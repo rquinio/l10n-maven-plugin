@@ -1,0 +1,1103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="1.0" xml:lang="en"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.w3.org/1999/xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
+    elementFormDefault="qualified">
+
+  <xs:annotation>
+    <xs:documentation>
+    XHTML 1.0 (Second Edition) Transitional in XML Schema
+
+    This is the same as HTML 4 Transitional except for
+    changes due to the differences between XML and SGML.
+
+    Namespace = http://www.w3.org/1999/xhtml
+
+    For further information, see: http://www.w3.org/TR/xhtml1
+
+    Copyright (c) 1998-2002 W3C (MIT, INRIA, Keio),
+    All Rights Reserved.
+
+    The DTD version is identified by the PUBLIC and SYSTEM identifiers:
+
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+
+    $Id: xhtml1-transitional.xsd,v 1.5 2002/08/28 09:53:29 mimasa Exp $
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+      schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+
+  <xs:annotation>
+    <xs:documentation>
+    ================== Imported Names ====================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:simpleType name="ContentType">
+    <xs:annotation>
+      <xs:documentation>
+      media type, as per [RFC2045]
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="ContentTypes">
+    <xs:annotation>
+      <xs:documentation>
+      comma-separated list of media types, as per [RFC2045]
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="LanguageCode">
+    <xs:annotation>
+      <xs:documentation>
+      a language code, as per [RFC3066]
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:language"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="Character">
+    <xs:annotation>
+      <xs:documentation>
+      a single character, as per section 2.2 of [XML]
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:length value="1" fixed="true"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Number">
+    <xs:annotation>
+      <xs:documentation>
+      one or more digits
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:nonNegativeInteger">
+      <xs:pattern value="[0-9]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tabindexNumber">
+    <xs:annotation>
+      <xs:documentation>
+      tabindex attribute specifies the position of the current element
+      in the tabbing order for the current document. This value must be
+      a number between 0 and 32767. User agents should ignore leading zeros.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="Number">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="32767"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="LinkTypes">
+    <xs:annotation>
+      <xs:documentation>
+      space-separated list of link types
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKENS"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="URI">
+    <xs:annotation>
+      <xs:documentation>
+      a Uniform Resource Identifier, see [RFC2396]
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:anyURI"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="Datetime">
+    <xs:annotation>
+      <xs:documentation>
+      date and time information. ISO date format
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:dateTime"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="Script">
+    <xs:annotation>
+      <xs:documentation>
+      script expression
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="StyleSheet">
+    <xs:annotation>
+      <xs:documentation>
+      style sheet data
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="Text">
+    <xs:annotation>
+      <xs:documentation>
+      used for titles etc.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="FrameTarget">
+    <xs:annotation>
+      <xs:documentation>
+      render in this frame
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:pattern value="_(blank|self|parent|top)|[A-Za-z]\c*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Length">
+    <xs:annotation>
+      <xs:documentation>
+      nn for pixels or nn% for percentage length
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[\-+]?(\d+|\d+(\.\d+)?%)"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="MultiLength">
+    <xs:annotation>
+      <xs:documentation>
+      pixel, percentage, or relative
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[\-+]?(\d+|\d+(\.\d+)?%)|[1-9]?(\d+)?\*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Pixels">
+    <xs:annotation>
+      <xs:documentation>
+      integer representing length in pixels
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:nonNegativeInteger"/>
+  </xs:simpleType>
+
+  <xs:annotation>
+    <xs:documentation>
+    these are used for image maps
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:simpleType name="Shape">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="rect"/>
+      <xs:enumeration value="circle"/>
+      <xs:enumeration value="poly"/>
+      <xs:enumeration value="default"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Coords">
+    <xs:annotation>
+      <xs:documentation>
+      comma separated list of lengths
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern
+          value="[\-+]?(\d+|\d+(\.\d+)?%)(,\s*[\-+]?(\d+|\d+(\.\d+)?%))*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ImgAlign">
+    <xs:annotation>
+      <xs:documentation>
+      used for object, applet, img, input and iframe
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="top"/>
+      <xs:enumeration value="middle"/>
+      <xs:enumeration value="bottom"/>
+      <xs:enumeration value="left"/>
+      <xs:enumeration value="right"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Color">
+    <xs:annotation>
+      <xs:documentation>
+      a color using sRGB: #RRGGBB as Hex values
+
+      There are also 16 widely known color names with their sRGB values:
+
+      Black  = #000000    Green  = #008000
+      Silver = #C0C0C0    Lime   = #00FF00
+      Gray   = #808080    Olive  = #808000
+      White  = #FFFFFF    Yellow = #FFFF00
+      Maroon = #800000    Navy   = #000080
+      Red    = #FF0000    Blue   = #0000FF
+      Purple = #800080    Teal   = #008080
+      Fuchsia= #FF00FF    Aqua   = #00FFFF
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Za-z]+|#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Generic Attributes ===============================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:attributeGroup name="coreattrs">
+    <xs:annotation>
+      <xs:documentation>
+      core attributes common to most elements
+      id       document-wide unique id
+      class    space separated list of classes
+      style    associated style info
+      title    advisory title/amplification
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="id" type="xs:ID"/>
+    <xs:attribute name="class" type="xs:NMTOKENS"/>
+    <xs:attribute name="style" type="StyleSheet"/>
+    <xs:attribute name="title" type="Text"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="i18n">
+    <xs:annotation>
+      <xs:documentation>
+      internationalization attributes
+      lang        language code (backwards compatible)
+      xml:lang    language code (as per XML 1.0 spec)
+      dir         direction for weak/neutral text
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="lang" type="LanguageCode"/>
+    <xs:attribute ref="xml:lang"/>
+    <xs:attribute name="dir">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="ltr"/>
+          <xs:enumeration value="rtl"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="events">
+    <xs:annotation>
+      <xs:documentation>
+      attributes for common UI events
+      onclick     a pointer button was clicked
+      ondblclick  a pointer button was double clicked
+      onmousedown a pointer button was pressed down
+      onmouseup   a pointer button was released
+      onmousemove a pointer was moved onto the element
+      onmouseout  a pointer was moved away from the element
+      onkeypress  a key was pressed and released
+      onkeydown   a key was pressed down
+      onkeyup     a key was released
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="onclick" type="Script"/>
+    <xs:attribute name="ondblclick" type="Script"/>
+    <xs:attribute name="onmousedown" type="Script"/>
+    <xs:attribute name="onmouseup" type="Script"/>
+    <xs:attribute name="onmouseover" type="Script"/>
+    <xs:attribute name="onmousemove" type="Script"/>
+    <xs:attribute name="onmouseout" type="Script"/>
+    <xs:attribute name="onkeypress" type="Script"/>
+    <xs:attribute name="onkeydown" type="Script"/>
+    <xs:attribute name="onkeyup" type="Script"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="focus">
+    <xs:annotation>
+      <xs:documentation>
+      attributes for elements that can get the focus
+      accesskey   accessibility key character
+      tabindex    position in tabbing order
+      onfocus     the element got the focus
+      onblur      the element lost the focus
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="accesskey" type="Character"/>
+    <xs:attribute name="tabindex" type="tabindexNumber"/>
+    <xs:attribute name="onfocus" type="Script"/>
+    <xs:attribute name="onblur" type="Script"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="attrs">
+    <xs:attributeGroup ref="coreattrs"/>
+    <xs:attributeGroup ref="i18n"/>
+    <xs:attributeGroup ref="events"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="TextAlign">
+    <xs:annotation>
+      <xs:documentation>
+      text alignment for p, div, h1-h6. The default is
+      align="left" for ltr headings, "right" for rtl
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="align">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="left"/>
+          <xs:enumeration value="center"/>
+          <xs:enumeration value="right"/>
+          <xs:enumeration value="justify"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Text Elements ====================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:group name="special.extra">
+    <xs:choice>
+      <xs:element ref="img"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="special.basic">
+    <xs:choice>
+      <xs:element ref="br"/>
+      <xs:element ref="span"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="special">
+    <xs:choice>
+      <xs:group ref="special.basic"/>
+      <xs:group ref="special.extra"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="fontstyle.basic">
+    <xs:choice>
+      <xs:element ref="i"/>
+      <xs:element ref="b"/>
+      <xs:element ref="u"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="fontstyle">
+    <xs:choice>
+      <xs:group ref="fontstyle.basic"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="phrase.extra">
+    <xs:choice>
+      <xs:element ref="sub"/>
+      <xs:element ref="sup"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="phrase.basic">
+    <xs:choice>
+      <xs:element ref="em"/>
+      <xs:element ref="strong"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="phrase">
+    <xs:choice>
+      <xs:group ref="phrase.basic"/>
+      <xs:group ref="phrase.extra"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="inline">
+    <xs:choice>
+      <xs:element ref="a"/>
+      <xs:group ref="special"/>
+      <xs:group ref="fontstyle"/>
+      <xs:group ref="phrase"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:complexType name="Inline" mixed="true">
+    <xs:annotation>
+      <xs:documentation>
+      "Inline" covers inline or "text-level" element
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:group ref="inline"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+    ================== Block level elements ==============================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:group name="heading">
+    <xs:choice>
+      <xs:element ref="h1"/>
+      <xs:element ref="h2"/>
+      <xs:element ref="h3"/>
+      <xs:element ref="h4"/>
+      <xs:element ref="h5"/>
+      <xs:element ref="h6"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="lists">
+    <xs:choice>
+      <xs:element ref="ul"/>
+      <xs:element ref="ol"/>
+      <xs:element ref="dl"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="blocktext">
+    <xs:choice>
+      <xs:element ref="center"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="block">
+    <xs:choice>
+      <xs:element ref="p"/>
+      <xs:group ref="heading"/>
+      <xs:element ref="div"/>
+      <xs:group ref="lists"/>
+      <xs:group ref="blocktext"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:complexType name="Flow" mixed="true">
+    <xs:annotation>
+      <xs:documentation>
+      "Flow" mixes block and inline and is used for list items etc.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:group ref="block"/>
+      <xs:group ref="inline"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+    ================== Content models for exclusions =====================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:complexType name="a.content" mixed="true">
+    <xs:annotation>
+      <xs:documentation>
+      a elements use "Inline" excluding a
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:group ref="special"/>
+      <xs:group ref="fontstyle"/>
+      <xs:group ref="phrase"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+    ================ Document Structure ==================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="html">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="head"/>
+        <xs:element ref="body"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="i18n"/>
+      <xs:attribute name="id" type="xs:ID"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    ================ Document Head =======================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="head">
+    <xs:annotation>
+      <xs:documentation>
+      content model is "head.misc" combined with a single
+      title and an optional base element in any order
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+		<xs:element ref="title"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="title">
+    <xs:annotation>
+      <xs:documentation>
+      The title element is not considered part of the flow of text.
+      It should be displayed, for example as the page header or
+      window title. Exactly one title is required per document.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="i18n"/>
+      <xs:attribute name="id" type="xs:ID"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Document Body ====================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="body">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Flow">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attribute name="onload" type="Script"/>
+          <xs:attribute name="onunload" type="Script"/>
+          <xs:attribute name="background" type="URI"/>
+          <xs:attribute name="bgcolor" type="Color"/>
+          <xs:attribute name="text" type="Color"/>
+          <xs:attribute name="link" type="Color"/>
+          <xs:attribute name="vlink" type="Color"/>
+          <xs:attribute name="alink" type="Color"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="div">
+    <xs:annotation>
+      <xs:documentation>
+      generic language/style container
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Flow">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Paragraphs =======================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="p">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Headings =========================================
+
+    There are six levels of headings from h1 (the most important)
+    to h6 (the least important).
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="h1">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="h2">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="h3">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="h4">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="h5">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="h6">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="TextAlign"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Lists ============================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:simpleType name="ULStyle">
+    <xs:annotation>
+      <xs:documentation>
+      Unordered list bullet styles
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="disc"/>
+      <xs:enumeration value="square"/>
+      <xs:enumeration value="circle"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="ul">
+    <xs:annotation>
+      <xs:documentation>
+      Unordered list
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="li"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="attrs"/>
+      <xs:attribute name="type" type="ULStyle"/>
+      <xs:attribute name="compact">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="compact"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="OLStyle">
+    <xs:annotation>
+      <xs:documentation>
+      Ordered list numbering style
+
+      1   arabic numbers      1, 2, 3, ...
+      a   lower alpha         a, b, c, ...
+      A   upper alpha         A, B, C, ...
+      i   lower roman         i, ii, iii, ...
+      I   upper roman         I, II, III, ...
+
+      The style is applied to the sequence number which by default
+      is reset to 1 for the first list item in an ordered list.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:element name="ol">
+    <xs:annotation>
+      <xs:documentation>
+      Ordered (numbered) list
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="li"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="attrs"/>
+      <xs:attribute name="type" type="OLStyle"/>
+      <xs:attribute name="compact">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="compact"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="start" type="Number"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="LIStyle">
+    <xs:annotation>
+      <xs:documentation>
+      LIStyle is constrained to: "(ULStyle|OLStyle)"
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:element name="li">
+    <xs:annotation>
+      <xs:documentation>
+      list item
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Flow">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attribute name="type" type="LIStyle"/>
+          <xs:attribute name="value" type="Number"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    definition lists - dt for term, dd for its definition
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="dl">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="dt"/>
+        <xs:element ref="dd"/>
+      </xs:choice>
+      <xs:attributeGroup ref="attrs"/>
+      <xs:attribute name="compact">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="compact"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="dt">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="dd">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Flow">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Text alignment ===================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="center">
+    <xs:annotation>
+      <xs:documentation>
+      center content
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Flow">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    ================== The Anchor Element ================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="a">
+    <xs:annotation>
+      <xs:documentation>
+      content is "Inline" except that anchors shouldn't be nested
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="a.content">
+          <xs:attributeGroup ref="attrs"/>
+          <xs:attributeGroup ref="focus"/>
+          <xs:attribute name="type" type="ContentType"/>
+          <xs:attribute name="name" type="xs:NMTOKEN"/>
+          <xs:attribute name="href" type="URI"/>
+          <xs:attribute name="hreflang" type="LanguageCode"/>
+          <xs:attribute name="rel" type="LinkTypes"/>
+          <xs:attribute name="rev" type="LinkTypes"/>
+          <xs:attribute name="shape" default="rect" type="Shape"/>
+          <xs:attribute name="coords" type="Coords"/>
+          <xs:attribute name="target" type="FrameTarget"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    ===================== Inline Elements ================================
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="span">
+    <xs:annotation>
+      <xs:documentation>
+      generic language/style container
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="br">
+    <xs:annotation>
+      <xs:documentation>
+      forced line break
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attributeGroup ref="coreattrs"/>
+      <xs:attribute name="clear" default="none">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="left"/>
+            <xs:enumeration value="all"/>
+            <xs:enumeration value="right"/>
+            <xs:enumeration value="none"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="em">
+    <xs:annotation>
+      <xs:documentation>
+      emphasis
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="strong">
+    <xs:annotation>
+      <xs:documentation>
+      strong emphasis
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="sub">
+    <xs:annotation>
+      <xs:documentation>
+      subscript
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="sup">
+    <xs:annotation>
+      <xs:documentation>
+      superscript
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="i">
+    <xs:annotation>
+      <xs:documentation>
+      italic font
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="b">
+    <xs:annotation>
+      <xs:documentation>
+      bold font
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="u">
+    <xs:annotation>
+      <xs:documentation>
+      underline
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="Inline">
+          <xs:attributeGroup ref="attrs"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+    =================== Images ===========================================
+
+    To avoid accessibility problems for people who aren't
+    able to see the image, you should provide a text
+    description using the alt and longdesc attributes.
+    In addition, avoid the use of server-side image maps.
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="img">
+    <xs:complexType>
+      <xs:attributeGroup ref="attrs"/>
+      <xs:attribute name="src" use="required" type="URI"/>
+      <xs:attribute name="alt" use="required" type="Text"/>
+      <xs:attribute name="name" type="xs:NMTOKEN"/>
+      <xs:attribute name="longdesc" type="URI"/>
+      <xs:attribute name="height" type="Length"/>
+      <xs:attribute name="width" type="Length"/>
+      <xs:attribute name="usemap" type="URI">
+	<xs:annotation>
+	  <xs:documentation>
+          usemap points to a map element which may be in this document
+          or an external document, although the latter is not widely supported
+          </xs:documentation>
+	</xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ismap">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="ismap"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="align" type="ImgAlign"/>
+      <xs:attribute name="border" type="Length"/>
+      <xs:attribute name="hspace" type="Pixels"/>
+      <xs:attribute name="vspace" type="Pixels"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
