@@ -34,6 +34,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -64,26 +65,40 @@ public class ValidateMojo extends AbstractMojo {
    * Template for inserting text resource content before XHTML validation. Need to declare HTML entities that are non
    * default XML ones. Also the text has to be inside a div, as plain text is not allowed directly in body.
    */
-  private static final String XHTML_TEMPLATE = "<!DOCTYPE html [ " + "<!ENTITY nbsp \"&#160;\"> "
-      + "<!ENTITY copy \"&#169;\"> " + "<!ENTITY cent \"&#162;\"> " + "<!ENTITY pound \"&#163;\"> "
-      + "<!ENTITY yen \"&#165;\"> " + "<!ENTITY euro \"&#8364;\"> " + "<!ENTITY sect \"&#167;\"> "
-      + "<!ENTITY reg \"&#174;\"> " + "<!ENTITY trade \"&#8482;\"> " + "]> "
-      + "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + "<head><title /></head><body><div>{0}</div></body></html>";
+  private static final String XHTML_TEMPLATE = "<!DOCTYPE html [ " 
+	  + "<!ENTITY nbsp \"&#160;\"> "
+      + "<!ENTITY copy \"&#169;\"> " 
+      + "<!ENTITY cent \"&#162;\"> " 
+      + "<!ENTITY pound \"&#163;\"> "
+      + "<!ENTITY yen \"&#165;\"> " 
+      + "<!ENTITY euro \"&#8364;\"> " 
+      + "<!ENTITY sect \"&#167;\"> "
+      + "<!ENTITY reg \"&#174;\"> " 
+      + "<!ENTITY trade \"&#8482;\"> " 
+      + "<!ENTITY ndash \"&#8211;\"> " 
+      + "]> "
+      + "<html xmlns=\"http://www.w3.org/1999/xhtml\">" 
+      + "<head><title /></head><body><div>{0}</div></body></html>";
 
   /**
    * Protocol must be included in URL (http(s), mailto, or protocol relative)
    */
-  private static final String URL_REGEXP = "^((http[s]?:)?//[-a-zA-Z0-9_.:]+[-a-zA-Z0-9_:@&?=+,.!/~*'%$#]*)|(mailto:).*$";
+  private static final String URL_VALIDATION_REGEXP = "^((http[s]?:)?//[-a-zA-Z0-9_.:]+[-a-zA-Z0-9_:@&?=+,.!/~*'%$#]*)|(mailto:).*$";
 
   /**
    * " \n \r \t are not allowed in js resources, as it would cause a script error.
    */
-  private static final String JS_REGEXP = "^([^\"|\n|\t|\r])*$";
+  private static final String JS_VALIDATION_REGEXP = "^([^\"|\n|\t|\r])*$";
 
   /**
    * Detection of html tags
    */
   private static final String HTML_REGEXP = ".*\\<[^>]+>.*";
+  
+  /**
+   * Detection of URL
+   */
+  private static final String URL_REGEXP = ".*//.*";
 
   /**
    * Directory containing properties file to check
@@ -126,11 +141,19 @@ public class ValidateMojo extends AbstractMojo {
    * @parameter
    */
   private String[] htmlKeys = new String[] { ".text." };
+  
+  /**
+   * List of keys to match as non-html text resources. Default is ".title.".
+   * 
+   * @parameter
+   */
+  private String[] textKeys = new String[] { ".title." };
 
   private final Validator xhtmlValidator;
-  private final Pattern urlPattern = Pattern.compile(URL_REGEXP);
-  private final Pattern jsPattern = Pattern.compile(JS_REGEXP);
+  private final Pattern urlValidationPattern = Pattern.compile(URL_VALIDATION_REGEXP);
+  private final Pattern jsValidationPattern = Pattern.compile(JS_VALIDATION_REGEXP);
   private final Pattern htmlPattern = Pattern.compile(HTML_REGEXP);
+  private final Pattern urlPattern = Pattern.compile(URL_REGEXP);
 
   public ValidateMojo() throws URISyntaxException, SAXException {
     SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -206,6 +229,8 @@ public class ValidateMojo extends AbstractMojo {
           nbErrors += validateHtmlResource(key, message, propertyName);
         } else if (StringUtils.indexOfAny(key, urlKeys) != -1) {
           nbErrors += validateUrlResource(key, message, propertyName);
+        } else if (StringUtils.indexOfAny(key, textKeys) != -1){
+          nbErrors += validateTextResource(key, message, propertyName);
         } else {
           nbErrors += validateOtherResource(key, message, propertyName);
         }
@@ -224,7 +249,7 @@ public class ValidateMojo extends AbstractMojo {
    */
   protected int validateJsResource(String key, String message, String propertyName) {
     int nbErrors = 0;
-    Matcher m = jsPattern.matcher(message);
+    Matcher m = jsValidationPattern.matcher(message);
     if (!m.matches()) {
       nbErrors++;
       StringBuffer sb = new StringBuffer();
@@ -246,7 +271,10 @@ public class ValidateMojo extends AbstractMojo {
   protected int validateUrlResource(String key, String message, String propertyName) {
     int nbErrors = 0;
     message = MessageFormat.format(message, "0", "1", "2");
-    Matcher m = urlPattern.matcher(message);
+    //Unescape HTML in case URL is used in HTML context (ex: &amp; -> &)
+    String url = StringEscapeUtils.unescapeHtml(message);
+    Matcher m = urlValidationPattern.matcher(url);
+
     if (!m.matches()) {
       nbErrors++;
       StringBuffer sb = new StringBuffer();
@@ -292,9 +320,32 @@ public class ValidateMojo extends AbstractMojo {
     }
     return nbErrors;
   }
+  
+  /**
+   * Check resource does not contain HTML/URL
+   * 
+   * @param key
+   * @param message
+   * @param propertyName
+   * @return Number of errors
+   */
+  protected int validateTextResource(String key, String message, String propertyName) {
+    int nbErrors = 0;
+    Matcher htmlMatcher = htmlPattern.matcher(message);
+    Matcher urlMatcher = urlPattern.matcher(message);
+    if (htmlMatcher.matches() || urlMatcher.matches()) {
+      nbErrors++;
+      StringBuffer sb = new StringBuffer();
+      sb.append("<").append(propertyName).append(">Text resource contains HTML or URL: <")
+          .append(key).append(">\n");
+      sb.append("Message value was: [").append(message).append("]\n\n");
+      getLog().error(sb);
+    }
+    return nbErrors;
+  }
 
   /**
-   * Other resources should not contain HTML.
+   * Warn if other resources contain HTML/URL.
    * 
    * @param key
    * @param message
@@ -302,19 +353,17 @@ public class ValidateMojo extends AbstractMojo {
    * @return Number of errors
    */
   protected int validateOtherResource(String key, String message, String propertyName) {
-    int nbErrors = 0;
-    // message = MessageFormat.format(message, "1", "2", "3"); //Issue with
-    // dates
-    Matcher m = htmlPattern.matcher(message);
-    if (m.matches()) {
-      nbErrors++;
+    Matcher htmlMatcher = htmlPattern.matcher(message);
+    Matcher urlMatcher = urlPattern.matcher(message);
+    
+    if (htmlMatcher.matches() || urlMatcher.matches()) {
       StringBuffer sb = new StringBuffer();
-      sb.append("<").append(propertyName).append(">Resource contains HTML but is not listed as an HTML resource: <")
+      sb.append("<").append(propertyName).append(">Resource may contain HTML or URL, but is not listed as such. No validation was performed: <")
           .append(key).append(">\n");
       sb.append("Message value was: [").append(message).append("]\n\n");
-      getLog().error(sb);
+      getLog().warn(sb);
     }
-    return nbErrors;
+    return 0;
   }
 
   public void setPropertyDir(File propertyDir) {
