@@ -102,11 +102,11 @@ public class ReportMojo extends AbstractMavenReport {
   private String outputDirectory;
   
   public String getDescription(Locale locale) {
-    return getBundle(locale).getString("report.dashboard.description");
+    return getBundle(locale).getString("report.dashboard.title.description");
   }
 
   public String getName(Locale locale) {
-    return getBundle(locale).getString("report.dashboard.name");
+    return getBundle(locale).getString("report.dashboard.title.name");
   }
 
   public String getOutputName() {

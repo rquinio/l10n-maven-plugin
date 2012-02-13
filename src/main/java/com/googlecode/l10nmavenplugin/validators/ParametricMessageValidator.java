@@ -37,6 +37,14 @@ public class ParametricMessageValidator implements L10nValidator {
    */
   private static final String CAPTURE_PARAMETERS_REGEXP = "(?:\\{([0-9]+)(?:,[a-z]+){0,2}\\})";
   private static final String DETECT_PARAMETERS_REGEXP = "^.*"+CAPTURE_PARAMETERS_REGEXP+".*$";
+  
+  /**
+   * Validation of single quotes escaping, consumed by MessageFormat.
+   * First unescaped quote is matched, with special case where it is at the end
+   * 
+   * "^([^']|'')*$" runs into StackOverflow for long messages.
+   */
+  private static final String UNESCAPED_QUOTE_REGEX = "[^']*'([^'].*)?";
 
   /**
    * Values to replace parameters {i} in properties.
@@ -45,12 +53,7 @@ public class ParametricMessageValidator implements L10nValidator {
    */
   private static final Object[] PARAMETRIC_REPLACE_VALUES = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-  /**
-   * Validation of single quotes escaping, consumed by MessageFormat.
-   * 
-   * "^([^']|'')*$" runs into StackOverflow for long messages.
-   */
-  private static final String UNESCAPED_QUOTE_REGEX = "[^']*'[^']*";
+  
   
   protected static final Pattern UNESCAPED_QUOTE_PATTERN = Pattern.compile(UNESCAPED_QUOTE_REGEX);
   protected static final Pattern CAPTURE_PARAMETERS_PATTERN = Pattern.compile(CAPTURE_PARAMETERS_REGEXP);
@@ -181,7 +184,9 @@ public class ParametricMessageValidator implements L10nValidator {
       this.setParameters(key, propertiesName, parameters);
       isParametric = (parameters.size() != 0);
     } else {
-      isParametric = (storedParams.size() != 0);
+      Matcher matcher = DETECT_PARAMETERS_PATTERN.matcher(message);
+      isParametric = matcher.matches();
+      //Not safe for unit test: isParametric = (storedParams.size() != 0);
     }
     return isParametric;
   }

@@ -39,8 +39,8 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     TEXT_VALIDATION_NO_URL("message.plainTextWithUrl.title","message.plainTextWithUrl.description"),
         
     //Warnings
-    INCOHERENT_PARAMETERS("message.incoherentParams.title","message.incoherentParams.description"),     
     ESCAPED_QUOTE_WITHOUT_PARAMETER("message.escapedQuoteWithoutParam.title","message.escapedQuoteWithoutParam.description"),
+    INCOHERENT_PARAMETERS("message.incoherentParams.title","message.incoherentParams.description"),
     MISSING_TRANSLATION("message.missingTranslation.title","message.missingTranslation.description"),  
     UNDECLARED_HTML_RESOURCE("message.undeclaredHtml.title","message.undeclaredHtml.description"),
     UNDECLARED_URL_RESOURCE("message.undeclaredUrl.title","message.undeclaredUrl.description"),

@@ -45,19 +45,6 @@ public class ParametricMessageValidatorTest {
     assertTrue(ParametricMessageValidator.DETECT_PARAMETERS_PATTERN.matcher("Some date: {0,number,integer}").matches());
   }
   
-  
-  @Test
-  public void testUnescapedQuotesPattern(){
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text").matches());
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some '' text").matches());
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ''{0}'' text").matches());
-    
-    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ' text").matches());
-    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text with a '").matches());
-   
-    //TODO assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some 'quoted' text").matches());
-  }
-  
   @Test
   public void testParametricReplacepatternCapture(){
     Matcher m = ParametricMessageValidator.DETECT_PARAMETERS_PATTERN.matcher("Some {0} parametrized text {1,date}");
@@ -65,6 +52,41 @@ public class ParametricMessageValidatorTest {
     //Only last is saved
     assertEquals(1, m.groupCount());
     assertEquals("1",m.group(1));
+  }
+  
+  @Test
+  public void testUnescapedQuotesPattern(){
+    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text").matches());
+    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some '' text").matches());
+    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text''").matches());
+    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("''Some text").matches());
+    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ''{0}'' text").matches());
+    
+    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ' text").matches());
+    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text'").matches());
+    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("'Some text'").matches());
+    //TODO assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some 'quoted' text").matches());
+  }
+  
+  @Test
+  public void testEscapedQuote(){
+    assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.valid", "Some text", null, reportItems));
+    assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.valid", "Some ' text", null, reportItems));
+    assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.valid", "Some '' {0} text", null, reportItems));
+    assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.valid", "Some ''{0}'' text", null, reportItems));
+  }
+  
+  @Test
+  public void testUnescapedQuote(){
+    assertEquals(1, parametricMessageValidator.validate("ALLP.parametric.invalid", "Some' text{1}", null, reportItems));
+    assertEquals(1, parametricMessageValidator.validate("ALLP.parametric.invalid", "Some {0} 'text", null, reportItems));
+    assertEquals(1, parametricMessageValidator.validate("ALLP.parametric.invalid", "<{0,date}> != '#price':$", null, reportItems));
+  }
+  
+  @Test
+  public void testUnnecessaryQuoteEscaping(){
+    //Only a warning
+    assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.invalid", "Some '' text", null, reportItems));
   }
   
   /**
@@ -125,14 +147,8 @@ public class ParametricMessageValidatorTest {
     		"Mauris venenatis, nisi eget suscipit accumsan, est est sollicitudin risus, vitae faucibus massa massa vitae ipsum. " +
     		"Fusce volutpat mattis porttitor. {2} Sed lobortis, mi at vehicula tristique, tortor ante iaculis felis, vitae mollis libero ipsum ac lectus. " +
     		"Nullam eros libero, tempor in venenatis sit amet, molestie elementum risus. {3} Nullam fermentum justo vel turpis tristique {4} congue. " +
-    		"Nulla '{5}' velit lorem, ultricies nec tempus laoreet, {6} congue at lorem. ";
+    		"Nulla {5} velit lorem, ultricies nec tempus laoreet, {6} congue at lorem. ";
 
-    assertEquals(0, parametricMessageValidator.validate("key", longMessage, null, reportItems));
-  }
-  
-  @Test
-  public void testUnnecessaryQuoteEscaping(){
-    //Only a warning
-    assertEquals(0, parametricMessageValidator.validate("ALLP.text.parametric", "Some '' text", null, reportItems));
+    assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.valid", longMessage, null, reportItems));
   }
 }

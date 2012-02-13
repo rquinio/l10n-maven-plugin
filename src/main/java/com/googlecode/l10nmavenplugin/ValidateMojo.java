@@ -163,7 +163,7 @@ public class ValidateMojo extends AbstractMojo {
   private L10nValidatorLogger logger;
 
   /**
-   * Initialize the validator only once in constructor, for performance reason.
+   * Initialize the validators only once in constructor, for performance reason.
    * 
    * @throws URISyntaxException
    * @throws SAXException
@@ -185,6 +185,8 @@ public class ValidateMojo extends AbstractMojo {
    * Entry point for the plugin validate goal
    */
   public void execute() throws MojoExecutionException, MojoFailureException {
+    //TODO log configuration used as DEBUG. 
+    
     List<L10nReportItem> reportItems = new ArrayList<L10nReportItem>();
     int nbErrors = validateProperties(propertyDir, reportItems);
 
@@ -246,14 +248,19 @@ public class ValidateMojo extends AbstractMojo {
           InputStream inStream = new FileInputStream(file);
           String propertiesName = file.getName();
           Properties properties = new Properties();
-          properties.load(inStream);
+          getLog().debug("Loading "+propertiesName+"...");
+          try {
+            properties.load(inStream);
+          } catch(IllegalArgumentException e) {
+            throw new MojoExecutionException("The file <"+propertiesName+"> could not be loaded. Check for a malformed Unicode escape sequence.", e);
+          }
           propertiesMap.put(propertiesName, properties);
         }
       }
     } catch (IOException e) {
       throw new MojoExecutionException("An unexpected exception has occured while loading properties.", e);
     }
-
+   
     return propertiesMap;
   }
 

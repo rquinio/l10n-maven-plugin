@@ -46,8 +46,10 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
   protected void renderBody() {
     // Need to order by Type
     Collections.sort(reportItems);
+    
+    super.
 
-    paragraph(MessageFormat.format(bundle.getString("report.dashboard.text"), nbErrors));
+    paragraph(MessageFormat.format(bundle.getString("report.dashboard.text.intro"), nbErrors));
 
     int index = 1;
     Type previousType = null;
@@ -56,18 +58,33 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
         if (previousType != null) { // Specific case of 1st row
           endTable();
           endSection();
+          sink.horizontalRule();
         }
         startSection("[" + reportItem.getItemSeverity().toString() + "] "
             + bundle.getString(reportItem.getItemType().getTitleLocKey()));
         paragraph(bundle.getString(reportItem.getItemType().getDescriptionLocKey()));
         startTable();
-        tableHeader(new String[] { "", "Property key", "Error", "Property value" });
+        tableHeader(new String[] { "", 
+            bundle.getString("report.dashboard.messages.title.propertyKey"),
+            bundle.getString("report.dashboard.messages.title.errorMessage"),
+            bundle.getString("report.dashboard.messages.title.propertyValue")});
       }
-      tableRow(new String[] { String.valueOf(index), reportItem.getPropertiesKey() + "  " + reportItem.getPropertiesName(),
-          reportItem.getItemMessage(), "[" + reportItem.getPropertiesValue() + "]" });
+      //Can't use super.tableRow, as it consumes some {}
+      sink.tableRow();
+      sink.tableCell(); sink.text(String.valueOf(index)); sink.tableCell_();
+      sink.tableCell(); sink.text(reportItem.getPropertiesKey() + "  " + reportItem.getPropertiesName()); sink.tableCell_();
+      sink.tableCell(); sink.text(reportItem.getItemMessage()); sink.tableCell_();
+      sink.tableCell();
+      if(reportItem.getPropertiesValue()!=null){
+        sink.text("[" + reportItem.getPropertiesValue() + "]"); 
+      }
+      sink.tableCell_();
+      sink.tableRow_();
+      
       previousType = reportItem.getItemType();
       index++;
     }
+
     // Close last section
     endTable();
     endSection();

@@ -43,7 +43,7 @@ public class HtmlValidatorTest {
   }
   
   @Test
-  public void testValidText() {
+  public void testValidHtml() {
     assertEquals(0, htmlValidator.validate("ALLP.text.valid", "Some text", null, reportItems));
     assertEquals(0, htmlValidator.validate("ALLP.text.valid", "<div>Some Text on<a href=\"www.google.fr\">Google</a></div>", null, reportItems));
     assertEquals(0, htmlValidator.validate("ALLP.text.valid", "<a href=\"www.google.fr\" target=\"_blank\">Google</a>", null, reportItems));
@@ -51,6 +51,12 @@ public class HtmlValidatorTest {
     assertEquals(0, htmlValidator.validate("ALLP.text.valid", "<a href='http://example.com'>link</a>", null, reportItems));
     //Nested HTML escaping "
     //assertEquals(0, plugin.validateProperty("ALLP.text.valid", "<a onclick=\"javascript:alert(\\\"plop\\\");\"></a>", null));
+  }
+  
+  @Test
+  public void testInvalidHtml() {
+    //Escaped = or : not consumed by Properties#load ?
+    assertEquals(1, htmlValidator.validate("ALLP.text.invalid", "<a href\\='http\\://example.com'>link</a>", null, reportItems));
   }
   
   @Test
