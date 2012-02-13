@@ -14,96 +14,84 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 package com.googlecode.l10nmavenplugin;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.xml.sax.SAXException;
 
+import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.validators.DefaultValidator;
+import com.googlecode.l10nmavenplugin.validators.JsValidator;
+import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
+import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
+import com.googlecode.l10nmavenplugin.validators.L10nValidator;
+import com.googlecode.l10nmavenplugin.validators.MissingTranslationValidator;
+import com.googlecode.l10nmavenplugin.validators.ParametricMessageValidator;
+import com.googlecode.l10nmavenplugin.validators.TextValidator;
+import com.googlecode.l10nmavenplugin.validators.UrlValidator;
+import com.googlecode.l10nmavenplugin.validators.HtmlValidator;
+
 /**
- * Maven plugin to validate a set of l10n properties file against:
+ * Validate a set of l10n {@link Properties} files against:
+ * 
  * <ul>
- * <li>Invalid XHTML text</li>
- * <li>Invalid javascript characters</li>
- * <li>Malformed URLs</li>
+ * <li>Missing javascript escaping for resources evaluated client side</li>
+ * <li>Bad escaping for {@link MessageFormat} in case of parametric replacement</li>
+ * <li>Invalid XHTML 1.0 transitional</li>
+ * <li>Malformed absolute URLs</li>
+ * <li>Plain text resources containing HTML/URL</li>
  * </ul>
  * 
+ * In case multiple checks are performed on a resource (ex: client side resource with parameters), the order above applies.
+ * 
+ * The syntax of properties file is not checked but it relies on loading them successfully as Properties.
+ * 
+ * 
+ * @note References for escape sequences and special characters:
+ *       <ul>
+ *       <li>Java Properties: {@link Properties#load}</li>
+ *       <li>Java MessageFormat: {@link MessageFormat}</li>
+ *       <li>Javascript: {@link http://www.w3schools.com/js/js_special_characters.asp}</li>
+ *       <li>XHTML: {@link http://www.w3schools.com/tags/ref_entities.asp}</li>
+ *       <li>URL: {@link http://www.w3schools.com/tags/ref_urlencode.asp}</li>
+ *       </ul>
+ *       Extra references for development:
+ *       <ul>
+ *       <li>Java Pattern: {@link Pattern}</li>
+ *       <li>Java String: {@link http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#101089}</li>
+ *       </ul>
+ *       
  * @goal validate
  * @phase test
+ * @since 1.0
  * @author romain.quinio
- * 
  */
 public class ValidateMojo extends AbstractMojo {
-
-  /**
-   * TODO Could allow only a subset of xhtml1-transitional, conforming to WCAG
-   */
-  private static final String XHTML_XSD = "xhtml1-transitional.xsd";
-
-  /**
-   * Template for inserting text resource content before XHTML validation. Need to declare HTML entities that are non
-   * default XML ones. Also the text has to be inside a div, as plain text is not allowed directly in body.
-   */
-  private static final String XHTML_TEMPLATE = "<!DOCTYPE html [ " 
-	  + "<!ENTITY nbsp \"&#160;\"> "
-      + "<!ENTITY copy \"&#169;\"> " 
-      + "<!ENTITY cent \"&#162;\"> " 
-      + "<!ENTITY pound \"&#163;\"> "
-      + "<!ENTITY yen \"&#165;\"> " 
-      + "<!ENTITY euro \"&#8364;\"> " 
-      + "<!ENTITY sect \"&#167;\"> "
-      + "<!ENTITY reg \"&#174;\"> " 
-      + "<!ENTITY trade \"&#8482;\"> " 
-      + "<!ENTITY ndash \"&#8211;\"> " 
-      + "]> "
-      + "<html xmlns=\"http://www.w3.org/1999/xhtml\">" 
-      + "<head><title /></head><body><div>{0}</div></body></html>";
-
-  /**
-   * Protocol must be included in URL (http(s), mailto, or protocol relative)
-   */
-  private static final String URL_VALIDATION_REGEXP = "^((http[s]?:)?//[-a-zA-Z0-9_.:]+[-a-zA-Z0-9_:@&?=+,.!/~*'%$#]*)|(mailto:).*$";
-
-  /**
-   * " \n \r \t are not allowed in js resources, as it would cause a script error.
-   */
-  private static final String JS_VALIDATION_REGEXP = "^([^\"|\n|\t|\r])*$";
-
-  /**
-   * Detection of html tags
-   */
-  private static final String HTML_REGEXP = ".*\\<[^>]+>.*";
-  
-  /**
-   * Detection of URL
-   */
-  private static final String URL_REGEXP = ".*//.*";
 
   /**
    * Directory containing properties file to check
    * 
    * @parameter default-value="src\\main\\resources"
+   * @since 1.0
    */
   private File propertyDir;
 
@@ -111,6 +99,7 @@ public class ValidateMojo extends AbstractMojo {
    * Keys excluded from validation. Default is none.
    * 
    * @parameter
+   * @since 1.0
    */
   private String[] excludedKeys = new String[] {};
 
@@ -118,6 +107,7 @@ public class ValidateMojo extends AbstractMojo {
    * Make validation failure not blocking the build
    * 
    * @parameter default-value="false"
+   * @since 1.0
    */
   private boolean ignoreFailure = false;
 
@@ -125,6 +115,7 @@ public class ValidateMojo extends AbstractMojo {
    * List of keys to match as text resources used from js. Default is ".js.".
    * 
    * @parameter
+   * @since 1.0
    */
   private String[] jsKeys = new String[] { ".js." };
 
@@ -132,6 +123,7 @@ public class ValidateMojo extends AbstractMojo {
    * List of keys to match as url resources. Default is ".url.".
    * 
    * @parameter
+   * @since 1.0
    */
   private String[] urlKeys = new String[] { ".url." };
 
@@ -139,231 +131,211 @@ public class ValidateMojo extends AbstractMojo {
    * List of keys to match as html text resources. Default is ".text.".
    * 
    * @parameter
+   * @since 1.0
    */
   private String[] htmlKeys = new String[] { ".text." };
-  
+
   /**
    * List of keys to match as non-html text resources. Default is ".title.".
    * 
    * @parameter
+   * @since 1.1
    */
   private String[] textKeys = new String[] { ".title." };
 
-  private final Validator xhtmlValidator;
-  private final Pattern urlValidationPattern = Pattern.compile(URL_VALIDATION_REGEXP);
-  private final Pattern jsValidationPattern = Pattern.compile(JS_VALIDATION_REGEXP);
-  private final Pattern htmlPattern = Pattern.compile(HTML_REGEXP);
-  private final Pattern urlPattern = Pattern.compile(URL_REGEXP);
+  private L10nValidator htmlValidator;
+  private L10nValidator jsValidator;
+  private L10nValidator urlValidator;
+  private L10nValidator textValidator;
+  private L10nValidator defaultValidator;
+  private L10nValidator parametricMessageValidator;
+  private L10nValidator missingTranslationValidator;
 
+  private L10nValidatorLogger logger;
+
+  /**
+   * Initialize the validator only once in constructor, for performance reason.
+   * 
+   * @throws URISyntaxException
+   * @throws SAXException
+   */
   public ValidateMojo() throws URISyntaxException, SAXException {
-    SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-    URL schemaURL = this.getClass().getClassLoader().getResource(XHTML_XSD);
-    xhtmlValidator = factory.newSchema(schemaURL).newValidator();
-    // xhtmlValidator = null;
+    logger = new L10nValidatorLogger(getLog());
+    
+    getLog().info("Initializing l10n validators...");
+    htmlValidator = new HtmlValidator(logger);
+    jsValidator = new JsValidator(htmlValidator, logger);
+    urlValidator = new UrlValidator(logger);
+    textValidator = new TextValidator(logger);
+    defaultValidator = new DefaultValidator(logger);
+    parametricMessageValidator = new ParametricMessageValidator(logger);
+    missingTranslationValidator = new MissingTranslationValidator(logger);
   }
 
   /**
-   * Entry point for the plugin
+   * Entry point for the plugin validate goal
    */
   public void execute() throws MojoExecutionException, MojoFailureException {
-    int nbErrors = 0;
+    List<L10nReportItem> reportItems = new ArrayList<L10nReportItem>();
+    int nbErrors = validateProperties(propertyDir, reportItems);
+
+    if (nbErrors > 0) {
+      if (ignoreFailure) {
+        getLog().error("Validation has failed with " + nbErrors + " errors.");
+        getLog().info("Ignoring failure as ignoreFailure is true.");
+      } else {
+        throw new MojoFailureException("Validation has failed with " + nbErrors + " errors.");
+      }
+    } else {
+      getLog().info("Validation was successful.");
+    }
+  }
+  
+  /**
+   * Maven Log is passed after constructor
+   */
+  @Override
+  public void setLog(Log log){
+    super.setLog(log);
+    logger.setLogger(log);
+  }
+  
+  /**
+   * Validation logic entry point used both by {@link ValidateMojo} and {@link ReportMojo}
+   * @param directory
+   * @param reportItems List to update with errors/warn/info
+   * @return number of errors.
+   * @throws MojoExecutionException
+   */
+  public int validateProperties(File directory, List<L10nReportItem> reportItems) throws MojoExecutionException {
+    Map<String, Properties> propertiesMap = loadProperties(directory);
+    return validateProperties(propertiesMap, reportItems);
+  }
+
+  /**
+   * Load Properties file
+   * 
+   * @return never null
+   * @throws MojoExecutionException
+   */
+  private Map<String, Properties> loadProperties(File directory) throws MojoExecutionException {
+    Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
+    getLog().info("Looking for .properties files in: " + directory.getAbsolutePath());
+
     try {
-      getLog().info("Looking for properties files in: " + propertyDir.getAbsolutePath());
-      File[] files = propertyDir.listFiles(new FilenameFilter() {
+      File[] files = directory.listFiles(new FilenameFilter() {
         public boolean accept(File dir, String name) {
           return name.endsWith(".properties");
         }
       });
+
       if (files == null || files.length == 0) {
-        getLog().warn(
-            "No properties file under folder " + propertyDir.getAbsolutePath() + ". Skipping l10n validation.");
-        return;
-      }
-      for (File file : files) {
-        InputStream inStream = new FileInputStream(file);
-        String propertyName = file.getName();
-        Properties properties = new Properties();
-        properties.load(inStream);
+        getLog().warn("No properties file under folder " + directory.getAbsolutePath() + ". Skipping l10n validation.");
 
-        nbErrors += validateProperties(properties, propertyName);
-      }
-
-    } catch (IOException e) {
-      throw new MojoExecutionException("An unexpected exception has occured", e);
-    }
-
-    if (nbErrors > 0) {
-      if (ignoreFailure) {
-        getLog().error("Validation of l10n properties has failed with " + nbErrors + " errors");
       } else {
-        throw new MojoFailureException("Validation of l10n properties has failed with " + nbErrors + " errors");
+        for (File file : files) {
+          InputStream inStream = new FileInputStream(file);
+          String propertiesName = file.getName();
+          Properties properties = new Properties();
+          properties.load(inStream);
+          propertiesMap.put(propertiesName, properties);
+        }
       }
-    } else {
-      getLog().info("Validation of l10n properties was successful");
+    } catch (IOException e) {
+      throw new MojoExecutionException("An unexpected exception has occured while loading properties.", e);
     }
+
+    return propertiesMap;
   }
 
   /**
-   * Validate a Properties file
+   * Validate some Properties file belonging to the same bundle. There are 2 steps:
+   * <ul>
+   * <li>Validate properties in isolation, based on the context the property will be used (xHTML, URL, js, ...)</li>
+   * <li>Compare properties between each Properties file.</li>
+   * </ul>
+   * 
+   * @param propertiesMap
+   * @return
+   */
+  protected int validateProperties(Map<String, Properties> propertiesMap, List<L10nReportItem> reportItems) {
+    int nbErrors = 0;
+
+    // 1st step: validation in isolation
+    for (Map.Entry<String, Properties> entry : propertiesMap.entrySet()) {
+      nbErrors += validateProperties(entry.getValue(), entry.getKey(),reportItems);
+    }
+
+    // 2nd step: comparison
+    nbErrors += parametricMessageValidator.report(propertiesMap.keySet(),reportItems);
+    nbErrors += missingTranslationValidator.report(excludeRootBundle(propertiesMap.keySet()),reportItems);
+
+    return nbErrors;
+  }
+
+  /**
+   * Validate a Properties file in isolation from the other Properties file.
    * 
    * @param properties
    * @param propertyName
    *          the name of the file, for error logging
    * @return Number of errors
    */
-  protected int validateProperties(Properties properties, String propertyName) {
+  protected int validateProperties(Properties properties, String propertiesName, List<L10nReportItem> reportItems) {
+    logger.info(propertiesName, null, "Starting validation...", null, null);
     int nbErrors = 0;
-    getLog().info("Validating " + propertyName);
-    Set<Object> keys = properties.keySet(); // .propertyNames
+
+    Set<Object> keys = properties.keySet();
     for (Object obj : keys) {
       String key = (String) obj;
       String message = properties.getProperty(key);
-      // Only validate if key is not excluded, and message is defined.
-      if (StringUtils.indexOfAny(key, excludedKeys) == -1 && message.length() > 0) {
+      nbErrors += validateProperty(key, message, propertiesName, reportItems);
+    }
+    return nbErrors;
+  }
+
+  /**
+   * Validate a single property of a Properties file
+   * 
+   * @param properties
+   * @param propertyName
+   *          the name of the file, for error logging
+   * @return Number of errors
+   */
+  protected int validateProperty(String key, String message, String propertiesName, List<L10nReportItem> reportItems) {
+    int nbErrors = 0;
+
+    if (message.length() > 0) { // Nothing to validate if message is empty.
+      // Only validate if key is not excluded
+      if (StringUtils.indexOfAny(key, excludedKeys) == -1) {
+        logger.debug(propertiesName, key, "Starting validation...", null, null);
+        
+        nbErrors+= missingTranslationValidator.validate(key, message, propertiesName, reportItems);
+        nbErrors+= parametricMessageValidator.validate(key, message, propertiesName, reportItems);
+
         if (StringUtils.indexOfAny(key, htmlKeys) != -1) {
-          nbErrors += validateHtmlResource(key, message, propertyName);
-        } else if (StringUtils.indexOfAny(key, jsKeys) != -1) {// key.contains("ALLP.listelem.Error")
-          // Js should pass both js and html
-          nbErrors += validateJsResource(key, message, propertyName);
-          nbErrors += validateHtmlResource(key, message, propertyName);
+          nbErrors+= htmlValidator.validate(key, message, propertiesName, reportItems);
+
+        } else if (StringUtils.indexOfAny(key, jsKeys) != -1) {
+          nbErrors+= jsValidator.validate(key, message, propertiesName, reportItems);
+
         } else if (StringUtils.indexOfAny(key, urlKeys) != -1) {
-          nbErrors += validateUrlResource(key, message, propertyName);
-        } else if (StringUtils.indexOfAny(key, textKeys) != -1){
-          nbErrors += validateTextResource(key, message, propertyName);
+          nbErrors+= urlValidator.validate(key, message, propertiesName, reportItems);
+
+        } else if (StringUtils.indexOfAny(key, textKeys) != -1) {
+          nbErrors+= textValidator.validate(key, message, propertiesName, reportItems);
+
         } else {
-          nbErrors += validateOtherResource(key, message, propertyName);
+          nbErrors+= defaultValidator.validate(key, message, propertiesName, reportItems);
         }
+      } else {
+        L10nReportItem item = new L10nReportItem(Severity.INFO, Type.EXCLUDED, 
+            "Property was excluded from validation by plugin configuration.", propertiesName, key, null, null);
+        reportItems.add(item);
+        logger.log(item);
       }
     }
     return nbErrors;
-  }
-
-  /**
-   * Validate js text using regexp.
-   * 
-   * @param key
-   * @param message
-   * @param propertyName
-   * @return Number of errors
-   */
-  protected int validateJsResource(String key, String message, String propertyName) {
-    int nbErrors = 0;
-    Matcher m = jsValidationPattern.matcher(message);
-    if (!m.matches()) {
-      nbErrors++;
-      StringBuffer sb = new StringBuffer();
-      sb.append("<").append(propertyName).append(">Js error for key <").append(key).append(">\n");
-      sb.append("Message value was: [").append(message).append("]\n\n");
-      getLog().error(sb);
-    }
-    return nbErrors;
-  }
-
-  /**
-   * Validate URLs using regexp. The URLValidator from Apache does not seem to support scheme relative URLs.
-   * 
-   * @param key
-   * @param message
-   * @param propertyName
-   * @return Number of errors
-   */
-  protected int validateUrlResource(String key, String message, String propertyName) {
-    int nbErrors = 0;
-    message = MessageFormat.format(message, "0", "1", "2");
-    //Unescape HTML in case URL is used in HTML context (ex: &amp; -> &)
-    String url = StringEscapeUtils.unescapeHtml(message);
-    Matcher m = urlValidationPattern.matcher(url);
-
-    if (!m.matches()) {
-      nbErrors++;
-      StringBuffer sb = new StringBuffer();
-      sb.append("<").append(propertyName).append(">URL error for <").append(key).append(">\n");
-      sb.append("Message value was: [").append(message).append("]\n\n");
-      getLog().error(sb);
-    }
-    return nbErrors;
-  }
-
-  /**
-   * Validate HTML text using XHTML validator.
-   * 
-   * @param key
-   * @param message
-   * @param propertyName
-   * @return Number of errors
-   */
-  protected int validateHtmlResource(String key, String message, String propertyName) {
-    int nbErrors = 0;
-    if (xhtmlValidator != null) {
-      String xhtml = MessageFormat.format(XHTML_TEMPLATE, message);
-
-      try {
-        Source source = new StreamSource(new ByteArrayInputStream(xhtml.getBytes("UTF-8")));
-        xhtmlValidator.validate(source);
-
-      } catch (SAXException e) {
-        nbErrors++;
-        StringBuffer sb = new StringBuffer();
-        sb.append("<").append(propertyName).append(">HTML error for key <").append(key).append("> : ");
-        sb.append(e.getMessage()).append("\n");
-        sb.append("Message value was: [").append(message).append("]\n\n");
-        getLog().error(sb);
-      } catch (IOException e) {
-        nbErrors++;
-        StringBuffer sb = new StringBuffer();
-        sb.append("<").append(propertyName).append(">HTML error for key <").append(key).append("> : ");
-        sb.append(e.getMessage()).append("\n");
-        sb.append("Message value was: [").append(message).append("]\n\n");
-        getLog().error(sb);
-      }
-    }
-    return nbErrors;
-  }
-  
-  /**
-   * Check resource does not contain HTML/URL
-   * 
-   * @param key
-   * @param message
-   * @param propertyName
-   * @return Number of errors
-   */
-  protected int validateTextResource(String key, String message, String propertyName) {
-    int nbErrors = 0;
-    Matcher htmlMatcher = htmlPattern.matcher(message);
-    Matcher urlMatcher = urlPattern.matcher(message);
-    if (htmlMatcher.matches() || urlMatcher.matches()) {
-      nbErrors++;
-      StringBuffer sb = new StringBuffer();
-      sb.append("<").append(propertyName).append(">Text resource contains HTML or URL: <")
-          .append(key).append(">\n");
-      sb.append("Message value was: [").append(message).append("]\n\n");
-      getLog().error(sb);
-    }
-    return nbErrors;
-  }
-
-  /**
-   * Warn if other resources contain HTML/URL.
-   * 
-   * @param key
-   * @param message
-   * @param propertyName
-   * @return Number of errors
-   */
-  protected int validateOtherResource(String key, String message, String propertyName) {
-    Matcher htmlMatcher = htmlPattern.matcher(message);
-    Matcher urlMatcher = urlPattern.matcher(message);
-    
-    if (htmlMatcher.matches() || urlMatcher.matches()) {
-      StringBuffer sb = new StringBuffer();
-      sb.append("<").append(propertyName).append(">Resource may contain HTML or URL, but is not listed as such. No validation was performed: <")
-          .append(key).append(">\n");
-      sb.append("Message value was: [").append(message).append("]\n\n");
-      getLog().warn(sb);
-    }
-    return 0;
   }
 
   public void setPropertyDir(File propertyDir) {
@@ -372,5 +344,40 @@ public class ValidateMojo extends AbstractMojo {
 
   public void setExcludedKeys(String[] excludedKeys) {
     this.excludedKeys = excludedKeys;
+  }
+
+  public void setIgnoreFailure(boolean ignoreFailure) {
+    this.ignoreFailure = ignoreFailure;
+  }
+
+  /**
+   *
+   * @param propertiesNames
+   * @return
+   */
+  private Set<String> excludeRootBundle(Set<String> propertiesNames){
+    Set<String> localizedPropertiesNames = new HashSet<String>();
+    for(String propertiesName : propertiesNames){
+      if(propertiesName.contains("_")){
+        localizedPropertiesNames.add(propertiesName);
+      }
+    }
+    return localizedPropertiesNames;
+  }
+
+  public void setJsKeys(String[] jsKeys) {
+    this.jsKeys = jsKeys;
+  }
+
+  public void setUrlKeys(String[] urlKeys) {
+    this.urlKeys = urlKeys;
+  }
+
+  public void setHtmlKeys(String[] htmlKeys) {
+    this.htmlKeys = htmlKeys;
+  }
+
+  public void setTextKeys(String[] textKeys) {
+    this.textKeys = textKeys;
   }
 }

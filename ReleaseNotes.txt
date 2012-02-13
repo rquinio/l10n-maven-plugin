@@ -1,0 +1,16 @@
+1.2
+Added report goal that binds to site phase
+Added parametric replacement checks (single quote escaping, parameters coherency).
+Added support for javascript escaping of double quotes in js resources (\\").
+Added javascript unescaping before HTML validation for js resources.
+Added missing translation checks.
+Refactored code architecture with validators.
+Changed logging to be more consistent.
+
+1.1
+Added HTML unescaping before URL validation.
+Added Text key validation (no HTML/URL).
+Changed Other resources validation to warning instead of error.
+
+1.0
+Initial release: validate goal that binds to test phase.
