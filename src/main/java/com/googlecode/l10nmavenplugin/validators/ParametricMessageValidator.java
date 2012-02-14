@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
@@ -175,7 +177,7 @@ public class ParametricMessageValidator implements L10nValidator {
       // Save info for further analysis
       while(m.find()){
         String param = m.group(1);
-        if (!param.isEmpty()) {
+        if (!StringUtils.isEmpty(param)) {
           parameters.add(Integer.valueOf(param));
         }
       }

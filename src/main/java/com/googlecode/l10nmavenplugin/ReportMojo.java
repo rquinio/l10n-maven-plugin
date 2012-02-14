@@ -23,8 +23,8 @@ import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.xml.sax.SAXException;
 
-import report.L10nReportRenderer;
 
+import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 
 /**
