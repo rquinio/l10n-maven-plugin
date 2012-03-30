@@ -9,42 +9,50 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.validators;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 
-public class DefaultValidatorTest {
-  
-  private L10nValidator defaultValidator;
-  
-  private List<L10nReportItem> reportItems;
-  
-  @Before
-  public void setUp(){
-    defaultValidator = new DefaultValidator(new L10nValidatorLogger());
-    reportItems = new ArrayList<L10nReportItem>();
+/**
+ * Validate against a customizable Regex.
+ * 
+ * @author romain.quinio
+ */
+public class PatternValidator implements L10nValidator {
+
+  private String name;
+  private Pattern pattern;
+  private L10nValidatorLogger logger;
+
+  public PatternValidator(L10nValidatorLogger logger, String name, String regex) {
+    this.logger = logger;
+    this.pattern = Pattern.compile(regex);
+    this.name = name;
   }
-  
-  @Test
-  public void testValidOther() {
-    assertEquals(0, defaultValidator.validate("ALLP.other.valid", "Some \"text\"", null,reportItems));
-    assertEquals(0, defaultValidator.validate("ALLP.other.valid", "a < b", null,reportItems));
-    assertEquals(0, reportItems.size());
+
+  /**
+   * Try to match the pattern
+   */
+  public int validate(String key, String message, String propertiesName, List<L10nReportItem> reportItems) {
+    int nbErrors = 0;
+    Matcher m = pattern.matcher(message);
+    if (!m.matches()) {
+      L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.CUSTOM_PATTERN, "Failed to match pattern '" + name
+          + "' with regex " + pattern.pattern(), propertiesName, key, message, null);
+      reportItems.add(reportItem);
+      logger.log(reportItem);
+      nbErrors++;
+    }
+    return nbErrors;
   }
-  
-  @Test
-  public void testOtherResource() {
-    // Check it's only warning
-    assertEquals(0, defaultValidator.validate("ALLP.other.invalid","<div>Some text</div>", null,reportItems));
-    assertEquals(0, defaultValidator.validate("ALLP.other.invalid","Some <br />text", null,reportItems));
-    assertEquals(0, defaultValidator.validate("ALLP.other.invalid","http://example.com", null,reportItems));
-    
-    assertEquals(3, reportItems.size());
+
+  public int report(Set<String> propertiesNames, List<L10nReportItem> reportItems) {
+    return 0;
   }
+
 }

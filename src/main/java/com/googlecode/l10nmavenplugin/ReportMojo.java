@@ -23,18 +23,18 @@ import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.xml.sax.SAXException;
 
-
 import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 
 /**
  * Creates a report on l10n Properties files validation
+ * 
  * @goal report
  * @phase site
  * @author romain.quinio
  */
-public class ReportMojo extends AbstractMavenReport {
-  
+public class ReportMojo extends AbstractMavenReport implements L10nValidationConfiguration {
+
   /**
    * Directory containing properties file to check
    * 
@@ -42,7 +42,7 @@ public class ReportMojo extends AbstractMavenReport {
    * @since 1.2
    */
   private File propertyDir;
-  
+
   /**
    * List of keys to match as text resources used from js. Default is ".js.".
    * 
@@ -74,17 +74,25 @@ public class ReportMojo extends AbstractMavenReport {
    * @since 1.2
    */
   private String[] textKeys = new String[] { ".title." };
-  
+
+  /**
+   * Custom validation patterns.
+   * 
+   * @parameter
+   * @since 1.3
+   */
+  private CustomPattern[] customPatterns = new CustomPattern[] {};
+
   /**
    * 
    */
   private Renderer siteRenderer;
-  
+
   /**
    * 
    */
   private L10nReportRenderer reportRenderer;
-  
+
   /**
    * @parameter default-value="${project}"
    * @required
@@ -94,13 +102,13 @@ public class ReportMojo extends AbstractMavenReport {
 
   /**
    * Directory where reports will go.
-   *
+   * 
    * @parameter expression="${project.reporting.outputDirectory}"
    * @required
    * @readonly
    */
   private String outputDirectory;
-  
+
   public String getDescription(Locale locale) {
     return getBundle(locale).getString("report.dashboard.title.description");
   }
@@ -120,30 +128,31 @@ public class ReportMojo extends AbstractMavenReport {
   protected void executeReport(Locale locale) throws MavenReportException {
     List<L10nReportItem> reportItems = new ArrayList<L10nReportItem>();
     int nbErrors = 0;
-    
-    try{
+
+    try {
       ValidateMojo validateMojo = new ValidateMojo();
       validateMojo.setLog(getLog());
-      //Exclusions should not be used in reporting
+      // Exclusions should not be used in reporting
       validateMojo.setExcludedKeys(new String[] {});
 
-      //Propagate configuration
+      // Propagate configuration
       validateMojo.setHtmlKeys(htmlKeys);
       validateMojo.setJsKeys(jsKeys);
       validateMojo.setTextKeys(textKeys);
       validateMojo.setUrlKeys(urlKeys);
+      validateMojo.setCustomPatterns(customPatterns);
 
       nbErrors = validateMojo.validateProperties(propertyDir, reportItems);
 
-    } catch(SAXException e){
+    } catch (SAXException e) {
       throw new MavenReportException("Could not initialize ValidateMojo", e);
-    } catch(URISyntaxException e){
+    } catch (URISyntaxException e) {
       throw new MavenReportException("Could not initialize ValidateMojo", e);
     } catch (MojoExecutionException e) {
       throw new MavenReportException("Could not exceute ValidateMojo", e);
     }
-    
-    reportRenderer = new L10nReportRenderer(getSink(),getBundle(locale));
+
+    reportRenderer = new L10nReportRenderer(getSink(), getBundle(locale));
     reportRenderer.setReportItems(reportItems);
     reportRenderer.setNbErrors(nbErrors);
     reportRenderer.render();
@@ -163,8 +172,44 @@ public class ReportMojo extends AbstractMavenReport {
   protected Renderer getSiteRenderer() {
     return siteRenderer;
   }
-  
-  private ResourceBundle getBundle(Locale locale){
-      return ResourceBundle.getBundle("l10n-report", locale, this.getClass().getClassLoader());
+
+  private ResourceBundle getBundle(Locale locale) {
+    return ResourceBundle.getBundle("l10n-report", locale, this.getClass().getClassLoader());
+  }
+
+  public File getPropertyDir() {
+    return propertyDir;
+  }
+
+  public void setPropertyDir(File propertyDir) {
+    this.propertyDir = propertyDir;
+  }
+
+  public void setExcludedKeys(String[] excludedKeys) {
+    // Ignored for reporting
+  }
+
+  public void setIgnoreFailure(boolean ignoreFailure) {
+    // Ignored for reporting
+  }
+
+  public void setJsKeys(String[] jsKeys) {
+    this.jsKeys = jsKeys;
+  }
+
+  public void setUrlKeys(String[] urlKeys) {
+    this.urlKeys = urlKeys;
+  }
+
+  public void setHtmlKeys(String[] htmlKeys) {
+    this.htmlKeys = htmlKeys;
+  }
+
+  public void setTextKeys(String[] textKeys) {
+    this.textKeys = textKeys;
+  }
+
+  public void setCustomPatterns(CustomPattern[] customPatterns) {
+    this.customPatterns = customPatterns;
   }
 }

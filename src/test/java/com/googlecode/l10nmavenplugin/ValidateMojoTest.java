@@ -9,7 +9,8 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,17 +28,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.googlecode.l10nmavenplugin.ValidateMojo;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 
 /**
  * Unit tests for {@link ValidateMojo}
+ * 
  * @author romain.quinio
  */
 public class ValidateMojoTest {
 
   private static ValidateMojo plugin;
-  
+
+  private static final String BUNDLE = "Junit.properties";
+
   private List<L10nReportItem> reportItems;
 
   /**
@@ -51,9 +54,9 @@ public class ValidateMojoTest {
     plugin = new ValidateMojo();
     plugin.setLog(new SystemStreamLog());
   }
-  
+
   @Before
-  public void setUp(){
+  public void setUp() {
     reportItems = new ArrayList<L10nReportItem>();
   }
 
@@ -70,9 +73,10 @@ public class ValidateMojoTest {
     }
     fail();
   }
-  
+
   /**
    * Mojo should not fail if resource path is empty/do not exist
+   * 
    * @throws MojoExecutionException
    * @throws MojoFailureException
    */
@@ -91,7 +95,7 @@ public class ValidateMojoTest {
     properties.put("ALLP.text.valid.4", "&nbsp;&copy;&ndash;");
     properties.put("ALLP.text.valid.5", "<a href='http://example.com'>link</a>");
 
-    int nbErrors = plugin.validateProperties(properties, "Junit.properties", reportItems);
+    int nbErrors = plugin.validateProperties(properties, BUNDLE, reportItems);
     assertEquals(0, nbErrors);
   }
 
@@ -100,13 +104,13 @@ public class ValidateMojoTest {
     String[] excludedKeys = new String[] { "ALLP.text.excluded" };
     plugin.setExcludedKeys(excludedKeys);
 
-    assertEquals(0, plugin.validateProperty("ALLP.text.excluded","<div>Some text", null, reportItems));
-    assertEquals(0, plugin.validateProperty("ALLP.text.excluded.longer","<div>Some text", null, reportItems));
+    assertEquals(0, plugin.validateProperty("ALLP.text.excluded", "<div>Some text", BUNDLE, reportItems));
+    assertEquals(0, plugin.validateProperty("ALLP.text.excluded.longer", "<div>Some text", BUNDLE, reportItems));
   }
 
   @Test
   public void emptyMessagesShouldBeIgnored() {
-    assertEquals(0, plugin.validateProperty("ALLP.text.empty","", null, reportItems));
+    assertEquals(0, plugin.validateProperty("ALLP.text.empty", "", BUNDLE, reportItems));
   }
 
   /**
@@ -118,8 +122,20 @@ public class ValidateMojoTest {
     Properties properties = new Properties();
     File file = new File(this.getClass().getClassLoader().getResource(fileName).getFile());
     properties.load(new FileInputStream(file));
-    
+
     int nbErrors = plugin.validateProperties(properties, fileName, reportItems);
     assertEquals(3, nbErrors);
+  }
+
+  /**
+   * Test custom patterns
+   */
+  @Test
+  public void testCustomPatterns() throws IOException {
+    CustomPattern pattern = new CustomPattern("List pattern", "([A-Z](:[A-Z])+)?", new String[] { ".list." });
+    plugin.setCustomPatterns(new CustomPattern[] { pattern });
+
+    assertEquals(0, plugin.validateProperty("ALLP.list.valid", "A:B:C", BUNDLE, reportItems));
+    assertEquals(1, plugin.validateProperty("ALLP.list.valid", "A:B:C ", BUNDLE, reportItems));
   }
 }

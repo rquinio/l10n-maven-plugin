@@ -9,17 +9,39 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin;
 
+import java.io.File;
+import java.util.Locale;
+
+import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
+import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.apache.maven.reporting.MavenReportException;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ReportMojoTest {
+
+  private static ReportMojo plugin;
+
   @Before
   public void setUp() {
-    
+    plugin = new ReportMojo() {
+      @Override
+      public Sink getSink() {
+        return new SiteRendererSink(null);
+      }
+    };
+    plugin.setLog(new SystemStreamLog());
+
+    CustomPattern listPattern = new CustomPattern("list", "([A-Z](:[A-Z])+)?", ".list.");
+    plugin.setCustomPatterns(new CustomPattern[] { listPattern });
   }
-  
+
   @Test
-  public void test(){
-    
+  public void testFromPropertiesResources() throws MavenReportException {
+    // Look for properties from src/test/resources added to test classpath
+    String propertiesDir = this.getClass().getClassLoader().getResource("").getFile();
+    plugin.setPropertyDir(new File(propertiesDir));
+    plugin.executeReport(Locale.ENGLISH);
   }
 }

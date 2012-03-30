@@ -9,7 +9,7 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.validators;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,32 +19,21 @@ import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 
-public class DefaultValidatorTest {
-  
-  private L10nValidator defaultValidator;
+public class PatternValidatorTest {
   
   private List<L10nReportItem> reportItems;
   
+  private static L10nValidator patternValidator;
+  
   @Before
   public void setUp(){
-    defaultValidator = new DefaultValidator(new L10nValidatorLogger());
     reportItems = new ArrayList<L10nReportItem>();
+    patternValidator = new PatternValidator(new L10nValidatorLogger(), "List validator", "([A-Z](:[A-Z])+)?");
   }
   
   @Test
-  public void testValidOther() {
-    assertEquals(0, defaultValidator.validate("ALLP.other.valid", "Some \"text\"", null,reportItems));
-    assertEquals(0, defaultValidator.validate("ALLP.other.valid", "a < b", null,reportItems));
-    assertEquals(0, reportItems.size());
-  }
-  
-  @Test
-  public void testOtherResource() {
-    // Check it's only warning
-    assertEquals(0, defaultValidator.validate("ALLP.other.invalid","<div>Some text</div>", null,reportItems));
-    assertEquals(0, defaultValidator.validate("ALLP.other.invalid","Some <br />text", null,reportItems));
-    assertEquals(0, defaultValidator.validate("ALLP.other.invalid","http://example.com", null,reportItems));
-    
-    assertEquals(3, reportItems.size());
+  public void test(){
+    assertEquals(0, patternValidator.validate("ALLP.list.valid", "A:B:C:D", null, reportItems));
+    assertEquals(1, patternValidator.validate("ALLP.list.invalid", " A:B:C:D ", null, reportItems));
   }
 }

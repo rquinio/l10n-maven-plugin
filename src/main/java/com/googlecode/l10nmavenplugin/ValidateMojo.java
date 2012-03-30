@@ -7,20 +7,6 @@
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-/* Copyright (c) 2012 Romain Quinio
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
-(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
-publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE 
- FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
- WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
 package com.googlecode.l10nmavenplugin;
 
 import java.io.File;
@@ -55,6 +41,7 @@ import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.MissingTranslationValidator;
 import com.googlecode.l10nmavenplugin.validators.ParametricMessageValidator;
+import com.googlecode.l10nmavenplugin.validators.PatternValidator;
 import com.googlecode.l10nmavenplugin.validators.TextValidator;
 import com.googlecode.l10nmavenplugin.validators.UrlValidator;
 import com.googlecode.l10nmavenplugin.validators.HtmlValidator;
@@ -94,7 +81,7 @@ import com.googlecode.l10nmavenplugin.validators.HtmlValidator;
  * @since 1.0
  * @author romain.quinio
  */
-public class ValidateMojo extends AbstractMojo {
+public class ValidateMojo extends AbstractMojo implements L10nValidationConfiguration {
 
   /**
    * Directory containing properties file to check
@@ -151,6 +138,14 @@ public class ValidateMojo extends AbstractMojo {
    * @since 1.1
    */
   private String[] textKeys = new String[] { ".title." };
+  
+  /**
+   * Custom validation patterns.
+   * 
+   * @parameter
+   * @since 1.3
+   */
+  private CustomPattern[] customPatterns = new CustomPattern[]{};
 
   private L10nValidator htmlValidator;
   private L10nValidator jsValidator;
@@ -159,11 +154,12 @@ public class ValidateMojo extends AbstractMojo {
   private L10nValidator defaultValidator;
   private L10nValidator parametricMessageValidator;
   private L10nValidator missingTranslationValidator;
+  private L10nValidator[] patternValidators;
 
   private L10nValidatorLogger logger;
 
   /**
-   * Initialize the validators only once in constructor, for performance reason.
+   * Initialize HTML validator only once in constructor, for performance reason.
    * 
    * @throws URISyntaxException
    * @throws SAXException
@@ -179,14 +175,14 @@ public class ValidateMojo extends AbstractMojo {
     defaultValidator = new DefaultValidator(logger);
     parametricMessageValidator = new ParametricMessageValidator(logger);
     missingTranslationValidator = new MissingTranslationValidator(logger);
+    patternValidators = new L10nValidator[]{}; //Initialized via setter
   }
 
   /**
    * Entry point for the plugin validate goal
    */
   public void execute() throws MojoExecutionException, MojoFailureException {
-    //TODO log configuration used as DEBUG. 
-    
+
     List<L10nReportItem> reportItems = new ArrayList<L10nReportItem>();
     int nbErrors = validateProperties(propertyDir, reportItems);
 
@@ -329,21 +325,38 @@ public class ValidateMojo extends AbstractMojo {
         nbErrors+= missingTranslationValidator.validate(key, message, propertiesName, reportItems);
         nbErrors+= parametricMessageValidator.validate(key, message, propertiesName, reportItems);
 
+        boolean bMatched = false;
         if (StringUtils.indexOfAny(key, htmlKeys) != -1) {
+          bMatched = true;
           nbErrors+= htmlValidator.validate(key, message, propertiesName, reportItems);
 
         } else if (StringUtils.indexOfAny(key, jsKeys) != -1) {
+          bMatched = true;
           nbErrors+= jsValidator.validate(key, message, propertiesName, reportItems);
 
         } else if (StringUtils.indexOfAny(key, urlKeys) != -1) {
+          bMatched = true;
           nbErrors+= urlValidator.validate(key, message, propertiesName, reportItems);
 
         } else if (StringUtils.indexOfAny(key, textKeys) != -1) {
+          bMatched = true;
           nbErrors+= textValidator.validate(key, message, propertiesName, reportItems);
-
+          
         } else {
+          for(int i=0; i<customPatterns.length; i++){
+            CustomPattern pattern = customPatterns[i];
+            if (StringUtils.indexOfAny(key, pattern.getKeys()) != -1){
+              bMatched = true;
+              nbErrors+= patternValidators[i].validate(key, message, propertiesName, reportItems);
+              break;
+            }
+          }
+        }
+        
+        if(!bMatched){ //Nothing matched, apply defaultValidator
           nbErrors+= defaultValidator.validate(key, message, propertiesName, reportItems);
         }
+        
       } else {
         L10nReportItem item = new L10nReportItem(Severity.INFO, Type.EXCLUDED, 
             "Property was excluded from validation by plugin configuration.", propertiesName, key, null, null);
@@ -395,5 +408,17 @@ public class ValidateMojo extends AbstractMojo {
 
   public void setTextKeys(String[] textKeys) {
     this.textKeys = textKeys;
+  }
+
+  public void setCustomPatterns(CustomPattern[] customPatterns) {
+    this.customPatterns = customPatterns;
+    if(customPatterns != null){
+      //Initialize custom pattern validators
+      patternValidators  = new L10nValidator[customPatterns.length]; 
+      for(int i=0; i<customPatterns.length; i++){
+        CustomPattern pattern = customPatterns[i];
+        patternValidators[i] = new PatternValidator(logger, pattern.getName(), pattern.getRegex());
+      }
+    }
   }
 }

@@ -1,3 +1,10 @@
+1.3
+Added custom pattern validators.
+Fixed report generation failure when no issues found.
+
+1.2.1
+Fixed Java 5 compatibility issue introduced in 1.2
+
 1.2
 Added report goal that binds to site phase
 Added parametric replacement checks (single quote escaping, parameters coherency).

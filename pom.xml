@@ -1,130 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
-	<groupId>com.googlecode.l10n-maven-plugin</groupId>
-	<artifactId>l10n-maven-plugin</artifactId>
-	<version>1.3</version>
-	<name>L10n maven plugin</name>
-	<description>Maven plugin to validate l10n properties resources</description>
-	<packaging>maven-plugin</packaging>
-	<url>http://code.google.com/p/l10n-maven-plugin/</url>
-	<inceptionYear>2012</inceptionYear>
-	<licenses>
-		<license>
-			<name>The MIT License (MIT)</name>
-			<url>http://www.opensource.org/licenses/mit-license.php</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<scm>
-		<url>http://code.google.com/p/l10n-maven-plugin/source</url>
+  <groupId>com.googlecode.l10n-maven-plugin</groupId>
+  <artifactId>l10n-maven-plugin</artifactId>
+  <version>1.3-SNAPSHOT</version>
+  <name>L10n maven plugin</name>
+  <description>Maven plugin to validate localization resources in Java properties files</description>
+  <packaging>maven-plugin</packaging>
+  <url>http://code.google.com/p/l10n-maven-plugin/</url>
+  <inceptionYear>2012</inceptionYear>
+  <licenses>
+    <license>
+      <name>The MIT License (MIT)</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>http://code.google.com/p/l10n-maven-plugin/source</url>
     <connection>scm:git:http://code.google.com/p/l10n-maven-plugin/</connection>
     <developerConnection>scm:git:https://code.google.com/p/l10n-maven-plugin/</developerConnection>
-	</scm>
-	<developers>
-		<developer>
-			<id>romain.quinio</id>
-			<name>Romain Quinio</name>
-			<roles>
-				<role>developer</role>
-			</roles>
-		</developer>
-	</developers>
-	<issueManagement>
-		<url>http://code.google.com/p/l10n-maven-plugin/issues/</url>
-	</issueManagement>
-	<properties>
-		<java.version>1.5</java.version>
-	</properties>
-	<dependencyManagement />
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-plugin-api</artifactId>
-			<version>3.0.4</version>
-		</dependency>
-		<dependency>
-	    <groupId>org.apache.maven.reporting</groupId>
-	    <artifactId>maven-reporting-api</artifactId>
-	    <version>2.0.8</version>
+  </scm>
+  <developers>
+    <developer>
+      <id>romain.quinio</id>
+      <name>Romain Quinio</name>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <issueManagement>
+    <url>http://code.google.com/p/l10n-maven-plugin/issues/</url>
+  </issueManagement>
+  <properties>
+    <java.version>1.5</java.version>
+  </properties>
+  <dependencyManagement />
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>3.0.4</version>
     </dependency>
-		<dependency>
-		    <groupId>org.apache.maven.reporting</groupId>
-		    <artifactId>maven-reporting-impl</artifactId>
-		    <version>2.0.4.3</version>
-		</dependency>
+    <dependency>
+      <groupId>org.apache.maven.reporting</groupId>
+      <artifactId>maven-reporting-api</artifactId>
+      <version>2.0.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.reporting</groupId>
+      <artifactId>maven-reporting-impl</artifactId>
+      <version>2.0.4.3</version>
+    </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>2.0.1</version>
     </dependency>
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-	<build>
-	  <pluginManagement>
-	   <plugins>
-	     <plugin>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.8.1</version>
         </plugin>
-	   </plugins>
-	  </pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	<reporting />
-	<profiles>
-  <profile>
-    <id>release-sign-artifacts</id>
-    <activation>
-      <property>
-        <name>performRelease</name>
-        <value>true</value>
-      </property>
-    </activation>
-    <build>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <version>1.1</version>
-          <executions>
-            <execution>
-              <id>sign-artifacts</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>sign</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
       </plugins>
-    </build>
-  </profile>
-</profiles>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <reporting />
+  <profiles>
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

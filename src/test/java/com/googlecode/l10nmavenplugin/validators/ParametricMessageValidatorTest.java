@@ -87,6 +87,7 @@ public class ParametricMessageValidatorTest {
   public void testUnnecessaryQuoteEscaping(){
     //Only a warning
     assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.invalid", "Some '' text", null, reportItems));
+    assertEquals(1, reportItems.size());
   }
   
   /**
@@ -101,7 +102,9 @@ public class ParametricMessageValidatorTest {
     parametricMessageValidator.validate(key, "{0}{1}{2}", "BundleA", reportItems);
     parametricMessageValidator.validate(key, "{1} {0} {2}", "BundleB", reportItems);
     parametricMessageValidator.validate(key, "{1}-{2}-{0}", "BundleC", reportItems);
-    assertEquals(0, parametricMessageValidator.report(propertiesNames, reportItems));
+    
+    parametricMessageValidator.report(propertiesNames, reportItems);
+    assertEquals(0, reportItems.size());
   }
   
   @Test
@@ -115,7 +118,8 @@ public class ParametricMessageValidatorTest {
     parametricMessageValidator.validate(key, "{0}", "BundleC", reportItems);
     
     //Only warning
-    assertEquals(/*2*/0, parametricMessageValidator.report(propertiesNames, reportItems));
+    assertEquals(0, parametricMessageValidator.report(propertiesNames, reportItems));
+    assertEquals(2, reportItems.size());
   }
   
   @Test
@@ -131,7 +135,8 @@ public class ParametricMessageValidatorTest {
     parametricMessageValidator.validate(key, "{0}{1}", "BundleE", reportItems);
     
     //Only 1 warning thanks to grouping
-    assertEquals(/*1*/0, parametricMessageValidator.report(propertiesNames, reportItems));
+    assertEquals(0, parametricMessageValidator.report(propertiesNames, reportItems));
+    assertEquals(1, reportItems.size());
   }
   
   /**
@@ -150,5 +155,16 @@ public class ParametricMessageValidatorTest {
     		"Nulla {5} velit lorem, ultricies nec tempus laoreet, {6} congue at lorem. ";
 
     assertEquals(0, parametricMessageValidator.validate("ALLP.parametric.valid", longMessage, null, reportItems));
+    assertEquals(0, reportItems.size());
+  }
+  
+  @Test
+  public void testRecursiveSubFormats(){
+    String key = "ALLP.subformat.valid";
+    parametricMessageValidator.validate(key, "{0,choice,0#none|0<many{0}}", "BundleA", reportItems);
+    parametricMessageValidator.validate(key, "{1,choice,0#none|0<many{1}}", "BundleB", reportItems);
+
+    parametricMessageValidator.report(null, reportItems);
+    assertEquals(1, reportItems.size());
   }
 }

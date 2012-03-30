@@ -44,5 +44,7 @@ public class MissingTranslationValidatorTest {
     missingValidator.validate("key1", "", "Bundle_es", reportItems);
 
     assertEquals(0, missingValidator.report(propertiesNames, reportItems));
+    //es and de are grouped
+    assertEquals(1, reportItems.size());
   }
 }

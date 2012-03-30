@@ -44,50 +44,58 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
 
   @Override
   protected void renderBody() {
-    // Need to order by Type
-    Collections.sort(reportItems);
-    
-    super.
+    if (reportItems.size() > 0) {
+      paragraph(MessageFormat.format(bundle.getString("report.dashboard.text.intro"), nbErrors));
 
-    paragraph(MessageFormat.format(bundle.getString("report.dashboard.text.intro"), nbErrors));
+      // Need to order report items by Type
+      Collections.sort(reportItems);
 
-    int index = 1;
-    Type previousType = null;
-    for (L10nReportItem reportItem : reportItems) {
-      if (reportItem.getItemType() != previousType) {
-        if (previousType != null) { // Specific case of 1st row
-          endTable();
-          endSection();
-          sink.horizontalRule();
+      int index = 1;
+      Type previousType = null;
+      for (L10nReportItem reportItem : reportItems) {
+        if (reportItem.getItemType() != previousType) {
+          if (previousType != null) { // Specific case of 1st row
+            endTable();
+            endSection();
+            sink.horizontalRule();
+          }
+          startSection("[" + reportItem.getItemSeverity().toString() + "] "
+              + bundle.getString(reportItem.getItemType().getTitleLocKey()));
+          paragraph(bundle.getString(reportItem.getItemType().getDescriptionLocKey()));
+          startTable();
+          tableHeader(new String[] { "", bundle.getString("report.dashboard.messages.title.propertyKey"),
+              bundle.getString("report.dashboard.messages.title.errorMessage"),
+              bundle.getString("report.dashboard.messages.title.propertyValue") });
         }
-        startSection("[" + reportItem.getItemSeverity().toString() + "] "
-            + bundle.getString(reportItem.getItemType().getTitleLocKey()));
-        paragraph(bundle.getString(reportItem.getItemType().getDescriptionLocKey()));
-        startTable();
-        tableHeader(new String[] { "", 
-            bundle.getString("report.dashboard.messages.title.propertyKey"),
-            bundle.getString("report.dashboard.messages.title.errorMessage"),
-            bundle.getString("report.dashboard.messages.title.propertyValue")});
-      }
-      //Can't use super.tableRow, as it consumes some {}
-      sink.tableRow();
-      sink.tableCell(); sink.text(String.valueOf(index)); sink.tableCell_();
-      sink.tableCell(); sink.text(reportItem.getPropertiesKey() + "  " + reportItem.getPropertiesName()); sink.tableCell_();
-      sink.tableCell(); sink.text(reportItem.getItemMessage()); sink.tableCell_();
-      sink.tableCell();
-      if(reportItem.getPropertiesValue()!=null){
-        sink.text("[" + reportItem.getPropertiesValue() + "]"); 
-      }
-      sink.tableCell_();
-      sink.tableRow_();
-      
-      previousType = reportItem.getItemType();
-      index++;
-    }
+        // Can't use super.tableRow, as it consumes some {}
+        sink.tableRow();
+        sink.tableCell();
+        sink.text(String.valueOf(index));
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(reportItem.getPropertiesKey() + "  " + reportItem.getPropertiesName());
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(reportItem.getItemMessage());
+        sink.tableCell_();
+        sink.tableCell();
+        if (reportItem.getPropertiesValue() != null) {
+          sink.text("[" + reportItem.getPropertiesValue() + "]");
+        }
+        sink.tableCell_();
+        sink.tableRow_();
 
-    // Close last section
-    endTable();
-    endSection();
+        previousType = reportItem.getItemType();
+        index++;
+      }
+
+      // Close last section
+      endTable();
+      endSection();
+
+    } else { // Nothing to report
+      paragraph(bundle.getString("report.dashboard.text.empty"));
+    }
   }
 
   public void setReportItems(List<L10nReportItem> reportItems) {
