@@ -12,7 +12,9 @@ package com.googlecode.l10nmavenplugin;
 import java.util.Arrays;
 
 /**
- * Plugin configuration "complex" object for defining a custom validation pattern
+ * Plugin configuration "complex" object for defining a custom validation pattern.
+ * 
+ * Needs to be in same package as the Mojo to be injected by Maven without extra configuration.
  * 
  * @author romain.quinio
  * 
@@ -47,7 +49,7 @@ public class CustomPattern {
   private String[] keys;
 
   /**
-   * Default constructor for configuration instantiation
+   * Mandatory default constructor for configuration instantiation
    */
   public CustomPattern() {
   }
@@ -64,7 +66,7 @@ public class CustomPattern {
     this.regex = regex;
     this.keys = keys;
   }
-  
+
   /**
    * Utility constructor for unit testing
    * 
@@ -75,7 +77,7 @@ public class CustomPattern {
   public CustomPattern(String name, String regex, String key) {
     this.name = name;
     this.regex = regex;
-    this.keys = new String[]{key};
+    this.keys = new String[] { key };
   }
 
   /**

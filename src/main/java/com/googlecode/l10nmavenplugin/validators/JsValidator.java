@@ -24,7 +24,7 @@ import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
  * Performs Js validation of a property, chaining with XHTML validation.
  * 
  * @author romain.quinio
- *
+ * 
  */
 public class JsValidator implements L10nValidator {
 
@@ -37,17 +37,28 @@ public class JsValidator implements L10nValidator {
    * 
    * \\\\n => Regex escpaing => \\n => Java String escaping => \n
    */
-  private static final String JS_VALIDATION_REGEXP = "^(?:[^\"\\n\\r]|\\\\\"|\\\\n|\\\\r)*$";
+  private static final String JS_DOUBLE_QUOTED_VALIDATION_REGEXP = "^(?:[^\"]|\\\\\")*$";
+  private static final String JS_SINGLE_QUOTED_VALIDATION_REGEXP = "^(?:[^\']|\\\\\')*$";
+  private static final String JS_NEWLINE_VALIDATION_REGEXP = "^(?:[^\\n\\r]|\\\\n|\\\\r)*$";
 
-  protected static final Pattern JS_VALIDATION_PATTERN = Pattern.compile(JS_VALIDATION_REGEXP);
+  protected static final Pattern JS_DOUBLE_QUOTED_VALIDATION_PATTERN = Pattern.compile(JS_DOUBLE_QUOTED_VALIDATION_REGEXP);
+  protected static final Pattern JS_SINGLE_QUOTED_VALIDATION_PATTERN = Pattern.compile(JS_SINGLE_QUOTED_VALIDATION_REGEXP);
+  protected static final Pattern JS_NEWLINE_VALIDATION_PATTERN = Pattern.compile(JS_NEWLINE_VALIDATION_REGEXP);
 
-  private L10nValidator xhtmValidator;
+  private final L10nValidator xhtmValidator;
+
+  private boolean jsDoubleQuoted;
 
   private L10nValidatorLogger logger;
 
   public JsValidator(L10nValidator xhtmValidator, L10nValidatorLogger logger) {
+    this(true, xhtmValidator, logger);
+  }
+
+  public JsValidator(boolean jsDoubleQuoted, L10nValidator xhtmValidator, L10nValidatorLogger logger) {
     this.logger = logger;
     this.xhtmValidator = xhtmValidator;
+    this.jsDoubleQuoted = jsDoubleQuoted;
   }
 
   /**
@@ -60,12 +71,40 @@ public class JsValidator implements L10nValidator {
    */
   public int validate(String key, String message, String propertiesName, List<L10nReportItem> reportItems) {
     int nbErrors = 0;
-    Matcher m = JS_VALIDATION_PATTERN.matcher(message);
+
+    // Check for quotes
+    Matcher m;
+    if (jsDoubleQuoted) {
+      m = JS_DOUBLE_QUOTED_VALIDATION_PATTERN.matcher(message);
+    } else {
+      m = JS_SINGLE_QUOTED_VALIDATION_PATTERN.matcher(message);
+    }
+
     if (!m.matches()) {
       nbErrors++;
-      L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.JS_VALIDATION, "Js resource must not contain \", \\n, or \\r."
-          + " Note that Properties silently drop \\ character before \", "
-          + "so it mused be escaped as \\\\\" for proper js escaping", propertiesName, key, message, null);
+      L10nReportItem reportItem;
+      if (jsDoubleQuoted) {
+        reportItem = new L10nReportItem(Severity.ERROR, Type.JS_DOUBLE_QUOTED_VALIDATION,
+            "Double quoted js resources must not contain \"." + " Note that Properties silently drop \\ character before \", "
+                + "so it mused be escaped as \\\\\" for proper js escaping", propertiesName, key, message, null);
+      } else {
+        reportItem = new L10nReportItem(Severity.ERROR, Type.JS_SINGLE_QUOTED_VALIDATION,
+            "Single quoted js resources must not contain '" + " Note that Properties silently drop \\ character before ', "
+                + "so it mused be escaped as \\\\' for proper js escaping", propertiesName, key, message, null);
+        reportItems.add(reportItem);
+        logger.log(reportItem);
+      }
+    }
+
+    // Check for newline
+    m = JS_NEWLINE_VALIDATION_PATTERN.matcher(message);
+    if (!m.matches()) {
+      nbErrors++;
+      L10nReportItem reportItem = new L10nReportItem(
+          Severity.ERROR,
+          Type.JS_NEWLINE_VALIDATION,
+          "Js resources must not contain \\n nor \\r, since newline is interpreted by browsers as the end of javascript statement",
+          propertiesName, key, message, null);
       reportItems.add(reportItem);
       logger.log(reportItem);
     }
@@ -79,8 +118,6 @@ public class JsValidator implements L10nValidator {
   }
 
   public int report(Set<String> propertiesNames, List<L10nReportItem> reportItems) {
-    // TODO Auto-generated method stub
-    return 0;
+    throw new UnsupportedOperationException();
   }
-
 }

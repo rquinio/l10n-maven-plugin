@@ -1,12 +1,17 @@
-1.3
+
+1.3 07-Apr-2012
 Added custom pattern validators.
+Added XHTML validation schema configuration, with pre-defined xhtml1-transitional (default), xhtml1-strict or xhtml5 (based on http://www.xmlmind.com/xhtml5_resources.shtml 1.0.1).
+Added configuration to switch from double quoted js resources (default) to single quoted js resources validation. 
+Modified URL validation regex to use more precise ESAPI pattern.
+Increased number of replaced formatting parameters in resource before URL/XHTML validation from 9 to 19.
 Fixed report generation failure when no issues found.
 
-1.2.1
-Fixed Java 5 compatibility issue introduced in 1.2
+1.2.1 14-Feb-2012
+Fixed Java 5 compatibility issue introduced in 1.2.
 
-1.2
-Added report goal that binds to site phase
+1.2 14-Feb-2012
+Added report goal that binds to site phase;
 Added parametric replacement checks (single quote escaping, parameters coherency).
 Added support for javascript escaping of double quotes in js resources (\\").
 Added javascript unescaping before HTML validation for js resources.
@@ -14,10 +19,11 @@ Added missing translation checks.
 Refactored code architecture with validators.
 Changed logging to be more consistent.
 
-1.1
+1.1 10-Feb-2012
 Added HTML unescaping before URL validation.
 Added Text key validation (no HTML/URL).
 Changed Other resources validation to warning instead of error.
 
-1.0
-Initial release: validate goal that binds to test phase.
+1.0 07-Feb-2012
+Initial release.
+Validate goal that binds to test phase.

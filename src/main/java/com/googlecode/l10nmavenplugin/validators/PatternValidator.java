@@ -52,7 +52,7 @@ public class PatternValidator implements L10nValidator {
   }
 
   public int report(Set<String> propertiesNames, List<L10nReportItem> reportItems) {
-    return 0;
+    throw new UnsupportedOperationException();
   }
 
 }

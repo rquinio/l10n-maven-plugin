@@ -73,7 +73,7 @@ public class L10nReportRendererTest {
     renderer.setNbErrors(3);
     L10nReportItem item1 = new L10nReportItem(Severity.ERROR, Type.HTML_VALIDATION, "Some text", "test.properties",
         "ALLP.text.invalid", "<a>", "");
-    L10nReportItem item2 = new L10nReportItem(Severity.ERROR, Type.JS_VALIDATION, "Some text", "test.properties",
+    L10nReportItem item2 = new L10nReportItem(Severity.ERROR, Type.JS_DOUBLE_QUOTED_VALIDATION, "Some text", "test.properties",
         "ALLP.js.invalid", "<a>", "");
     L10nReportItem item3 = new L10nReportItem(Severity.ERROR, Type.URL_VALIDATION, "Some text", "test.properties",
         "ALLP.url.invalid", "<a>", "");

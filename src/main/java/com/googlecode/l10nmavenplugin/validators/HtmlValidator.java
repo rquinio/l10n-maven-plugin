@@ -10,13 +10,14 @@
 package com.googlecode.l10nmavenplugin.validators;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -24,6 +25,8 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
 import org.xml.sax.SAXException;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
@@ -47,26 +50,62 @@ public class HtmlValidator implements L10nValidator {
       + "<!ENTITY trade \"&#8482;\"> " + "<!ENTITY ndash \"&#8211;\"> " + "]> " + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
       + "<head><title /></head><body><div>{0}</div></body></html>";
 
-  /**
-   * TODO Could allow only a subset of xhtml1-transitional, conforming to WCAG
-   */
-  private static final String XHTML_XSD = "xhtml1-transitional.xsd";
+  private static final String[] DEFAULT_XHTML_XSD = new String[] { "xhtml1-transitional.xsd", "xhtml1-strict.xsd", "xhtml5.xsd" };
 
   /**
    * The validator for HTML resources
    */
-  private final Validator xhtmlValidator;
+  private Validator xhtmlValidator;
 
   private L10nValidatorLogger logger;
 
-  public HtmlValidator(L10nValidatorLogger logger) throws SAXException {
+  /**
+   * Initialize using default XML schema
+   * 
+   * @param xhtmlSchema
+   * @param logger
+   */
+  public HtmlValidator(L10nValidatorLogger logger) {
+    this(new File(DEFAULT_XHTML_XSD[0]), logger);
+  }
+
+  /**
+   * Initialize using XML schema
+   * 
+   * @param xhtmlSchema
+   * @param logger
+   */
+  public HtmlValidator(File xhtmlSchema, L10nValidatorLogger logger) {
     this.logger = logger;
 
-    SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    try {
+      // SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      // Need to use XERCES so that XHTML5 schema passes validation
+      SchemaFactory factory = new XMLSchemaFactory();
+      factory.setFeature(Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING, false);
 
-    URL schemaURL = this.getClass().getClassLoader().getResource(XHTML_XSD);
-    Schema xhtmlSchema = factory.newSchema(schemaURL);
-    xhtmlValidator = xhtmlSchema.newValidator();
+      Schema schema = null;
+      if (xhtmlSchema.exists()) {
+        // Load custom schema
+        schema = factory.newSchema(xhtmlSchema);
+      } else {
+        // Try to load a pre-defined schemas from classpath
+        URL schemaURL = this.getClass().getClassLoader().getResource(xhtmlSchema.getName());
+
+        if (schemaURL == null) {
+          logger.getLogger().error(
+              "Could not load XML schema from file <" + xhtmlSchema.getAbsolutePath() + "> and <" + xhtmlSchema.getName()
+                  + "> is not a default schema either (" + Arrays.toString(DEFAULT_XHTML_XSD) + "), thus defaulting to "
+                  + DEFAULT_XHTML_XSD[0]);
+          schemaURL = this.getClass().getClassLoader().getResource(DEFAULT_XHTML_XSD[0]);
+        }
+        schema = factory.newSchema(schemaURL);
+        xhtmlValidator = schema.newValidator();
+      }
+
+    } catch (SAXException e) {
+      logger.getLogger().error("Could not iniialize HtmlValidator", e);
+    }
   }
 
   /**
@@ -92,9 +131,9 @@ public class HtmlValidator implements L10nValidator {
         String xhtml = MessageFormat.format(XHTML_TEMPLATE, formattedMessage);
         Source source = new StreamSource(new ByteArrayInputStream(xhtml.getBytes("UTF-8")));
         xhtmlValidator.validate(source);
-        
-      } catch(IllegalArgumentException e){
-        //Catch MessageFormat errors in case of malformed message
+
+      } catch (IllegalArgumentException e) {
+        // Catch MessageFormat errors in case of malformed message
         nbErrors++;
         handleException(e, Type.MALFORMED_PARAMETER, propertiesName, key, message, formattedMessage, reportItems);
       } catch (SAXException e) {
@@ -107,16 +146,17 @@ public class HtmlValidator implements L10nValidator {
     }
     return nbErrors;
   }
-  
-  private void handleException(Exception e, Type type, String propertiesName, String key, String message, String formattedMessage, List<L10nReportItem> reportItems){
-    L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, type, "XHTML validation error: " + StringUtils.abbreviate(e.getMessage(), 140),
-        propertiesName, key, message, formattedMessage);
+
+  private void handleException(Exception e, Type type, String propertiesName, String key, String message,
+      String formattedMessage, List<L10nReportItem> reportItems) {
+    L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, type, "XHTML validation error: "
+        + StringUtils.abbreviate(e.getMessage(), 140), propertiesName, key, message, formattedMessage);
     reportItems.add(reportItem);
     logger.log(reportItem);
   }
 
   public int report(Set<String> propertiesNames, List<L10nReportItem> reportItems) {
-    return 0;
+    throw new UnsupportedOperationException();
   }
 
 }

@@ -53,6 +53,8 @@ public class ValidateMojoTest {
   public static void setUpClass() throws URISyntaxException, SAXException {
     plugin = new ValidateMojo();
     plugin.setLog(new SystemStreamLog());
+    // Use default configuration
+    plugin.initialize();
   }
 
   @Before
@@ -67,11 +69,11 @@ public class ValidateMojoTest {
     plugin.setPropertyDir(new File(propertiesDir));
 
     try {
-      plugin.execute();
+      plugin.executeInternal();
     } catch (MojoFailureException e) {
       return;
     }
-    fail();
+    fail("Errors didn't fail the validation");
   }
 
   /**
@@ -83,7 +85,7 @@ public class ValidateMojoTest {
   @Test
   public void testNoPropertiesResources() throws MojoFailureException, MojoExecutionException {
     plugin.setPropertyDir(new File("non-existing"));
-    plugin.execute();
+    plugin.executeInternal();
   }
 
   @Test
@@ -127,15 +129,9 @@ public class ValidateMojoTest {
     assertEquals(3, nbErrors);
   }
 
-  /**
-   * Test custom patterns
-   */
   @Test
-  public void testCustomPatterns() throws IOException {
-    CustomPattern pattern = new CustomPattern("List pattern", "([A-Z](:[A-Z])+)?", new String[] { ".list." });
-    plugin.setCustomPatterns(new CustomPattern[] { pattern });
-
-    assertEquals(0, plugin.validateProperty("ALLP.list.valid", "A:B:C", BUNDLE, reportItems));
-    assertEquals(1, plugin.validateProperty("ALLP.list.valid", "A:B:C ", BUNDLE, reportItems));
+  public void testBundleBaseName() {
+    assertEquals("bundle", plugin.getBundleBaseName("bundle.properties"));
+    assertEquals("bundle", plugin.getBundleBaseName("bundle_EN_GB.properties"));
   }
 }

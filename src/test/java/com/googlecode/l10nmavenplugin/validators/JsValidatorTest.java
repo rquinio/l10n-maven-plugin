@@ -24,55 +24,64 @@ import org.xml.sax.SAXException;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 
 public class JsValidatorTest {
-  
+
   private static L10nValidator jsValidator;
-  
+
   private List<L10nReportItem> reportItems;
-  
+
   @BeforeClass
-  public static void setUpClass() throws SAXException{
+  public static void setUpClass() throws SAXException {
     L10nValidatorLogger logger = new L10nValidatorLogger();
     jsValidator = new JsValidator(new HtmlValidator(logger), logger);
   }
-  
+
   @Before
-  public void setUp(){
+  public void setUp() {
     reportItems = new ArrayList<L10nReportItem>();
   }
 
   @Test
-  public void testJsValidationPattern(){
-    assertTrue(JsValidator.JS_VALIDATION_PATTERN.matcher("Some text").matches());
-    assertTrue(JsValidator.JS_VALIDATION_PATTERN.matcher("Some 'text'").matches());
-    //Unescaped double quotes
-    assertFalse(JsValidator.JS_VALIDATION_PATTERN.matcher("Some \"text\"").matches());
-    //Unescaped newline
-    assertFalse(JsValidator.JS_VALIDATION_PATTERN.matcher("Some text\n").matches());
-    //Quotes/newline escaped
-    assertTrue(JsValidator.JS_VALIDATION_PATTERN.matcher("<div id=\\\"id\\\" />").matches());
-    assertTrue(JsValidator.JS_VALIDATION_PATTERN.matcher("Some text\\n").matches());
+  public void testJsQuoteValidationPattern() {
+    assertTrue(JsValidator.JS_DOUBLE_QUOTED_VALIDATION_PATTERN.matcher("Some text").matches());
+    assertTrue(JsValidator.JS_DOUBLE_QUOTED_VALIDATION_PATTERN.matcher("Some 'text'").matches());
+    // Unescaped quotes
+    assertFalse(JsValidator.JS_DOUBLE_QUOTED_VALIDATION_PATTERN.matcher("Some \"text\"").matches());
+    assertFalse(JsValidator.JS_SINGLE_QUOTED_VALIDATION_PATTERN.matcher("Some 'text'").matches());
+
+    // Quotes escaped
+    assertTrue(JsValidator.JS_DOUBLE_QUOTED_VALIDATION_PATTERN.matcher("<div id=\\\"id\\\" />").matches());
+    assertTrue(JsValidator.JS_SINGLE_QUOTED_VALIDATION_PATTERN.matcher("<div id=\\'id\\' />").matches());
   }
-  
+
+  @Test
+  public void testJsNewlineValidationPattern() {
+    // Unescaped newline
+    assertFalse(JsValidator.JS_NEWLINE_VALIDATION_PATTERN.matcher("Some text\n").matches());
+    // Newline escaped
+    assertTrue(JsValidator.JS_NEWLINE_VALIDATION_PATTERN.matcher("Some text\\n").matches());
+  }
+
   @Test
   public void testValidJs() {
     assertEquals(0, jsValidator.validate("ALLP.js.valid", "Some 'text' ", null, reportItems));
-    assertEquals(0, jsValidator.validate("ALLP.js.valid", "<a href='www.google.fr' target='_blank'>Google</a>", null, reportItems));
+    assertEquals(0,
+        jsValidator.validate("ALLP.js.valid", "<a href='www.google.fr' target='_blank'>Google</a>", null, reportItems));
   }
-  
+
   @Test
   public void testJsSpecialCharacters() {
-    //Unescaped "
-    assertEquals(1, jsValidator.validate("ALLP.js.invalid","Some \"badly escaped text\"", null, reportItems));
+    // Unescaped "
+    assertEquals(1, jsValidator.validate("ALLP.js.invalid", "Some \"badly escaped text\"", null, reportItems));
 
-    //Note: this only works because Properties#load is by passed
+    // Note: this only works because Properties#load is by passed
     assertEquals(0, jsValidator.validate("ALLP.js.valid", "Some \\\"js escaped text\\\" ", null, reportItems));
-    
-    assertEquals(1, jsValidator.validate("ALLP.js.invalid","Some text\r\n", null, reportItems));
+
+    assertEquals(1, jsValidator.validate("ALLP.js.invalid", "Some text\r\n", null, reportItems));
   }
-  
+
   @Test
   public void testInvalidHtmlInsideJs() {
-    assertEquals(1, jsValidator.validate("ALLP.js.invalid","Some error <a href=''>Text<a>", null, reportItems));
-    assertEquals(1, jsValidator.validate("ALLP.js.invalid","Some Text <br>", null, reportItems));
+    assertEquals(1, jsValidator.validate("ALLP.js.invalid", "Some error <a href=''>Text<a>", null, reportItems));
+    assertEquals(1, jsValidator.validate("ALLP.js.invalid", "Some Text <br>", null, reportItems));
   }
 }

@@ -31,7 +31,9 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
   public enum Type {
     // Errors
     MALFORMED_PARAMETER("message.malformedParameters.title", "message.malformedParameters.description"), //
-    JS_VALIDATION("message.jdValidation.title", "message.jdValidation.description"), //
+    JS_DOUBLE_QUOTED_VALIDATION("message.jsDoubleQuotedValidation.title", "message.jsDoubleQuotedValidation.description"), //
+    JS_SINGLE_QUOTED_VALIDATION("message.jsSingleQuotedValidation.title", "message.jsSingleQuotedValidation.description"), //
+    JS_NEWLINE_VALIDATION("message.jsNewlineValidation.title", "message.jsNewlineValidation.description"), //
     UNESCAPED_QUOTE_WITH_PARAMETERS("message.UnescapedQuotesParams.title", "message.UnescapedQuotesParams.description"), //
     HTML_VALIDATION("message.htmlValidation.title", "message.htmlValidation.description"), //
     TEXT_VALIDATION_NO_HTML("message.plainTextWithHtml.title", "message.plainTextWithHtml.description"), //

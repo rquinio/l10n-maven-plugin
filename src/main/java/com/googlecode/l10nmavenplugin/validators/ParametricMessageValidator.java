@@ -38,25 +38,34 @@ public class ParametricMessageValidator implements L10nValidator {
    * Detection of parameters in properties, ex: {0}, {0,date}, {0,number,integer}
    */
   private static final String CAPTURE_PARAMETERS_REGEXP = "(?:\\{([0-9]+)(?:,[a-z]+){0,2}\\})";
-  private static final String DETECT_PARAMETERS_REGEXP = "^.*"+CAPTURE_PARAMETERS_REGEXP+".*$";
-  
+  private static final String DETECT_PARAMETERS_REGEXP = "^.*" + CAPTURE_PARAMETERS_REGEXP + ".*$";
+
   /**
-   * Validation of single quotes escaping, consumed by MessageFormat.
-   * First unescaped quote is matched, with special case where it is at the end
+   * Validation of single quotes escaping, consumed by MessageFormat. First unescaped quote is matched, with special case where it
+   * is at the end
    * 
    * "^([^']|'')*$" runs into StackOverflow for long messages.
    */
   private static final String UNESCAPED_QUOTE_REGEX = "[^']*'([^'].*)?";
 
   /**
+   * Number of formatting parameters replaced in resources
+   */
+  private static final int NB_MAX_FORMAT_PARAM = 19;
+
+  /**
    * Values to replace parameters {i} in properties.
    * 
    * Use Integers as they work with all parameter definitions {i,date} {i,number} etc.
    */
-  private static final Object[] PARAMETRIC_REPLACE_VALUES = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  private static final Object[] PARAMETRIC_REPLACE_VALUES = new Integer[NB_MAX_FORMAT_PARAM];
 
-  
-  
+  static {
+    for (int i = 0; i < NB_MAX_FORMAT_PARAM; i++) {
+      PARAMETRIC_REPLACE_VALUES[i] = i;
+    }
+  }
+
   protected static final Pattern UNESCAPED_QUOTE_PATTERN = Pattern.compile(UNESCAPED_QUOTE_REGEX);
   protected static final Pattern CAPTURE_PARAMETERS_PATTERN = Pattern.compile(CAPTURE_PARAMETERS_REGEXP);
   protected static final Pattern DETECT_PARAMETERS_PATTERN = Pattern.compile(DETECT_PARAMETERS_REGEXP);
@@ -79,14 +88,16 @@ public class ParametricMessageValidator implements L10nValidator {
       Matcher unescapedQuotesMatcher = UNESCAPED_QUOTE_PATTERN.matcher(message);
       if (unescapedQuotesMatcher.matches()) {
         nbErrors++;
-        L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.UNESCAPED_QUOTE_WITH_PARAMETERS, 
+        L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.UNESCAPED_QUOTE_WITH_PARAMETERS,
             "MessageFormat requires that ' be escaped with ''.", propertiesName, key, message, null);
         reportItems.add(reportItem);
         logger.log(reportItem);
       }
-    } else if(message.contains("''")){
-      L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.ESCAPED_QUOTE_WITHOUT_PARAMETER, 
-          "Resource contains escaped quote '' but no parameters. This may be correct if formatter is called with unused parameters.", 
+    } else if (message.contains("''")) {
+      L10nReportItem reportItem = new L10nReportItem(
+          Severity.WARN,
+          Type.ESCAPED_QUOTE_WITHOUT_PARAMETER,
+          "Resource contains escaped quote '' but no parameters. This may be correct if formatter is called with unused parameters.",
           propertiesName, key, message, null);
       reportItems.add(reportItem);
       logger.log(reportItem);
@@ -107,19 +118,19 @@ public class ParametricMessageValidator implements L10nValidator {
       Map<String, List<Integer>> propertiesMap = keyEntry.getValue();
       if (propertiesMap.size() >= 2) { // Ignore messages only present in a single properties (i.e global / not translated)
 
-        Map<List<Integer>,Set<String>> reverseMap = buildReverseMap(propertiesMap);
-        if(reverseMap.size() > 1){
+        Map<List<Integer>, Set<String>> reverseMap = buildReverseMap(propertiesMap);
+        if (reverseMap.size() > 1) {
           List<Integer> majorityKey = getMajorityKey(reverseMap);
           String majorityKeyMessage = displayParameters(majorityKey);
           Set<String> majorityPropertiesNames = reverseMap.get(majorityKey);
-          for(List<Integer> entry : reverseMap.keySet()){
-            if(!entry.equals(majorityKey)){
+          for (List<Integer> entry : reverseMap.keySet()) {
+            if (!entry.equals(majorityKey)) {
               Set<String> faultyPropertiesNames = reverseMap.get(entry);
-              //Only warn for now, need more feedback before moving to error.
-              //nbErrors++;
-              L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.INCOHERENT_PARAMETERS, 
-                  "Incoherent usage of parameters: " + displayParameters(entry) + " versus " + majorityKeyMessage + 
-                  " in <" + majorityPropertiesNames + ">", faultyPropertiesNames.toString(), key, null, null);
+              // Only warn for now, need more feedback before moving to error.
+              // nbErrors++;
+              L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.INCOHERENT_PARAMETERS,
+                  "Incoherent usage of parameters: " + displayParameters(entry) + " versus " + majorityKeyMessage + " in <"
+                      + majorityPropertiesNames + ">", faultyPropertiesNames.toString(), key, null, null);
               reportItems.add(reportItem);
               logger.log(reportItem);
             }
@@ -129,15 +140,15 @@ public class ParametricMessageValidator implements L10nValidator {
     }
     return nbErrors;
   }
-  
-  private Map<List<Integer>,Set<String>> buildReverseMap(Map<String, List<Integer>> propertiesMap){
-    Map<List<Integer>,Set<String>> reverseMap = new HashMap<List<Integer>,Set<String>>();
+
+  private Map<List<Integer>, Set<String>> buildReverseMap(Map<String, List<Integer>> propertiesMap) {
+    Map<List<Integer>, Set<String>> reverseMap = new HashMap<List<Integer>, Set<String>>();
     for (Map.Entry<String, List<Integer>> propertiesNameEntry : propertiesMap.entrySet()) {
       String propertiesName = propertiesNameEntry.getKey();
       List<Integer> parameters = propertiesNameEntry.getValue();
-      
+
       Set<String> matchedPropertiesName = reverseMap.get(parameters);
-      if(matchedPropertiesName == null){
+      if (matchedPropertiesName == null) {
         matchedPropertiesName = new HashSet<String>();
         reverseMap.put(parameters, matchedPropertiesName);
       }
@@ -145,12 +156,12 @@ public class ParametricMessageValidator implements L10nValidator {
     }
     return reverseMap;
   }
-  
-  private List<Integer> getMajorityKey(Map<List<Integer>,Set<String>> reverseMap){
+
+  private List<Integer> getMajorityKey(Map<List<Integer>, Set<String>> reverseMap) {
     List<Integer> majorityKey = null;
     Set<String> majority = null;
-    for(Map.Entry<List<Integer>, Set<String>> entry : reverseMap.entrySet()){
-      if(majority == null || entry.getValue().size() > majority.size()){
+    for (Map.Entry<List<Integer>, Set<String>> entry : reverseMap.entrySet()) {
+      if (majority == null || entry.getValue().size() > majority.size()) {
         majority = entry.getValue();
         majorityKey = entry.getKey();
       }
@@ -175,7 +186,7 @@ public class ParametricMessageValidator implements L10nValidator {
     if (storedParams == null) {
       List<Integer> parameters = new ArrayList<Integer>();
       // Save info for further analysis
-      while(m.find()){
+      while (m.find()) {
         String param = m.group(1);
         if (!StringUtils.isEmpty(param)) {
           parameters.add(Integer.valueOf(param));
@@ -188,7 +199,7 @@ public class ParametricMessageValidator implements L10nValidator {
     } else {
       Matcher matcher = DETECT_PARAMETERS_PATTERN.matcher(message);
       isParametric = matcher.matches();
-      //Not safe for unit test: isParametric = (storedParams.size() != 0);
+      // Not safe for unit test: isParametric = (storedParams.size() != 0);
     }
     return isParametric;
   }
@@ -213,7 +224,7 @@ public class ParametricMessageValidator implements L10nValidator {
 
   private String displayParameters(List<Integer> parameters) {
     StringBuffer sb = new StringBuffer("[");
-    for (int i=0; i<parameters.size(); i++) {
+    for (int i = 0; i < parameters.size(); i++) {
       if (i != 0) {
         sb.append(",");
       }

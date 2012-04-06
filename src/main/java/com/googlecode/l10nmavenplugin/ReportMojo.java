@@ -10,7 +10,6 @@
 package com.googlecode.l10nmavenplugin;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -21,13 +20,15 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
-import org.xml.sax.SAXException;
 
 import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 
 /**
- * Creates a report on l10n Properties files validation
+ * Creates a report on l10n Properties files validation result.
+ * 
+ * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via {@link L10nReportRenderer}. It uses
+ * a subset of {@link ValidateMojo} configuration, as ignoreFailures and excludedKey are not applicable for a report.
  * 
  * @goal report
  * @phase site
@@ -52,6 +53,16 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   private String[] jsKeys = new String[] { ".js." };
 
   /**
+   * Declares how the client side resources are loaded in javascript.
+   * 
+   * @see {@link ValidateMojo}
+   * 
+   * @parameter default-value="true"
+   * @since 1.3
+   */
+  private boolean jsDoubleQuoted = true;
+
+  /**
    * List of keys to match as url resources. Default is ".url.".
    * 
    * @parameter
@@ -66,6 +77,14 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
    * @since 1.2
    */
   private String[] htmlKeys = new String[] { ".text." };
+
+  /**
+   * XML Schema to use for html resource validation. Default value is to use XHTML1 transitional.
+   * 
+   * @parameter default-value="xhtml1-transitional.xsd"
+   * @since 1.3
+   */
+  private File xhtmlSchema;
 
   /**
    * List of keys to match as non-html text resources. Default is ".title.".
@@ -84,12 +103,12 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   private CustomPattern[] customPatterns = new CustomPattern[] {};
 
   /**
-   * 
+   * Maven site renderer, not used by this Mojo.
    */
   private Renderer siteRenderer;
 
   /**
-   * 
+   * The {@link org.apache.maven.reporting.MavenReportRenderer} to generate report
    */
   private L10nReportRenderer reportRenderer;
 
@@ -109,45 +128,23 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
    */
   private String outputDirectory;
 
-  public String getDescription(Locale locale) {
-    return getBundle(locale).getString("report.dashboard.title.description");
-  }
-
-  public String getName(Locale locale) {
-    return getBundle(locale).getString("report.dashboard.title.name");
-  }
-
-  public String getOutputName() {
-    return "l10n-report";
-  }
-
   /**
    * Entry point for the plugin report goal
+   * 
+   * @param locale
    */
   @Override
   protected void executeReport(Locale locale) throws MavenReportException {
     List<L10nReportItem> reportItems = new ArrayList<L10nReportItem>();
+
+    ValidateMojo validateMojo = new ValidateMojo(this);
+    validateMojo.setLog(getLog());
+    validateMojo.initialize();
     int nbErrors = 0;
 
     try {
-      ValidateMojo validateMojo = new ValidateMojo();
-      validateMojo.setLog(getLog());
-      // Exclusions should not be used in reporting
-      validateMojo.setExcludedKeys(new String[] {});
-
-      // Propagate configuration
-      validateMojo.setHtmlKeys(htmlKeys);
-      validateMojo.setJsKeys(jsKeys);
-      validateMojo.setTextKeys(textKeys);
-      validateMojo.setUrlKeys(urlKeys);
-      validateMojo.setCustomPatterns(customPatterns);
-
       nbErrors = validateMojo.validateProperties(propertyDir, reportItems);
 
-    } catch (SAXException e) {
-      throw new MavenReportException("Could not initialize ValidateMojo", e);
-    } catch (URISyntaxException e) {
-      throw new MavenReportException("Could not initialize ValidateMojo", e);
     } catch (MojoExecutionException e) {
       throw new MavenReportException("Could not exceute ValidateMojo", e);
     }
@@ -156,6 +153,27 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
     reportRenderer.setReportItems(reportItems);
     reportRenderer.setNbErrors(nbErrors);
     reportRenderer.render();
+  }
+
+  /**
+   * Report description
+   */
+  public String getDescription(Locale locale) {
+    return getBundle(locale).getString("report.dashboard.title.description");
+  }
+
+  /**
+   * Report title
+   */
+  public String getName(Locale locale) {
+    return getBundle(locale).getString("report.dashboard.title.name");
+  }
+
+  /**
+   * Report file name
+   */
+  public String getOutputName() {
+    return "l10n-report";
   }
 
   @Override
@@ -211,5 +229,51 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
 
   public void setCustomPatterns(CustomPattern[] customPatterns) {
     this.customPatterns = customPatterns;
+  }
+
+  public void setJsDoubleQuoted(boolean jsDoubleQuoted) {
+    this.jsDoubleQuoted = jsDoubleQuoted;
+  }
+
+  public void setXhtmlSchema(File xhtmlSchema) {
+    this.xhtmlSchema = xhtmlSchema;
+  }
+
+  public String[] getExcludedKeys() {
+    // Exclusions should not be used in reporting
+    return new String[] {};
+  }
+
+  public boolean getIgnoreFailure() {
+    // No failure should be ignored in reporting
+    return false;
+  }
+
+  public String[] getJsKeys() {
+    return jsKeys;
+  }
+
+  public boolean getJsDoubleQuoted() {
+    return jsDoubleQuoted;
+  }
+
+  public String[] getUrlKeys() {
+    return urlKeys;
+  }
+
+  public String[] getHtmlKeys() {
+    return htmlKeys;
+  }
+
+  public File getXhtmlSchema() {
+    return xhtmlSchema;
+  }
+
+  public String[] getTextKeys() {
+    return textKeys;
+  }
+
+  public CustomPattern[] getCustomPatterns() {
+    return customPatterns;
   }
 }
