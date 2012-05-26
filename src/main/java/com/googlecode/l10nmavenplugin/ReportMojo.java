@@ -103,6 +103,16 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   private CustomPattern[] customPatterns = new CustomPattern[] {};
 
   /**
+   * Directory containing dictionaries for SpellCheck validation.
+   * 
+   * Defaults to the value of parameter propertyDir.
+   * 
+   * @parameter
+   * @since 1.4
+   */
+  private File dictionaryDir;
+
+  /**
    * Maven site renderer, not used by this Mojo.
    */
   private Renderer siteRenderer;
@@ -276,4 +286,22 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   public CustomPattern[] getCustomPatterns() {
     return customPatterns;
   }
+
+  public File getDictionaryDir() {
+    return dictionaryDir;
+  }
+
+  public void setDictionaryDir(File dictionaryDir) {
+    this.dictionaryDir = dictionaryDir;
+  }
+
+  public void setSkip(boolean skip) {
+    // Ignored for reporting
+  }
+
+  public boolean getSkip() {
+    // Ignored for reporting
+    return false;
+  }
+
 }

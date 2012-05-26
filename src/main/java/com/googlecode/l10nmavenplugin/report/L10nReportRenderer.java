@@ -64,6 +64,8 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
   @Override
   protected void renderBody() {
     if (reportItems.size() > 0) {
+
+      // TODO put a breakdown per type summary (with links to sections ?)
       paragraph(MessageFormat.format(bundle.getString("report.dashboard.text.intro"), nbErrors));
 
       // Need to order report items by Type

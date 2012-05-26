@@ -9,17 +9,32 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.validators;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.TreeMap;
+
+import com.googlecode.l10nmavenplugin.model.Property;
+
 public class L10nReportItem implements Comparable<L10nReportItem> {
 
   /**
    * Ordered severity
    */
   public enum Severity {
-    // Very likely to cause a bug in the appplication
+    /**
+     * Very likely to cause a bug in the application
+     */
     ERROR,
-    // Potential bug or bad practices
+    /**
+     * Potential bug or bad practices
+     */
     WARN,
-    // Informative
+    /**
+     * Informative or suggestion
+     */
     INFO,
   }
 
@@ -46,10 +61,17 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     INCOHERENT_PARAMETERS("message.incoherentParams.title", "message.incoherentParams.description"), //
     MISSING_TRANSLATION("message.missingTranslation.title", "message.missingTranslation.description"), //
     UNDECLARED_HTML_RESOURCE("message.undeclaredHtml.title", "message.undeclaredHtml.description"), //
-    UNDECLARED_URL_RESOURCE("message.undeclaredUrl.title", "message.undeclaredUrl.description"),
+    UNDECLARED_URL_RESOURCE("message.undeclaredUrl.title", "message.undeclaredUrl.description"), //
+    TRAILING_WHITESPACE("message.trailingWhitespace.title", "message.trailingWhitespace.description"), //
+    ALMOST_DUPLICATED_RESOURCE("message.almostDuplicatedResource.title", "message.almostDuplicatedResource.description"), //
+    ALMOST_IDENTICAL_TRANSLATION("message.almostIdenticalTranslation.title", "message.almostIdenticalTranslation.description"), //
+    SPELLCHECK("message.spellcheck.title", "message.spellcheck.description"), //
+    INCOHERENT_TAGS("message.incoherentTags.title", "message.incoherentTags.description"),
 
     // Infos
-    EXCLUDED("message.excluded.title", "message.excluded.description"); //
+    EXCLUDED("message.excluded.title", "message.excluded.description"), //
+    DUPLICATED_RESOURCE("message.duplicatedResource.title", "message.duplicatedResource.description"), //
+    IDENTICAL_TRANSLATION("message.identicalTranslation.title", "message.identicalTranslation.description");
 
     private final String titleLocKey;
     private final String descriptionLocKey;
@@ -65,6 +87,16 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
 
     public String getDescriptionLocKey() {
       return descriptionLocKey;
+    }
+
+    @Override
+    public String toString() {
+      ResourceBundle bundle = getBundle(Locale.ENGLISH);
+      return bundle.getString(titleLocKey);
+    }
+
+    private ResourceBundle getBundle(Locale locale) {
+      return ResourceBundle.getBundle("l10n-report", locale, this.getClass().getClassLoader());
     }
   }
 
@@ -97,6 +129,12 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
    * The value actually used for validation.
    */
   private String formattedPropertiesValue;
+
+  public L10nReportItem(Severity itemSeverity, Type itemType, String itemMessage, Property property,
+      String formattedPropertiesValue) {
+    this(itemSeverity, itemType, itemMessage, property.getPropertiesFile().toString(), property.getKey(), property.getMessage(),
+        formattedPropertiesValue);
+  }
 
   public L10nReportItem(Severity itemSeverity, Type itemType, String itemMessage, String propertiesName, String propertiesKey,
       String propertiesValue, String formattedPropertiesValue) {
@@ -149,5 +187,21 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
       result = propertiesName.compareTo(o.getPropertiesName());
     }
     return result;
+  }
+
+  public static Map<Type, Collection<L10nReportItem>> byType(Collection<L10nReportItem> items) {
+    Map<Type, Collection<L10nReportItem>> mapByType = new TreeMap<Type, Collection<L10nReportItem>>();
+
+    for (L10nReportItem reportItem : items) {
+      Collection<L10nReportItem> itemsByType = mapByType.get(reportItem.getItemType());
+      if (itemsByType == null) {
+        itemsByType = new ArrayList<L10nReportItem>();
+        mapByType.put(reportItem.getItemType(), itemsByType);
+      }
+      itemsByType.add(reportItem);
+    }
+
+    return mapByType;
+
   }
 }

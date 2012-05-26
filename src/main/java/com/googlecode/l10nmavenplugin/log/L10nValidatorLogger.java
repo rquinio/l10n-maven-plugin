@@ -9,64 +9,105 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.log;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
+import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
 
 /**
  * Basic logger that ensures consistency in logging.
  * 
- * Standard maven options apply: --quiet for ERROR level, -X for DEBUG. 
+ * Standard maven options apply: --quiet for ERROR level, -X for DEBUG.
  * 
  * @author romain.quinio
- *
+ * 
  */
 public class L10nValidatorLogger {
-  
-  private Log logger; 
+
+  /**
+   * Max number of time a given type id logged
+   */
+  private static final int THRESOLD = 30;
+
+  private Log logger;
+
+  private Map<L10nReportItem.Type, Integer> occurences = new HashMap<L10nReportItem.Type, Integer>();
 
   public L10nValidatorLogger() {
     this.logger = new SystemStreamLog();
   }
-  
+
   public L10nValidatorLogger(Log logger) {
     this.logger = logger;
   }
-  
-  public void debug(String propertiesName, String key, String logMessage, String message, String formattedMessage){
+
+  public void debug(String propertiesName, String key, String logMessage, String message, String formattedMessage) {
     this.logger.debug(buildLogMessage(propertiesName, key, logMessage, message, formattedMessage));
   }
-  
-  public void info(String propertiesName, String key, String logMessage, String message, String formattedMessage){
+
+  public void info(String propertiesName, String key, String logMessage, String message, String formattedMessage) {
     this.logger.info(buildLogMessage(propertiesName, key, logMessage, message, formattedMessage));
   }
-  
-  public void warn(String propertiesName, String key, String logMessage, String message, String formattedMessage){
+
+  public void warn(String propertiesName, String key, String logMessage, String message, String formattedMessage) {
     this.logger.warn(buildLogMessage(propertiesName, key, logMessage, message, formattedMessage));
   }
-  
-  public void error(String propertiesName, String key, String logMessage, String message, String formattedMessage){
+
+  public void error(String propertiesName, String key, String logMessage, String message, String formattedMessage) {
     this.logger.error(buildLogMessage(propertiesName, key, logMessage, message, formattedMessage));
   }
-  
-  public void log(L10nReportItem reportItem){
-    switch(reportItem.getItemSeverity()){
-      case INFO:
-         this.info(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(), 
-             reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
-         break;
-      case WARN:
-        this.warn(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(), 
+
+  public void log(L10nReportItem reportItem) {
+    Integer nbLogged = occurences.get(reportItem.getItemType());
+    if (nbLogged == null) {
+      nbLogged = 1;
+    } else {
+      nbLogged++;
+    }
+    occurences.put(reportItem.getItemType(), nbLogged);
+    if (nbLogged == THRESOLD) {
+      this.logger.warn("Info/Warn of type " + reportItem.getItemType() + " exceed the threshold, items will no more be logged.");
+    }
+
+    switch (reportItem.getItemSeverity()) {
+    case INFO:
+      if (nbLogged < THRESOLD) {
+        this.info(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
             reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
-        break;
-      case ERROR:
-        this.error(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(), 
+      }
+      break;
+    case WARN:
+      if (nbLogged < THRESOLD) {
+        this.warn(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
             reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
-        break;
+      }
+      break;
+    case ERROR:
+      // Report all errors
+      this.error(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
+          reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
+      break;
     }
   }
-  
+
+  public void log(Severity severity, String message) {
+    switch (severity) {
+    case INFO:
+      logger.info(message);
+      break;
+    case WARN:
+      logger.warn(message);
+      break;
+    case ERROR:
+      logger.error(message);
+      break;
+    }
+  }
+
   /**
    * Log in a consistent way for all validators.
    * 
@@ -80,8 +121,7 @@ public class L10nValidatorLogger {
    * @param formattedMessage
    *          optional
    */
-  private String buildLogMessage(String propertiesName, String key, String logMessage, String message,
-      String formattedMessage) {
+  private String buildLogMessage(String propertiesName, String key, String logMessage, String message, String formattedMessage) {
     StringBuffer sb = new StringBuffer();
     sb.append("<").append(propertiesName).append(">");
     if (key != null) {

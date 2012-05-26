@@ -17,15 +17,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -35,18 +35,31 @@ import org.apache.maven.plugin.MojoFailureException;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
-import com.googlecode.l10nmavenplugin.validators.DefaultValidator;
-import com.googlecode.l10nmavenplugin.validators.HtmlValidator;
-import com.googlecode.l10nmavenplugin.validators.JsValidator;
+import com.googlecode.l10nmavenplugin.model.BundlePropertiesFamily;
+import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
+import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
+import com.googlecode.l10nmavenplugin.model.PropertiesFile;
+import com.googlecode.l10nmavenplugin.model.Property;
+import com.googlecode.l10nmavenplugin.model.PropertyFamily;
+import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
-import com.googlecode.l10nmavenplugin.validators.MissingTranslationValidator;
-import com.googlecode.l10nmavenplugin.validators.ParametricMessageValidator;
-import com.googlecode.l10nmavenplugin.validators.PatternValidator;
-import com.googlecode.l10nmavenplugin.validators.TextValidator;
-import com.googlecode.l10nmavenplugin.validators.UrlValidator;
+import com.googlecode.l10nmavenplugin.validators.bundle.DuplicationValidator;
+import com.googlecode.l10nmavenplugin.validators.bundle.HtmlTagCoherenceValidator;
+import com.googlecode.l10nmavenplugin.validators.bundle.IdenticalTranslationValidator;
+import com.googlecode.l10nmavenplugin.validators.bundle.MissingTranslationValidator;
+import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
+import com.googlecode.l10nmavenplugin.validators.property.DefaultValidator;
+import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
+import com.googlecode.l10nmavenplugin.validators.property.JsValidator;
+import com.googlecode.l10nmavenplugin.validators.property.ParametricMessageValidator;
+import com.googlecode.l10nmavenplugin.validators.property.PatternValidator;
+import com.googlecode.l10nmavenplugin.validators.property.PlainTextValidator;
+import com.googlecode.l10nmavenplugin.validators.property.SpellCheckValidator;
+import com.googlecode.l10nmavenplugin.validators.property.TrailingWhitespaceValidator;
+import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
 
 /**
  * Validate a set of l10n {@link Properties} files against:
@@ -172,14 +185,42 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    */
   private CustomPattern[] customPatterns = new CustomPattern[] {};
 
-  private L10nValidator htmlValidator;
-  private L10nValidator jsValidator;
-  private L10nValidator urlValidator;
-  private L10nValidator textValidator;
-  private L10nValidator defaultValidator;
-  private L10nValidator parametricMessageValidator;
-  private L10nValidator missingTranslationValidator;
-  private L10nValidator[] patternValidators = new L10nValidator[] {};
+  /**
+   * Directory containing dictionaries for SpellCheck validation.
+   * 
+   * Defaults to the value of parameter propertyDir.
+   * 
+   * @parameter
+   * @since 1.4
+   */
+  private File dictionaryDir;
+
+  /**
+   * Flag allowing to skip plugin exceution for a particular build.
+   * 
+   * This makes the plugin more controllable from profiles.
+   * 
+   * @parameter expression="${l10n.skip}"
+   * @since 1.4
+   */
+  private boolean skip;
+
+  private L10nValidator<Property> htmlValidator;
+  private L10nValidator<Property> jsValidator;
+  private L10nValidator<Property> urlValidator;
+  private L10nValidator<Property> plainTextValidator;
+  private L10nValidator<Property> spellCheckValidator;
+  private L10nValidator<Property> defaultValidator;
+  private L10nValidator<Property> parametricMessageValidator;
+  private L10nValidator<Property> trailingWhitespaceValidator;
+  private L10nValidator<Property>[] patternValidators = new PatternValidator[] {};
+
+  private L10nValidator<PropertyFamily> missingTranslationValidator;
+  private L10nValidator<PropertyFamily> identicalTranslationValidator;
+  private L10nValidator<PropertyFamily> parametricCoherenceValidator;
+  private L10nValidator<PropertyFamily> htmlTagCoherenceValidator;
+
+  private L10nValidator<PropertiesFamily> duplicationValidator;
 
   private L10nValidatorLogger logger;
 
@@ -207,6 +248,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     setUrlKeys(configuration.getUrlKeys());
     setCustomPatterns(configuration.getCustomPatterns());
     setExcludedKeys(configuration.getExcludedKeys());
+    setDictionaryDir(configuration.getDictionaryDir());
   }
 
   /**
@@ -217,22 +259,33 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     logger = new L10nValidatorLogger(getLog());
     getLog().info("Initializing l10n validators...");
 
+    if (dictionaryDir == null) {
+      // Default to propertyDir
+      dictionaryDir = propertyDir;
+    }
+    spellCheckValidator = new SpellCheckValidator(logger, dictionaryDir);
+
     if (xhtmlSchema != null) {
-      htmlValidator = new HtmlValidator(xhtmlSchema, logger);
+      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator);
     } else {
-      htmlValidator = new HtmlValidator(logger);
+      htmlValidator = new HtmlValidator(logger, spellCheckValidator);
     }
     jsValidator = new JsValidator(jsDoubleQuoted, htmlValidator, logger);
 
     urlValidator = new UrlValidator(logger);
-    textValidator = new TextValidator(logger);
+    plainTextValidator = new PlainTextValidator(logger, spellCheckValidator);
     defaultValidator = new DefaultValidator(logger);
     parametricMessageValidator = new ParametricMessageValidator(logger);
+    trailingWhitespaceValidator = new TrailingWhitespaceValidator(logger);
     missingTranslationValidator = new MissingTranslationValidator(logger);
+    parametricCoherenceValidator = new ParametricCoherenceValidator(logger);
+    identicalTranslationValidator = new IdenticalTranslationValidator(logger);
+    duplicationValidator = new DuplicationValidator(logger);
+    htmlTagCoherenceValidator = new HtmlTagCoherenceValidator(logger);
 
     if (customPatterns != null) {
       // Initialize custom pattern validators
-      patternValidators = new L10nValidator[customPatterns.length];
+      patternValidators = new PatternValidator[customPatterns.length];
       for (int i = 0; i < customPatterns.length; i++) {
         CustomPattern pattern = customPatterns[i];
         patternValidators[i] = new PatternValidator(logger, pattern.getName(), pattern.getRegex());
@@ -249,8 +302,12 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    *           in case validation detected errors and ignoreFailure is false
    */
   public void execute() throws MojoExecutionException, MojoFailureException {
-    initialize();
-    executeInternal();
+    if (skip == false) {
+      initialize();
+      executeInternal();
+    } else {
+      getLog().info("Skipping plugin execution, as per configuration.");
+    }
   }
 
   /**
@@ -265,6 +322,10 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     List<L10nReportItem> reportItems = new ArrayList<L10nReportItem>();
     int nbErrors = validateProperties(propertyDir, reportItems);
 
+    if (reportItems.size() > 0) {
+      logSummary(reportItems);
+    }
+
     if (nbErrors > 0) {
       if (ignoreFailure) {
         getLog().error("Validation has failed with " + nbErrors + " errors.");
@@ -278,6 +339,28 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   }
 
   /**
+   * Log a summary of the validation
+   * 
+   * @param reportItems
+   */
+  private void logSummary(List<L10nReportItem> reportItems) {
+    getLog().info("--------------------");
+    getLog().info("Validation summary: " + reportItems.size() + " issues.");
+
+    Map<Type, Collection<L10nReportItem>> byType = L10nReportItem.byType(reportItems);
+
+    for (Entry<Type, Collection<L10nReportItem>> entry : byType.entrySet()) {
+      Type type = entry.getKey();
+      int nbType = entry.getValue().size();
+      Severity severity = entry.getValue().iterator().next().getItemSeverity();
+
+      logger.log(severity, type + ": " + nbType);
+    }
+    getLog().info("--------------------\n");
+
+  }
+
+  /**
    * Validation logic entry point used both by {@link ValidateMojo} and {@link ReportMojo}
    * 
    * @param directory
@@ -288,81 +371,91 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    * @throws MojoExecutionException
    */
   public int validateProperties(File directory, List<L10nReportItem> reportItems) throws MojoExecutionException {
-    Map<String, Properties> propertiesMap = loadProperties(directory);
-    if (propertiesMap.size() > 0) {
-      return validateProperties(propertiesMap, reportItems);
+    // TODO split multiple bundles in same directory ?
+    PropertiesFamily propertiesFamily = loadPropertiesFamily(directory);
+    if (propertiesFamily != null && propertiesFamily.getNbPropertiesFiles() > 0) {
+      return validatePropertiesFamily(propertiesFamily, reportItems);
     } else {
       return 0;
     }
   }
 
   /**
-   * Load Properties file
+   * Load a group of Properties file
    * 
    * @param directory
    *          the folder containing .properties files to load
-   * @return map of <file name, file content as Properties>, never null
+   * @param log
+   * @return
    * @throws MojoExecutionException
    */
-  private Map<String, Properties> loadProperties(File directory) throws MojoExecutionException {
-    Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
+  protected PropertiesFamily loadPropertiesFamily(File directory) throws MojoExecutionException {
     getLog().info("Looking for .properties files in: " + directory.getAbsolutePath());
+    List<PropertiesFile> propertiesFiles = new ArrayList<PropertiesFile>();
+
+    File[] files = directory.listFiles((FilenameFilter) new SuffixFileFilter(".properties"));
+    if (files == null || files.length == 0) {
+      getLog().warn("No properties file under folder " + directory.getAbsolutePath() + ". Skipping l10n validation.");
+
+    } else {
+      for (File file : files) {
+        propertiesFiles.add(loadPropertiesFile(file));
+      }
+    }
+
+    return new BundlePropertiesFamily(propertiesFiles);
+  }
+
+  /**
+   * Load a single Properties file
+   * 
+   * @param file
+   * @param log
+   * @return
+   * @throws MojoExecutionException
+   */
+  protected PropertiesFile loadPropertiesFile(File file) throws MojoExecutionException {
+    PropertiesFile propertiesFile = null;
+
+    String fileName = file.getName();
+    getLog().debug("Loading " + fileName + "...");
 
     try {
-      File[] files = directory.listFiles((FilenameFilter) new SuffixFileFilter(".properties"));
-      if (files == null || files.length == 0) {
-        getLog().warn("No properties file under folder " + directory.getAbsolutePath() + ". Skipping l10n validation.");
-
-      } else {
-        for (File file : files) {
-          InputStream inStream = new FileInputStream(file);
-          String propertiesName = file.getName();
-          Properties properties = new Properties();
-          getLog().debug("Loading " + propertiesName + "...");
-          try {
-            properties.load(inStream);
-          } catch (IllegalArgumentException e) {
-            throw new MojoExecutionException("The file <" + propertiesName
-                + "> could not be loaded. Check for a malformed Unicode escape sequence.", e);
-          }
-          propertiesMap.put(propertiesName, properties);
-        }
+      InputStream inStream = new FileInputStream(file);
+      Properties properties = new Properties();
+      try {
+        properties.load(inStream);
+        propertiesFile = new BundlePropertiesFile(fileName, properties);
+      } catch (IllegalArgumentException e) {
+        // Add file details to the exception
+        throw new IllegalArgumentException("The file <" + fileName
+            + "> could not be loaded. Check for a malformed Unicode escape sequence.", e);
       }
     } catch (IOException e) {
       throw new MojoExecutionException("An unexpected exception has occured while loading properties.", e);
     }
-
-    return propertiesMap;
+    return propertiesFile;
   }
 
   /**
-   * Validate some Properties file belonging to the same bundle. There are 2 steps:
-   * <ul>
-   * <li>Validate properties in isolation, based on the context the property will be used (xHTML, URL, js, ...)</li>
-   * <li>Compare properties between each Properties file.</li>
-   * </ul>
+   * Validate some Properties file belonging to the same bundle.
    * 
-   * @param propertiesMap
-   *          Properties to validate, indexed by bundle name
+   * @param propertiesFamily
+   *          Properties to validate
    * @param reportItems
    *          list to update with validation errors/warn/info items
    * @return number of validation errors
    * @throws MojoExecutionException
    */
-  protected int validateProperties(Map<String, Properties> propertiesMap, List<L10nReportItem> reportItems)
+  protected int validatePropertiesFamily(PropertiesFamily propertiesFamily, List<L10nReportItem> reportItems)
       throws MojoExecutionException {
     int nbErrors = 0;
 
-    // TODO need to split bundles and reset validators that are statefull
+    // nbErrors += duplicationValidator.validate(propertiesFamily, reportItems);
 
-    // 1st step: validation in isolation
-    for (Map.Entry<String, Properties> entry : propertiesMap.entrySet()) {
-      nbErrors += validateProperties(entry.getValue(), entry.getKey(), reportItems);
+    for (Iterator<PropertyFamily> it = propertiesFamily.iterator(); it.hasNext();) {
+      nbErrors += validatePropertyFamily(it.next(), reportItems);
     }
-
-    // 2nd step: comparison
-    nbErrors += parametricMessageValidator.report(propertiesMap.keySet(), reportItems);
-    nbErrors += missingTranslationValidator.report(excludeRootBundle(propertiesMap.keySet()), reportItems);
 
     // Generate csv file
     /*
@@ -385,16 +478,63 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    *          list to update with validation errors/warn/info items
    * @return number of validation errors
    */
-  protected int validateProperties(Properties properties, String propertiesName, List<L10nReportItem> reportItems) {
-    logger.info(propertiesName, null, "Starting validation...", null, null);
+  protected int validatePropertiesFile(PropertiesFile propertiesFile, List<L10nReportItem> reportItems) {
+    logger.info(propertiesFile.getFileName(), null, "Starting validation (locale: " + propertiesFile.getLocale() + ")...", null,
+        null);
     int nbErrors = 0;
 
-    Set<Object> keys = properties.keySet();
+    Set<Object> keys = propertiesFile.getProperties().keySet();
     for (Object obj : keys) {
       String key = (String) obj;
-      String message = properties.getProperty(key);
-      nbErrors += validateProperty(key, message, propertiesName, reportItems);
+      String message = propertiesFile.getProperties().getProperty(key);
+      nbErrors += validateProperty(new PropertyImpl(key, message, propertiesFile), reportItems);
     }
+    return nbErrors;
+  }
+
+  /**
+   * Validate translations of a property. There are 2 steps:
+   * <ul>
+   * <li>Validate property in isolation, based on the context the property will be used (xHTML, URL, js, ...)</li>
+   * <li>Validate the coherence of translation of the property</li>
+   * </ul>
+   * 
+   * @param properties
+   *          Properties to validate
+   * @param propertiesName
+   *          the name of the .properties file, for error logging
+   * @param reportItems
+   *          list to update with validation errors/warn/info items
+   * @return number of validation errors
+   */
+  protected int validatePropertyFamily(PropertyFamily propertyFamily, List<L10nReportItem> reportItems) {
+    int nbErrors = 0;
+    String key = propertyFamily.getKey();
+
+    // Only validate if key is not excluded
+    if (StringUtils.indexOfAny(key, excludedKeys) == -1) {
+      for (PropertiesFile propertiesFile : propertyFamily.getExistingPropertyFiles()) {
+        nbErrors += validateProperty(new PropertyImpl(key, propertiesFile.getProperties().getProperty(key), propertiesFile),
+            reportItems);
+      }
+
+      // Apply validation with PropertyFamily scope
+      nbErrors += parametricCoherenceValidator.validate(propertyFamily, reportItems);
+      nbErrors += missingTranslationValidator.validate(propertyFamily, reportItems);
+      nbErrors += identicalTranslationValidator.validate(propertyFamily, reportItems);
+      if (StringUtils.indexOfAny(key, htmlKeys) != -1) {
+        nbErrors += htmlTagCoherenceValidator.validate(propertyFamily, reportItems);
+      }
+
+    } else {
+      // Property is excluded from validation
+      L10nReportItem item = new L10nReportItem(Severity.INFO, Type.EXCLUDED,
+          "Property was excluded from validation by plugin configuration.", propertyFamily.getExistingPropertyFiles().toString(),
+          key, null, null);
+      reportItems.add(item);
+      logger.log(item);
+    }
+
     return nbErrors;
   }
 
@@ -411,52 +551,57 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    *          list to update with validation errors/warn/info items
    * @return number of validation errors
    */
-  protected int validateProperty(String key, String message, String propertiesName, List<L10nReportItem> reportItems) {
+  protected int validateProperty(Property property, List<L10nReportItem> reportItems) {
     int nbErrors = 0;
+    String key = property.getKey();
 
-    if (message.length() > 0) { // Nothing to validate if message is empty.
+    // Nothing to validate if message is empty.
+    if (property.getMessage().length() > 0) {
       // Only validate if key is not excluded
       if (StringUtils.indexOfAny(key, excludedKeys) == -1) {
-        logger.debug(propertiesName, key, "Starting validation...", null, null);
+        logger.debug(property.getPropertiesFile().toString(), key, "Starting validation...", null, null);
 
-        nbErrors += missingTranslationValidator.validate(key, message, propertiesName, reportItems);
-        nbErrors += parametricMessageValidator.validate(key, message, propertiesName, reportItems);
+        nbErrors += parametricMessageValidator.validate(property, reportItems);
+        nbErrors += trailingWhitespaceValidator.validate(property, reportItems);
 
         boolean bMatched = false;
         if (StringUtils.indexOfAny(key, htmlKeys) != -1) {
           bMatched = true;
-          nbErrors += htmlValidator.validate(key, message, propertiesName, reportItems);
+          nbErrors += htmlValidator.validate(property, reportItems);
 
         } else if (StringUtils.indexOfAny(key, jsKeys) != -1) {
           bMatched = true;
-          nbErrors += jsValidator.validate(key, message, propertiesName, reportItems);
+          nbErrors += jsValidator.validate(property, reportItems);
 
         } else if (StringUtils.indexOfAny(key, urlKeys) != -1) {
           bMatched = true;
-          nbErrors += urlValidator.validate(key, message, propertiesName, reportItems);
+          nbErrors += urlValidator.validate(property, reportItems);
 
         } else if (StringUtils.indexOfAny(key, textKeys) != -1) {
           bMatched = true;
-          nbErrors += textValidator.validate(key, message, propertiesName, reportItems);
+          nbErrors += plainTextValidator.validate(property, reportItems);
 
         } else {
           for (int i = 0; i < customPatterns.length; i++) {
             CustomPattern pattern = customPatterns[i];
             if (StringUtils.indexOfAny(key, pattern.getKeys()) != -1) {
               bMatched = true;
-              nbErrors += patternValidators[i].validate(key, message, propertiesName, reportItems);
+              nbErrors += patternValidators[i].validate(property, reportItems);
               break;
             }
           }
         }
 
-        if (!bMatched) { // Nothing matched, apply defaultValidator
-          nbErrors += defaultValidator.validate(key, message, propertiesName, reportItems);
+        if (!bMatched) {
+          // Nothing matched, apply defaultValidator
+          nbErrors += defaultValidator.validate(property, reportItems);
         }
 
       } else {
+        // Property is excluded from validation
         L10nReportItem item = new L10nReportItem(Severity.INFO, Type.EXCLUDED,
-            "Property was excluded from validation by plugin configuration.", propertiesName, key, null, null);
+            "Property was excluded from validation by plugin configuration.", property.getPropertiesFile().toString(), key, null,
+            null);
         reportItems.add(item);
         logger.log(item);
       }
@@ -497,58 +642,6 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     this.ignoreFailure = ignoreFailure;
   }
 
-  /**
-   * Exclude the root bundle from a set of properties from the same bundle
-   * 
-   * @param propertiesNames
-   * @return
-   */
-  private Set<String> excludeRootBundle(Set<String> propertiesNames) {
-    String rootBundle = getRootBundle(propertiesNames);
-
-    Set<String> localizedPropertiesNames = new HashSet<String>();
-    for (String propertiesName : propertiesNames) {
-      if (!propertiesName.equals(rootBundle)) {
-        localizedPropertiesNames.add(propertiesName);
-      }
-    }
-    return localizedPropertiesNames;
-  }
-
-  /**
-   * Get the root bundle
-   * 
-   * @param propertiesNames
-   * @return rootBundle, or null if not found
-   */
-  private String getRootBundle(Set<String> propertiesNames) {
-    String rootBundle = null;
-    for (String propertiesName : propertiesNames) {
-      if (!propertiesName.contains("_")) {
-        rootBundle = propertiesName;
-        break;
-      }
-    }
-    return rootBundle;
-  }
-
-  /**
-   * Get the base name of bundle, based on default {@link java.util.ResourceBundle} convention
-   * baseName[_language[_country[_variant]]].properties
-   * 
-   * @param propertiesName
-   *          file name of 1 properties of the bundle
-   * @return baseName of the bundle
-   */
-  protected String getBundleBaseName(String propertiesName) {
-    int index = propertiesName.indexOf("_");
-    if (index != -1) {
-      return propertiesName.substring(0, index);
-    } else {
-      return FilenameUtils.getBaseName(propertiesName);
-    }
-  }
-
   public void setJsKeys(String[] jsKeys) {
     this.jsKeys = jsKeys;
   }
@@ -575,6 +668,10 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
 
   public void setXhtmlSchema(File xhtmlSchema) {
     this.xhtmlSchema = xhtmlSchema;
+  }
+
+  public void setDictionaryDir(File dictionaryDir) {
+    this.dictionaryDir = dictionaryDir;
   }
 
   public File getPropertyDir() {
@@ -615,5 +712,17 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
 
   public CustomPattern[] getCustomPatterns() {
     return customPatterns;
+  }
+
+  public File getDictionaryDir() {
+    return dictionaryDir;
+  }
+
+  public void setSkip(boolean skip) {
+    this.skip = skip;
+  }
+
+  public boolean getSkip() {
+    return skip;
   }
 }

@@ -7,63 +7,37 @@
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-package com.googlecode.l10nmavenplugin;
+package com.googlecode.l10nmavenplugin.validators;
 
-import java.io.File;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Interface for l10 validation/report Mojo configuration
+ * Interface for all l10n validation modules
  * 
  * @author romain.quinio
- * 
  */
-public interface L10nValidationConfiguration {
+public interface L10nValidator {
 
-  public void setPropertyDir(File propertyDir);
+  /**
+   * Validates a property
+   * 
+   * @param key
+   *          key of the property
+   * @param message
+   *          value to validate, potentially different from the original property value in case of chaining validators
+   * @param propertiesName
+   *          identification of the Properties file, usually file name.
+   * @return number of errors
+   */
+  public int validate(String key, String message, String propertiesName, List<L10nReportItem> reportItems);
 
-  public File getPropertyDir();
-
-  public void setExcludedKeys(String[] excludedKeys);
-
-  public String[] getExcludedKeys();
-
-  public void setIgnoreFailure(boolean ignoreFailure);
-
-  public boolean getIgnoreFailure();
-
-  public void setJsKeys(String[] jsKeys);
-
-  public String[] getJsKeys();
-
-  public void setJsDoubleQuoted(boolean jsDoubleQuoted);
-
-  public boolean getJsDoubleQuoted();
-
-  public void setUrlKeys(String[] urlKeys);
-
-  public String[] getUrlKeys();
-
-  public void setHtmlKeys(String[] htmlKeys);
-
-  public String[] getHtmlKeys();
-
-  public void setXhtmlSchema(File xhtmlSchema);
-
-  public File getXhtmlSchema();
-
-  public void setTextKeys(String[] textKeys);
-
-  public String[] getTextKeys();
-
-  public void setCustomPatterns(CustomPattern[] customPatterns);
-
-  public CustomPattern[] getCustomPatterns();
-
-  public void setDictionaryDir(File dictionaryDir);
-
-  public File getDictionaryDir();
-
-  public void setSkip(boolean skip);
-
-  public boolean getSkip();
+  /**
+   * Report on validation results
+   * 
+   * @param propertiesNames
+   * @return
+   * @throw java.lang.UnsupportedOperationException if the method is not applicable for the validator
+   */
+  public int report(Set<String> propertiesNames, List<L10nReportItem> reportItems);
 }

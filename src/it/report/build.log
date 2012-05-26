@@ -1,0 +1,55 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Report goal IT
+[INFO]    task-segment: [site]
+[INFO] ------------------------------------------------------------------------
+[INFO] [site:site {execution: default-site}]
+[WARNING] No URL defined for the project - decoration links will not be resolved
+[INFO] Generating "L10n validation" report.
+[INFO] Initializing l10n validators...
+[INFO] Looking for .properties files in: C:\Users\romain.quinio\git\l10n-maven-plugin\src\it\report\src\main\resources
+[INFO] <Bundle.properties> Starting validation...
+
+[WARNING] <Bundle.properties><ALLP.list.invalid> Resource ends with whitespace character [ ]
+Property value was:[A:B:C:D ]
+
+[ERROR] <Bundle.properties><ALLP.list.invalid> Failed to match pattern 'List pattern' with regex ([A-Z](:[A-Z])+)?
+Property value was:[A:B:C:D ]
+
+[ERROR] <Bundle.properties><ALLP.text.invalid.someresource3> XHTML validation error: The element type "div" must be terminated by the matching end-tag "</div>".
+Property value was:[<div>Some Text on<a href="www.google.fr">Google</a>]
+Formatted value used for validation:[<div>Some Text on<a href="www.google.fr">Google</a>]
+
+[ERROR] <Bundle.properties><ALLP.url.invalid.someurlresource1> Invalid absolute URL.
+Property value was:[www.google.fr?plop=plop]
+Formatted value used for validation:[www.google.fr?plop=plop]
+
+[ERROR] <Bundle.properties><ALLP.text.invalid.someresource2> XHTML validation error: Element type "a" must be followed by either attribute specifications, ">" or "/>".
+Property value was:[<div>Some Text on<a href="www.goo"gle.fr">Google</a></div>]
+Formatted value used for validation:[<div>Some Text on<a href="www.goo"gle.fr">Google</a></div>]
+
+[ERROR] <Bundle.properties><ALLP.text.invalid.someresource1> XHTML validation error: The element type "a" must be terminated by the matching end-tag "</a>".
+Property value was:[<div>Some Text on<a href="www.google.fr">Google</div>]
+Formatted value used for validation:[<div>Some Text on<a href="www.google.fr">Google</div>]
+
+[WARNING] <Bundle.properties><ALLP.js.invalid.somejsresource2> Resource ends with whitespace character [\n]
+Property value was:[This is a 'js' resource
+]
+
+[ERROR] <Bundle.properties><ALLP.js.invalid.somejsresource2> Js resources must not contain \n nor \r, since newline is interpreted by browsers as the end of javascript statement
+Property value was:[This is a 'js' resource
+]
+
+[INFO] <Bundle_FR.properties> Starting validation...
+
+[ERROR] <Bundle_FR.properties><ALLP.url.invalid.someresource> Invalid absolute URL.
+Property value was:[Some Text]
+Formatted value used for validation:[Some Text]
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESSFUL
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 35 seconds
+[INFO] Finished at: Wed May 09 03:37:04 CEST 2012
+[INFO] Final Memory: 17M/32M
+[INFO] ------------------------------------------------------------------------
