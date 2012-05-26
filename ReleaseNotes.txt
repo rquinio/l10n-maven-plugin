@@ -1,5 +1,20 @@
+1.5 ???
+Added generation of CSV file containing keys with warning/error.
 
-1.3 07-Apr-2012
+1.4 26-May-2012 New validators
+
+Refactored validators architecture and model, with notion of scope (single property value, translations of a property, whole properties file, whole bundle of properties file, ...)
+Added identical translation validator, to info identically translated resources, or warn if translations are mostly identical but a few differ.
+Added Trailing whitespace validator for all resources.
+Added SpellCheck validator, based on Jazzy Spellchecker and using locale from properties file name. Location of dictionaries has to be specified via plugin configuration.
+Added HTML tag coherence validator, to warn if html tags used are different between translated values of a resource.
+Modified URL validator to detect HTML imported urls with hardcoded http protocol (*.js, *.css, *.png, ...) that would cause browser mixed content warnings.
+Modified HTML validator to ignore HTML5 data-* custom attributes, as this cannot easily be expressed in an XML schema.
+Added threshold (30) for number of info/warn issues logged per type.
+Added skip plugin configuration property.
+Added plugin integration tests using maven-invoker-plugin.
+
+1.3 07-Apr-2012 Customization
 Added custom pattern validators.
 Added XHTML validation schema configuration, with pre-defined xhtml1-transitional (default), xhtml1-strict or xhtml5 (based on http://www.xmlmind.com/xhtml5_resources.shtml 1.0.1).
 Added configuration to switch from double quoted js resources (default) to single quoted js resources validation. 
@@ -7,10 +22,10 @@ Modified URL validation regex to use more precise ESAPI pattern.
 Increased number of replaced formatting parameters in resource before URL/XHTML validation from 9 to 19.
 Fixed report generation failure when no issues found.
 
-1.2.1 14-Feb-2012
+1.2.1 14-Feb-2012 Java 5 compatibility patch
 Fixed Java 5 compatibility issue introduced in 1.2.
 
-1.2 14-Feb-2012
+1.2 14-Feb-2012 Reporting goal
 Added report goal that binds to site phase;
 Added parametric replacement checks (single quote escaping, parameters coherency).
 Added support for javascript escaping of double quotes in js resources (\\").
@@ -24,6 +39,5 @@ Added HTML unescaping before URL validation.
 Added Text key validation (no HTML/URL).
 Changed Other resources validation to warning instead of error.
 
-1.0 07-Feb-2012
-Initial release.
+1.0 07-Feb-2012 Initial release
 Validate goal that binds to test phase.

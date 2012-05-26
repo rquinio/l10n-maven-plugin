@@ -36,6 +36,7 @@
     </developer>
   </developers>
   <issueManagement>
+    <system>GoogleCode</system>
     <url>http://code.google.com/p/l10n-maven-plugin/issues/</url>
   </issueManagement>
   <properties>
@@ -84,6 +85,11 @@
       <version>2.3</version>
     </dependency>
     <dependency>
+      <groupId>net.sf.jazzy</groupId>
+      <artifactId>jazzy</artifactId>
+      <version>0.5.2-rtext-1.4.1</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.8.1</version>
@@ -98,22 +104,59 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.8.1</version>
         </plugin>
+         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>2.3</version>
+        </plugin> 
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+          </configuration>
+        </plugin>    
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
-      </plugin>
+      
     </plugins>
   </build>
-  <reporting />
   <profiles>
+    <profile>
+      <id>it</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <version>1.5</version>
+            <configuration>
+              <projectsDirectory>src/it</projectsDirectory>
+              <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+              <pomIncludes>
+                <pomInclude>*/pom.xml</pomInclude>
+              </pomIncludes>
+              <filterProperties>
+                <project.version>${project.version}</project.version>
+              </filterProperties>
+              <showVersion>true</showVersion>
+              <showErrors>true</showErrors>
+            </configuration>
+            <executions>
+              <execution>
+                <id>integration-test</id>
+                <goals>
+                  <goal>install</goal>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>release-sign-artifacts</id>
       <activation>
