@@ -9,13 +9,11 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -24,11 +22,14 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
+import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
+import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
+import com.googlecode.l10nmavenplugin.model.PropertiesFile;
+import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
+import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
 
 /**
  * Unit tests for {@link ValidateMojo}
@@ -37,43 +38,31 @@ import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
  */
 public class ValidateMojoTest {
 
-  private static ValidateMojo plugin;
+  private static final PropertiesFile FILE = new BundlePropertiesFile("junit.properties", null);
 
   private static final String BUNDLE = "Junit.properties";
 
-  private List<L10nReportItem> reportItems;
+  private ValidateMojo plugin;
 
-  /**
-   * Initialize only once as the XHTML schema loading can be slow
-   * 
-   * @throws URISyntaxException
-   * @throws SAXException
-   */
-  @BeforeClass
-  public static void setUpClass() throws URISyntaxException, SAXException {
-    plugin = new ValidateMojo();
-    plugin.setLog(new SystemStreamLog());
-    // Use default configuration
-    plugin.initialize();
-  }
+  private List<L10nReportItem> items;
 
   @Before
   public void setUp() {
-    reportItems = new ArrayList<L10nReportItem>();
-  }
+    items = new ArrayList<L10nReportItem>();
+    plugin = new ValidateMojo();
+    // Use XHTML5 as it is much faster
+    plugin.setXhtmlSchema(HtmlValidator.XHTML5);
 
-  @Test
-  public void testFromPropertiesResources() throws MojoExecutionException, MojoFailureException {
-    // Look for properties from src/test/resources added to test classpath
-    String propertiesDir = this.getClass().getClassLoader().getResource("").getFile();
-    plugin.setPropertyDir(new File(propertiesDir));
+    File dictionaryDir = new File(this.getClass().getClassLoader().getResource("").getFile());
+    plugin.setDictionaryDir(dictionaryDir);
 
-    try {
-      plugin.executeInternal();
-    } catch (MojoFailureException e) {
-      return;
-    }
-    fail("Errors didn't fail the validation");
+    plugin.setLog(new SystemStreamLog());
+
+    CustomPattern listPattern = new CustomPattern("List", "([A-Z](:[A-Z])+)?", ".list.");
+    plugin.setCustomPatterns(new CustomPattern[] { listPattern });
+
+    // Use default configuration for the rest
+    plugin.initialize();
   }
 
   /**
@@ -97,7 +86,9 @@ public class ValidateMojoTest {
     properties.put("ALLP.text.valid.4", "&nbsp;&copy;&ndash;");
     properties.put("ALLP.text.valid.5", "<a href='http://example.com'>link</a>");
 
-    int nbErrors = plugin.validateProperties(properties, BUNDLE, reportItems);
+    PropertiesFile propertiesFile = new BundlePropertiesFile(BUNDLE, properties);
+
+    int nbErrors = plugin.validatePropertiesFile(propertiesFile, items);
     assertEquals(0, nbErrors);
   }
 
@@ -106,13 +97,13 @@ public class ValidateMojoTest {
     String[] excludedKeys = new String[] { "ALLP.text.excluded" };
     plugin.setExcludedKeys(excludedKeys);
 
-    assertEquals(0, plugin.validateProperty("ALLP.text.excluded", "<div>Some text", BUNDLE, reportItems));
-    assertEquals(0, plugin.validateProperty("ALLP.text.excluded.longer", "<div>Some text", BUNDLE, reportItems));
+    assertEquals(0, plugin.validateProperty(new PropertyImpl("ALLP.text.excluded", "<div>Some text", FILE), items));
+    assertEquals(0, plugin.validateProperty(new PropertyImpl("ALLP.text.excluded.longer", "<div>Some text", FILE), items));
   }
 
   @Test
   public void emptyMessagesShouldBeIgnored() {
-    assertEquals(0, plugin.validateProperty("ALLP.text.empty", "", BUNDLE, reportItems));
+    assertEquals(0, plugin.validateProperty(new PropertyImpl("ALLP.text.empty", "", FILE), items));
   }
 
   /**
@@ -120,18 +111,44 @@ public class ValidateMojoTest {
    */
   @Test
   public void testJsEscapeFromProperties() throws IOException {
-    String fileName = "BundleJsEscape.properties";
+    String fileName = "js/BundleJs.properties";
     Properties properties = new Properties();
-    File file = new File(this.getClass().getClassLoader().getResource(fileName).getFile());
+    File file = getFile(fileName);
     properties.load(new FileInputStream(file));
 
-    int nbErrors = plugin.validateProperties(properties, fileName, reportItems);
+    PropertiesFile propertiesFile = new BundlePropertiesFile(fileName, properties);
+
+    int nbErrors = plugin.validatePropertiesFile(propertiesFile, items);
     assertEquals(3, nbErrors);
   }
 
   @Test
-  public void testBundleBaseName() {
-    assertEquals("bundle", plugin.getBundleBaseName("bundle.properties"));
-    assertEquals("bundle", plugin.getBundleBaseName("bundle_EN_GB.properties"));
+  public void testBundleLocale() throws MojoExecutionException {
+    File directory = getFile("locales");
+    PropertiesFamily propertiesFamily = plugin.loadPropertiesFamily(directory);
+
+    assertEquals("Bundle", propertiesFamily.getBaseName());
+    assertEquals(3, propertiesFamily.getNbPropertiesFiles());
+    assertNotNull(propertiesFamily.getRootPropertiesFile());
+
+    plugin.validatePropertiesFamily(propertiesFamily, items);
+    // SpellCheck warnings
+    assertEquals(2, items.size());
   }
+
+  @Test
+  public void testMalfomedProperties() throws MojoExecutionException {
+    File file = getFile("malformed/malformed.properties");
+    try {
+      plugin.loadPropertiesFile(file);
+      fail("Malformed properties file should fail");
+    } catch (IllegalArgumentException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private File getFile(String path) {
+    return new File(this.getClass().getClassLoader().getResource(path).getFile());
+  }
+
 }

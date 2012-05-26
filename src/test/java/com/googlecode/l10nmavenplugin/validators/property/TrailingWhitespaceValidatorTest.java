@@ -7,36 +7,38 @@
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-package com.googlecode.l10nmavenplugin.validators;
+package com.googlecode.l10nmavenplugin.validators.property;
 
-import java.util.List;
+import static org.junit.Assert.*;
 
-/**
- * Generic interface for validation on part or group of Properties files. It can be:
- * <ul>
- * <li>The syntax of a single {@link com.googlecode.l10nmavenplugin.model.Property}</li>
- * <li>The coherence of translation of a property across languages ({@link com.googlecode.l10nmavenplugin.model.PropertyFamily})</li>
- * <li>The coherence of a ({@link com.googlecode.l10nmavenplugin.model.PropertiesFile})</li>
- * <li>The coherence of a bundle (a group of Properties files, ({@link com.googlecode.l10nmavenplugin.model.PropertiesFamily}))</li>
- * <li>etc.</li>
- * </ul>
- * 
- * @author romain.quinio
- * 
- * @param <T>
- *          scope of the validation
- */
-public interface L10nValidator<T> {
+import org.junit.Before;
+import org.junit.Test;
 
-  /**
-   * Validate the syntax/coherence of T
-   * 
-   * @param toValidate
-   *          the property/group/bundle to validate
-   * @param reportItems
-   *          list of items to which validation issues should be added.
-   * @return number of reportItems with a severity {@link L10nReportItem.Severity#ERROR}
-   */
-  public int validate(T toValidate, List<L10nReportItem> reportItems);
+import com.googlecode.l10nmavenplugin.model.Property;
+import com.googlecode.l10nmavenplugin.model.PropertyImpl;
+import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
 
+public class TrailingWhitespaceValidatorTest extends AbstractL10nValidatorTest<Property> {
+
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    validator = new TrailingWhitespaceValidator(logger);
+  }
+
+  @Test
+  public void testValid() {
+    validator.validate(new PropertyImpl(KEY_OK, "", FILE), items);
+    validator.validate(new PropertyImpl(KEY_OK, "Some text", FILE), items);
+    assertEquals(0, items.size());
+  }
+
+  @Test
+  public void testInvalid() {
+    validator.validate(new PropertyImpl(KEY_KO, "Some text ", FILE), items);
+    validator.validate(new PropertyImpl(KEY_KO, "Some text\t", FILE), items);
+    validator.validate(new PropertyImpl(KEY_KO, "Some text\n", FILE), items);
+    assertEquals(3, items.size());
+  }
 }
