@@ -15,18 +15,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
 
 /**
- * Performs syntax validation of properties containing parameters ({0},{1},...)
+ * Validator to check syntax of parametric resources, i.e properties containing formatting parameters ({0},{1},...).
+ * 
+ * It will detect single quotes that are not escaped (typical usage in French, Italian, and also English). Also performs a format,
+ * to check syntax is correct.
+ * 
+ * Note: parametric js resource, where parametric replacement is done on client side, should also consume the single quote
+ * escaping (i.e follow {@link java.text.MessageFormat} specification), otherwise the validator will raise false positive.
  * 
  * @author romain.quinio
+ * @since 1.0
+ * @see {@link com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator}
  * 
  */
 public class ParametricMessageValidator extends AbstractL10nValidator implements L10nValidator<Property> {
@@ -64,7 +72,9 @@ public class ParametricMessageValidator extends AbstractL10nValidator implements
   }
 
   /**
-   * Validate single quotes are escaped and collect info on number of parameters.
+   * ERROR single quotes are not escaped, while some parameters are present.
+   * 
+   * WARN escaped single quotes while resource is not parametric.
    */
   public int validate(Property property, List<L10nReportItem> reportItems) {
     int nbErrors = 0;
@@ -93,7 +103,6 @@ public class ParametricMessageValidator extends AbstractL10nValidator implements
   }
 
   public static String defaultFormat(String message) {
-    String formattedMessage = MessageFormat.format(message, PARAMETRIC_REPLACE_VALUES);
-    return formattedMessage;
+    return MessageFormat.format(message, PARAMETRIC_REPLACE_VALUES);
   }
 }

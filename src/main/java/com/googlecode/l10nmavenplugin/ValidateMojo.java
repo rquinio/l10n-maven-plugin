@@ -15,7 +15,6 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang.StringUtils;
@@ -37,14 +35,14 @@ import au.com.bytecode.opencsv.CSVWriter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.bundle.DuplicationValidator;
 import com.googlecode.l10nmavenplugin.validators.bundle.HtmlTagCoherenceValidator;
@@ -66,7 +64,7 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  * 
  * <ul>
  * <li>Missing javascript escaping for resources evaluated client side</li>
- * <li>Bad escaping for {@link MessageFormat} in case of parametric replacement</li>
+ * <li>Bad escaping for {@link java.text.MessageFormat} in case of parametric replacement</li>
  * <li>Invalid XHTML 1.0 transitional</li>
  * <li>Malformed absolute URLs</li>
  * <li>Plain text resources containing HTML/URL</li>
@@ -80,7 +78,7 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  * @note References for escape sequences and special characters:
  *       <ul>
  *       <li>Java Properties: {@link Properties#load}</li>
- *       <li>Java MessageFormat: {@link MessageFormat}</li>
+ *       <li>Java MessageFormat: {@link java.text.MessageFormat}</li>
  *       <li>Javascript: {@link http://www.w3schools.com/js/js_special_characters.asp}</li>
  *       <li>JSON {@link http://json.org/}</li>
  *       <li>XHTML: {@link http://www.w3schools.com/tags/ref_entities.asp}</li>
@@ -88,7 +86,7 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  *       </ul>
  *       Extra references for development:
  *       <ul>
- *       <li>Java Pattern: {@link Pattern}</li>
+ *       <li>Java Pattern: {@link java.util.regex.Pattern}</li>
  *       <li>Java String: {@link http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#101089}</li>
  *       </ul>
  * 
@@ -302,7 +300,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    *           in case validation detected errors and ignoreFailure is false
    */
   public void execute() throws MojoExecutionException, MojoFailureException {
-    if (skip == false) {
+    if (!skip) {
       initialize();
       executeInternal();
     } else {
@@ -430,6 +428,9 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
         // Add file details to the exception
         throw new IllegalArgumentException("The file <" + fileName
             + "> could not be loaded. Check for a malformed Unicode escape sequence.", e);
+
+      } finally {
+        inStream.close();
       }
     } catch (IOException e) {
       throw new MojoExecutionException("An unexpected exception has occured while loading properties.", e);
@@ -627,7 +628,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
         entries.add(reportItem.getPropertiesKey());
       }
     }
-    writer.writeNext(entries.toArray(new String[] {}));
+    writer.writeNext(entries.toArray(new String[entries.size()]));
   }
 
   public void setPropertyDir(File propertyDir) {

@@ -10,11 +10,11 @@
 package com.googlecode.l10nmavenplugin.model;
 
 import java.util.Collection;
-import java.util.Properties;
 
 /**
- * Values of resource from different {@link Properties} files belonging to the same family
+ * Representation of the various values/translations of a property across a bundle of {@link java.util.Properties} files.
  * 
+ * @since 1.4
  * @author romain.quinio
  * 
  */
@@ -25,21 +25,21 @@ public interface PropertyFamily {
    * 
    * @return
    */
-  public String getKey();
+  String getKey();
 
   /**
    * Different values of the property, with associated files (empty values are ignored).
    * 
    * @return
    */
-  public Collection<Property> getValues();
+  Collection<Property> getValues();
 
   /**
    * List of properties files for which resource is not defined (either null or empty)
    * 
    * @return
    */
-  public Collection<PropertiesFile> getMissingPropertyFiles();
+  Collection<PropertiesFile> getMissingPropertyFiles();
 
   /**
    * List of properties files for which resource is defined
@@ -48,20 +48,20 @@ public interface PropertyFamily {
    * 
    * @return
    */
-  public Collection<PropertiesFile> getExistingPropertyFiles();
+  Collection<PropertiesFile> getExistingPropertyFiles();
 
   /**
    * Family excluding root bundle
    * 
    * @return
    */
-  public PropertyFamily getPropertyFamilyExcludingRoot();
+  PropertyFamily getPropertyFamilyExcludingRoot();
 
   /**
    * Number of properties files in the bundle
    * 
    * @return
    */
-  public int getNbPropertiesFiles();
+  int getNbPropertiesFiles();
 
 }

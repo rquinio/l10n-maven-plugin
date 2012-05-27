@@ -17,14 +17,15 @@ import java.util.ResourceBundle;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.reporting.AbstractMavenReportRenderer;
 
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 
 /**
  * Renderer for l10n reports, using a simple layout.
  * 
  * The items should be displayed per type/severity (errors, warning, info), cf {@link L10nReportItem#compareTo(L10nReportItem)}.
  * 
+ * @since 1.2
  * @author romain.quinio
  */
 public class L10nReportRenderer extends AbstractMavenReportRenderer {
@@ -32,7 +33,7 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
   /**
    * Unsorted list of items to be displayed
    */
-  private List<L10nReportItem> reportItems;
+  private List<L10nReportItem> reportItems = null;
 
   /**
    * List of blocking validations items (type error)

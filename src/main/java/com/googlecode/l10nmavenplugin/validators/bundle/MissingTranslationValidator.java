@@ -22,20 +22,24 @@ import java.util.Collection;
 import java.util.List;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Check for resources that are missing translations
+ * Validator to check for resources that are missing translations.
+ * 
+ * As the behavior is normal for new resources when developers only define a default translation in development language, it only
+ * applies if number of translations is more than 1.
  * 
  * Root bundle should be excluded, as it usually contains non language dependent resources.
  * 
  * @author romain.quinio
+ * @since 1.2
  * 
  */
 public class MissingTranslationValidator extends AbstractL10nValidator implements L10nValidator<PropertyFamily> {
@@ -45,9 +49,9 @@ public class MissingTranslationValidator extends AbstractL10nValidator implement
   }
 
   /**
-   * Raise a WARNING for any resource missing translation in at least 2 languages.
+   * Raise a WARN for any resource missing translation in at least 2 languages.
    * 
-   * Resource translated in only 1 language are ignored as this is frequent during DEV, or if part of site is not translated.
+   * Resource translated in only 1 language are ignored.
    * 
    */
   public int validate(PropertyFamily propertyFamily, List<L10nReportItem> reportItems) {

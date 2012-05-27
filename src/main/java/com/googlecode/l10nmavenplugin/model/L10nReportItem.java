@@ -7,7 +7,7 @@
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-package com.googlecode.l10nmavenplugin.validators;
+package com.googlecode.l10nmavenplugin.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,8 +16,12 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
-import com.googlecode.l10nmavenplugin.model.Property;
-
+/**
+ * Single unit of reporting during validation.
+ * 
+ * @author romain.quinio
+ * 
+ */
 public class L10nReportItem implements Comparable<L10nReportItem> {
 
   /**
@@ -95,6 +99,12 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
       return bundle.getString(titleLocKey);
     }
 
+    /**
+     * The bundle containing localized description of item types.
+     * 
+     * @param locale
+     * @return
+     */
     private ResourceBundle getBundle(Locale locale) {
       return ResourceBundle.getBundle("l10n-report", locale, this.getClass().getClassLoader());
     }
@@ -203,5 +213,28 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
 
     return mapByType;
 
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((itemSeverity == null) ? 0 : itemSeverity.hashCode());
+    result = prime * result + ((itemType == null) ? 0 : itemType.hashCode());
+    result = prime * result + ((propertiesKey == null) ? 0 : propertiesKey.hashCode());
+    result = prime * result + ((propertiesName == null) ? 0 : propertiesName.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof L10nReportItem)) {
+      return false;
+    } else {
+      return this.compareTo((L10nReportItem) obj) == 0;
+    }
   }
 }

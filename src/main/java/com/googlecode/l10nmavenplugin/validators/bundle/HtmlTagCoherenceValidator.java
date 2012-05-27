@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,16 +23,31 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.PropertiesFileUtils;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
 
+/**
+ * Validator to check the coherence of HTML tag in translations.
+ * 
+ * Any tag present in the original language should usually also be present in the translations, or it would mean some meaningfull
+ * info has been lost.
+ * 
+ * Values not conforming to (X)HTML will be ignored
+ * 
+ * @see {@link com.googlecode.l10nmavenplugin.validators.property.HtmlValidator}
+ * @see {@link com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator}
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
 public class HtmlTagCoherenceValidator extends AbstractL10nValidator implements L10nValidator<PropertyFamily> {
 
   private DocumentBuilder dBuilder;
@@ -48,6 +64,11 @@ public class HtmlTagCoherenceValidator extends AbstractL10nValidator implements 
     }
   }
 
+  /**
+   * Extract the XML tags, then WARN if order is not the same.
+   * 
+   * TODO re-order ?? Nested tags ?
+   */
   public int validate(PropertyFamily propertyFamily, List<L10nReportItem> reportItems) {
     if (dBuilder != null) {
       dBuilder.setErrorHandler(new SilentErrorHandler());
@@ -80,12 +101,12 @@ public class HtmlTagCoherenceValidator extends AbstractL10nValidator implements 
       Collection<String> majorityKey = PropertiesFileUtils.getMajorityKey(reverseMap);
       Collection<PropertiesFile> majorityPropertiesNames = reverseMap.get(majorityKey);
 
-      for (Collection<String> entry : reverseMap.keySet()) {
-        if (!entry.equals(majorityKey)) {
-          Collection<PropertiesFile> faultyPropertiesFiles = reverseMap.get(entry);
+      for (Entry<Collection<String>, Collection<PropertiesFile>> entry : reverseMap.entrySet()) {
+        if (!entry.getKey().equals(majorityKey)) {
+          Collection<PropertiesFile> faultyPropertiesFiles = entry.getValue();
 
           L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.INCOHERENT_TAGS, "Incoherent usage of html tags: "
-              + entry.toString() + " versus " + majorityKey.toString() + " in <" + majorityPropertiesNames + ">",
+              + entry.getKey().toString() + " versus " + majorityKey.toString() + " in <" + majorityPropertiesNames + ">",
               faultyPropertiesFiles.toString(), key, null, null);
           reportItems.add(reportItem);
           logger.log(reportItem);
@@ -116,7 +137,7 @@ public class HtmlTagCoherenceValidator extends AbstractL10nValidator implements 
    * ErrorHandler that silently catch fatalError that would otherwise be logged.
    * 
    */
-  class SilentErrorHandler implements ErrorHandler {
+  private static class SilentErrorHandler implements ErrorHandler {
 
     public void warning(SAXParseException e) throws SAXException {
     }

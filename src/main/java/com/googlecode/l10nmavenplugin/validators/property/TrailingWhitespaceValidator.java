@@ -14,17 +14,18 @@ import java.util.List;
 import org.codehaus.plexus.util.StringUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
  * Check for trailing spaces/invisible characters at the end of a resource
  * 
  * @author romain.quinio
+ * @since 1.4
  * 
  */
 public class TrailingWhitespaceValidator extends AbstractL10nValidator implements L10nValidator<Property> {

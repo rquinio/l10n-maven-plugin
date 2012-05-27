@@ -15,25 +15,32 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.PropertiesFileUtils;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Performs coherence validation of properties containing parameters ({0},{1},...)
+ * Validator to check the coherence of parametric properties, i.e. properties containing formatting parameters ({0},{1},...).
  * 
+ * Even if the order of the parameters can vary in translations, the number of parameters and the index should usually remain
+ * identical, or some info from the original language would be lost.
+ * 
+ * @since 1.2
  * @author romain.quinio
+ * @see {@link com.googlecode.l10nmavenplugin.validators.bundle.HtmlTagCoherenceValidator}
+ * @see {@link com.googlecode.l10nmavenplugin.validators.property.ParametricMessageValidator}
  * 
  */
 public class ParametricCoherenceValidator extends AbstractL10nValidator implements L10nValidator<PropertyFamily> {
@@ -56,6 +63,9 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
     return m.matches();
   }
 
+  /**
+   * Extract and re-order the parameters by index, then WARN if order is not the same.
+   */
   public int validate(PropertyFamily propertyFamily, List<L10nReportItem> reportItems) {
     String key = propertyFamily.getKey();
 
@@ -78,13 +88,13 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
         List<Integer> majorityKey = PropertiesFileUtils.getMajorityKey(reverseMap);
         String majorityKeyMessage = displayParameters(majorityKey);
         Collection<PropertiesFile> majorityPropertiesNames = reverseMap.get(majorityKey);
-        for (List<Integer> entry : reverseMap.keySet()) {
-          if (!entry.equals(majorityKey)) {
-            Collection<PropertiesFile> faultyPropertiesFiles = reverseMap.get(entry);
+        for (Entry<List<Integer>, Collection<PropertiesFile>> entry : reverseMap.entrySet()) {
+          if (!entry.getKey().equals(majorityKey)) {
+            Collection<PropertiesFile> faultyPropertiesFiles = entry.getValue();
             // Only warn for now, need more feedback before moving to error.
             L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.INCOHERENT_PARAMETERS,
-                "Incoherent usage of parameters: " + displayParameters(entry) + " versus " + majorityKeyMessage + " in <"
-                    + majorityPropertiesNames + ">", faultyPropertiesFiles.toString(), key, null, null);
+                "Incoherent usage of parameters: " + displayParameters(entry.getKey()) + " versus " + majorityKeyMessage
+                    + " in <" + majorityPropertiesNames + ">", faultyPropertiesFiles.toString(), key, null, null);
             reportItems.add(reportItem);
             logger.log(reportItem);
           }

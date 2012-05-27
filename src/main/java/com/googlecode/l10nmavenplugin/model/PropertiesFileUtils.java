@@ -9,7 +9,16 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * Utility class on the model.
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
 public final class PropertiesFileUtils {
+
+  private static final int MAX_LOCALE_PARTS = 3;
 
   /**
    * Hide constructor
@@ -69,13 +78,13 @@ public final class PropertiesFileUtils {
   public static Locale getLocale(String localeString) {
     Locale locale = null;
     if (!StringUtils.isEmpty(localeString)) {
-      String[] parts = localeString.split("_", 3);
+      String[] parts = localeString.split("_", MAX_LOCALE_PARTS);
 
       if (parts.length == 1) {
         locale = new Locale(parts[0]);
       } else if (parts.length == 2) {
         locale = new Locale(parts[0], parts[1]);
-      } else if (parts.length == 3) {
+      } else if (parts.length == MAX_LOCALE_PARTS) {
         locale = new Locale(parts[0], parts[1], parts[2]);
       }
     }

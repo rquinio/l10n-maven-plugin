@@ -16,16 +16,16 @@ import java.util.List;
 import java.util.Set;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Check for keys that are duplicated (same values) for the same language.
+ * Validator to check for keys that are duplicated, i.e. identical values that exist twice or more for the same language.
  * 
  * INFO for keys that have duplication in all languages (excluding languages where value are missing or empty), meaning that they
  * can be merged into 1 unique key.
@@ -33,6 +33,7 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
  * WARN if there is duplication in at least 2 or 3 languages but no all languages, suggesting a mistake.
  * 
  * @author romain.quinio
+ * @since ??
  * 
  */
 public class DuplicationValidator extends AbstractL10nValidator implements L10nValidator<PropertiesFamily> {

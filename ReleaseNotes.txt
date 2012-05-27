@@ -1,5 +1,11 @@
-1.5 ???
+TODO 1.5 ???
 Added generation of CSV file containing keys with warning/error.
+Fix HTML tag coherence : order should not matter + attributes ?
+No spellcheck on root bundle
+Check resource defined both in root and language
+Add summary to report
+Add formating attempt to all resources
+
 
 1.4 26-May-2012 New validators
 
@@ -13,6 +19,7 @@ Modified HTML validator to ignore HTML5 data-* custom attributes, as this cannot
 Added threshold (30) for number of info/warn issues logged per type.
 Added skip plugin configuration property.
 Added plugin integration tests using maven-invoker-plugin.
+Added log of issues summary per severity & type, after validation.
 
 1.3 07-Apr-2012 Customization
 Added custom pattern validators.

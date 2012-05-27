@@ -18,9 +18,9 @@ import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 
 public class L10nReportRendererTest {
 

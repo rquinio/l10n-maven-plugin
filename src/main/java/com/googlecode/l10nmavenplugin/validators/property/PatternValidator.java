@@ -14,17 +14,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Validate against a customizable Regex.
+ * Validator to check properties against a customizable Regex.
+ * 
+ * This allows basic customization, without having to implement a specific validator.
  * 
  * @author romain.quinio
+ * @since 1.3
  */
 public class PatternValidator extends AbstractL10nValidator implements L10nValidator<Property> {
 

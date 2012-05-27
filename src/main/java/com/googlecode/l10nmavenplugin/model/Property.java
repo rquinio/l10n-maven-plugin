@@ -12,6 +12,13 @@ package com.googlecode.l10nmavenplugin.model;
 import java.util.Collection;
 import java.util.Locale;
 
+/**
+ * Representation of a property (i.e. an element of a {@link java.util.Properties} file)
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
 public interface Property {
 
   /**
@@ -19,35 +26,40 @@ public interface Property {
    * 
    * @return
    */
-  public String getKey();
+  String getKey();
 
   /**
    * The value of the property
    * 
    * @return
    */
-  public String getMessage();
+  String getMessage();
 
   /**
    * The locale of the property, or null for root bundle properties
    * 
    * @return
    */
-  public Locale getLocale();
+  Locale getLocale();
 
   /**
    * The first PropertiesFile
    * 
    * @return
    */
-  public PropertiesFile getPropertiesFile();
+  PropertiesFile getPropertiesFile();
 
   /**
    * List of Properties files where the property is defined with same value
    * 
    * @return
    */
-  public Collection<PropertiesFile> getContainingPropertiesFiles();
+  Collection<PropertiesFile> getContainingPropertiesFiles();
 
-  public void addContainingPropertiesFile(PropertiesFile propertiesFile);
+  /**
+   * Adds a file that share same property value
+   * 
+   * @param propertiesFile
+   */
+  void addContainingPropertiesFile(PropertiesFile propertiesFile);
 }

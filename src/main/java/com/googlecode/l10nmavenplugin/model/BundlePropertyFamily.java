@@ -15,6 +15,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * {@link java.util.ResourceBundle} based implementation of {@link PropertyFamily}, using the notion of hierarchical bundles with
+ * a root usually containing non-localized resources.
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
 public class BundlePropertyFamily implements PropertyFamily {
 
   /**

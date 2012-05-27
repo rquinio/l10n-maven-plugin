@@ -16,6 +16,7 @@ import java.util.Arrays;
  * 
  * Needs to be in same package as the Mojo to be injected by Maven without extra configuration.
  * 
+ * @since 1.3
  * @author romain.quinio
  * 
  */

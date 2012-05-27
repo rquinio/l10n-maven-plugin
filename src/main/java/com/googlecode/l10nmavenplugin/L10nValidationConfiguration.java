@@ -19,51 +19,51 @@ import java.io.File;
  */
 public interface L10nValidationConfiguration {
 
-  public void setPropertyDir(File propertyDir);
+  void setPropertyDir(File propertyDir);
 
-  public File getPropertyDir();
+  File getPropertyDir();
 
-  public void setExcludedKeys(String[] excludedKeys);
+  void setExcludedKeys(String[] excludedKeys);
 
-  public String[] getExcludedKeys();
+  String[] getExcludedKeys();
 
-  public void setIgnoreFailure(boolean ignoreFailure);
+  void setIgnoreFailure(boolean ignoreFailure);
 
-  public boolean getIgnoreFailure();
+  boolean getIgnoreFailure();
 
-  public void setJsKeys(String[] jsKeys);
+  void setJsKeys(String[] jsKeys);
 
-  public String[] getJsKeys();
+  String[] getJsKeys();
 
-  public void setJsDoubleQuoted(boolean jsDoubleQuoted);
+  void setJsDoubleQuoted(boolean jsDoubleQuoted);
 
-  public boolean getJsDoubleQuoted();
+  boolean getJsDoubleQuoted();
 
-  public void setUrlKeys(String[] urlKeys);
+  void setUrlKeys(String[] urlKeys);
 
-  public String[] getUrlKeys();
+  String[] getUrlKeys();
 
-  public void setHtmlKeys(String[] htmlKeys);
+  void setHtmlKeys(String[] htmlKeys);
 
-  public String[] getHtmlKeys();
+  String[] getHtmlKeys();
 
-  public void setXhtmlSchema(File xhtmlSchema);
+  void setXhtmlSchema(File xhtmlSchema);
 
-  public File getXhtmlSchema();
+  File getXhtmlSchema();
 
-  public void setTextKeys(String[] textKeys);
+  void setTextKeys(String[] textKeys);
 
-  public String[] getTextKeys();
+  String[] getTextKeys();
 
-  public void setCustomPatterns(CustomPattern[] customPatterns);
+  void setCustomPatterns(CustomPattern[] customPatterns);
 
-  public CustomPattern[] getCustomPatterns();
+  CustomPattern[] getCustomPatterns();
 
-  public void setDictionaryDir(File dictionaryDir);
+  void setDictionaryDir(File dictionaryDir);
 
-  public File getDictionaryDir();
+  File getDictionaryDir();
 
-  public void setSkip(boolean skip);
+  void setSkip(boolean skip);
 
-  public boolean getSkip();
+  boolean getSkip();
 }

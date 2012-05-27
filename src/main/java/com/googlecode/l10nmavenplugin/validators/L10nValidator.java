@@ -11,16 +11,23 @@ package com.googlecode.l10nmavenplugin.validators;
 
 import java.util.List;
 
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+
 /**
- * Generic interface for validation on part or group of Properties files. It can be:
+ * Generic interface for validation on an element or group of {@link java.util.Properties} files. The scope can be:
  * <ul>
  * <li>The syntax of a single {@link com.googlecode.l10nmavenplugin.model.Property}</li>
  * <li>The coherence of translation of a property across languages ({@link com.googlecode.l10nmavenplugin.model.PropertyFamily})</li>
  * <li>The coherence of a ({@link com.googlecode.l10nmavenplugin.model.PropertiesFile})</li>
- * <li>The coherence of a bundle (a group of Properties files, ({@link com.googlecode.l10nmavenplugin.model.PropertiesFamily}))</li>
+ * <li>The coherence of the whole bundle (a group of Properties files, (
+ * {@link com.googlecode.l10nmavenplugin.model.PropertiesFamily}))</li>
  * <li>etc.</li>
  * </ul>
  * 
+ * Note: the limitation of using Java templates is that a given {@link L10nValidator} won't be able to implement more than 1 scope
+ * of validation.
+ * 
+ * @since 1.4
  * @author romain.quinio
  * 
  * @param <T>
@@ -37,6 +44,6 @@ public interface L10nValidator<T> {
    *          list of items to which validation issues should be added.
    * @return number of reportItems with a severity {@link L10nReportItem.Severity#ERROR}
    */
-  public int validate(T toValidate, List<L10nReportItem> reportItems);
+  int validate(T toValidate, List<L10nReportItem> reportItems);
 
 }

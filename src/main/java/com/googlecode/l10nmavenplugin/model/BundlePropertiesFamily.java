@@ -20,13 +20,15 @@ import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 
 /**
+ * {@link java.util.ResourceBundle} based implementation of {@link PropertiesFamily}, using file name prefix as bundle base name.
  * 
- * Family based on default {@link java.util.ResourceBundle} naming convention
- * 
+ * @since 1.4
  * @author romain.quinio
  * 
  */
 public class BundlePropertiesFamily implements PropertiesFamily {
+
+  private static final String SEPARATOR = "_";
 
   private PropertiesFile rootPropertiesFile = null;
 
@@ -44,7 +46,7 @@ public class BundlePropertiesFamily implements PropertiesFamily {
 
     // Determine root bundle (if any)
     for (PropertiesFile propertiesFile : propertiesFiles) {
-      if (!propertiesFile.getFileName().contains("_")) {
+      if (!propertiesFile.getFileName().contains(SEPARATOR)) {
         rootPropertiesFile = propertiesFile;
         break;
       }
@@ -54,6 +56,9 @@ public class BundlePropertiesFamily implements PropertiesFamily {
     propertiesFilesNoRoot.remove(rootPropertiesFile);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public Set<String> getKeys() {
     Set<String> keys = new HashSet<String>();
     for (PropertiesFile propertiesFile : propertiesFiles) {
@@ -62,6 +67,9 @@ public class BundlePropertiesFamily implements PropertiesFamily {
     return keys;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public String getBaseName() {
     if (propertiesFiles.size() > 0) {
       return getBundleBaseName(propertiesFiles.iterator().next().getFileName());
@@ -74,18 +82,26 @@ public class BundlePropertiesFamily implements PropertiesFamily {
    * {@inheritDoc}
    */
   public PropertiesFamily getPropertiesFamilyExcludingRoot() {
-    PropertiesFamily familyNoRoot = new BundlePropertiesFamily(propertiesFilesNoRoot);
-    return familyNoRoot;
+    return new BundlePropertiesFamily(propertiesFilesNoRoot);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public int getNbPropertiesFiles() {
     return propertiesFiles.size();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public PropertyFamily getPropertyFamily(String key) {
     return new BundlePropertyFamily(key, this);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public Iterator<PropertyFamily> iterator() {
     return new Iterator<PropertyFamily>() {
 
@@ -106,6 +122,9 @@ public class BundlePropertiesFamily implements PropertiesFamily {
     };
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public Collection<PropertiesFile> getPropertiesFiles() {
     return propertiesFiles;
   }
@@ -128,7 +147,7 @@ public class BundlePropertiesFamily implements PropertiesFamily {
    * @return baseName of the bundle
    */
   protected String getBundleBaseName(String propertiesName) {
-    int index = propertiesName.indexOf("_");
+    int index = propertiesName.indexOf(SEPARATOR);
     if (index != -1) {
       return propertiesName.substring(0, index);
     } else {

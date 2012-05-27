@@ -14,8 +14,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Group of {@link PropertiesFile} belonging to the same family
+ * Representation of a multi-language bundle, i.e. a group of {@link PropertiesFile} belonging to the same "family"
  * 
+ * @since 1.4
  * @author romain.quinio
  * 
  */
@@ -26,46 +27,52 @@ public interface PropertiesFamily {
    * 
    * @return
    */
-  public Collection<PropertiesFile> getPropertiesFiles();
+  Collection<PropertiesFile> getPropertiesFiles();
 
   /**
    * Number of files (i.e languages)
    * 
    * @return
    */
-  public int getNbPropertiesFiles();
+  int getNbPropertiesFiles();
 
   /**
    * Exclude the root Properties file
    * 
    * @return
    */
-  public PropertiesFamily getPropertiesFamilyExcludingRoot();
+  PropertiesFamily getPropertiesFamilyExcludingRoot();
 
   /**
    * Root Properties files
    * 
    * @return can be null
    */
-  public PropertiesFile getRootPropertiesFile();
+  PropertiesFile getRootPropertiesFile();
 
   /**
    * Set of keys used in the Properties
    */
-  public Set<String> getKeys();
+  Set<String> getKeys();
 
   /**
    * Base name of family
    */
-  public String getBaseName();
+  String getBaseName();
 
-  public PropertyFamily getPropertyFamily(String key);
+  /**
+   * Get a property from this family with given key
+   * 
+   * @param key
+   * @return
+   */
+  PropertyFamily getPropertyFamily(String key);
 
   /**
    * Iterator over keys
    * 
    * @return
    */
-  public Iterator<PropertyFamily> iterator();
+  Iterator<PropertyFamily> iterator();
 
 }

@@ -14,18 +14,25 @@ import java.util.Collection;
 import java.util.List;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Check for identical and almost identical translations.
+ * Validator to check for identical and almost identical translations.
  * 
+ * Identical translation increases the maintenance in case of modifications, and would better be moved to a root bundle if
+ * property non-language dependent. The property can still be overridden later for a specific language.
+ * 
+ * Almost identical translation can indicate a copy/paste mistake on property that is not actually language dependent. Or if it is
+ * language dependent, it means it it is not translated in some languages.
+ * 
+ * @since 1.4
  * @author romain.quinio
  * 
  */

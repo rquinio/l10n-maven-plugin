@@ -20,17 +20,26 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
 
 /**
- * Performs validation of absolute (http(s),ftp and mailto) or scheme relative URLs.
+ * Validator to check URL is well formed, either being:
+ * <ul>
+ * <li>An absolute URL (starting with http(s) or ftp)</li>
+ * <li>A pseudo-url starting with mailto</li>
+ * <li>A scheme relative URL, starting with //</li>
+ * </ul>
  * 
+ * Also checks for HTML import URLs, based on file extensions (.js, .css, .png, ...) that would not support HTTPS context, causing
+ * mixed content warnings in browsers.
+ * 
+ * @since 1.0
  * @author romain.quinio
  * 
  */
@@ -64,11 +73,13 @@ public class UrlValidator extends AbstractL10nValidator implements L10nValidator
   }
 
   /**
-   * Validate URLs using regexp.
+   * ERROR if URL does not match regexp.
+   * 
+   * ERROR if URL does not support https context and is an HTML import.
    * 
    * Performs a MessageFormat if needed.
    * 
-   * @note the URLValidator from Apache does not seem to support scheme relative URLs.
+   * @note the {@link org.apache.commons.validator.UrlValidator} from Apache does not seem to support scheme relative URLs.
    * 
    * @param key
    * @param message

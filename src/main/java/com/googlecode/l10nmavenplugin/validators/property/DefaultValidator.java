@@ -12,17 +12,21 @@ package com.googlecode.l10nmavenplugin.validators.property;
 import java.util.List;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
  * Default validator, used in case no other specific validator was triggered.
  * 
+ * It should detect if the resource could have been validated by another validator, meaning either that the keys naming convention
+ * was not followed, or that the plugin configuration might not be correct.
+ * 
  * @author romain.quinio
+ * @since 1.0
  * 
  */
 public class DefaultValidator extends AbstractL10nValidator implements L10nValidator<Property> {
@@ -32,7 +36,7 @@ public class DefaultValidator extends AbstractL10nValidator implements L10nValid
   }
 
   /**
-   * Warn if other resources contain HTML/URL.
+   * Warn if resources contain HTML or some URL.
    * 
    * @param property
    * @return Number of errors

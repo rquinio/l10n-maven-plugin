@@ -13,6 +13,13 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
+/**
+ * Wrapper around a {@link java.util.Properties} object, to add info on the file itself.
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
 public interface PropertiesFile {
 
   /**
@@ -20,27 +27,27 @@ public interface PropertiesFile {
    * 
    * @return
    */
-  public String getFileName();
+  String getFileName();
 
   /**
    * The {@link Locale} of the file
    * 
    * @return null if unknown
    */
-  public Locale getLocale();
+  Locale getLocale();
 
   /**
    * The {@link Properties} object loaded from the file
    * 
    * @return
    */
-  public Properties getProperties();
+  Properties getProperties();
 
   /**
    * Set of keys for resources whose value is not unique in the file
    * 
    * @return
    */
-  public Set<String> getDuplicatedResourceKeys();
+  Set<String> getDuplicatedResourceKeys();
 
 }

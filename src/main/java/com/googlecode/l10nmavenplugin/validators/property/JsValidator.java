@@ -16,18 +16,27 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Performs Js validation of a property, chaining with XHTML validation.
+ * Validator to check resource can be used inside a Javascript context. Then {@link HtmlValidator} is applied after Javascript
+ * unescaping.
+ * 
+ * Some characters are forbidden in Javascript context:
+ * <ul>
+ * <li>Unescaped single quotes or double quotes, depending on how the resource is included in js. For instance with var
+ * text="<fmt:message key='example.js'/>"; any unescaped double quote would cause script error at runtime.</li>
+ * <li>Newline character, as browser interpret these as end of js statement (even if there is no ;)</li>
+ * </ul>
  * 
  * @author romain.quinio
+ * @since 1.0
  * 
  */
 public class JsValidator extends AbstractL10nValidator implements L10nValidator<Property> {
@@ -64,7 +73,9 @@ public class JsValidator extends AbstractL10nValidator implements L10nValidator<
   }
 
   /**
-   * Validate js resource using regexp and then XHTML validation
+   * Validate js resource using regexp and then chain XHTML validation after unescaping
+   * 
+   * ERROR if any js forbidden character is present.
    * 
    * @param key
    * @param message
@@ -93,9 +104,9 @@ public class JsValidator extends AbstractL10nValidator implements L10nValidator<
         reportItem = new L10nReportItem(Severity.ERROR, Type.JS_SINGLE_QUOTED_VALIDATION,
             "Single quoted js resources must not contain '" + " Note that Properties silently drop \\ character before ', "
                 + "so it mused be escaped as \\\\' for proper js escaping", property, null);
-        reportItems.add(reportItem);
-        logger.log(reportItem);
       }
+      reportItems.add(reportItem);
+      logger.log(reportItem);
     }
 
     // Check for newline

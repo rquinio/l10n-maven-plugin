@@ -17,10 +17,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 public class PlainTextValidatorTest extends AbstractL10nValidatorTest<Property> {

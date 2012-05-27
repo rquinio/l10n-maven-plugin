@@ -13,6 +13,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 
+/**
+ * Basic property POJO
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
 public class PropertyImpl implements Property {
 
   private String key;

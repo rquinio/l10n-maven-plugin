@@ -14,17 +14,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Performs validation of plain text properties (non HTML, non URL)
+ * Performs validation of plain text properties (non HTML, non URL).
+ * 
+ * For instance when using some HTML tags in title attribute, the markup is not evaluated and displayed 'as is'.
  * 
  * @author romain.quinio
+ * @since 1.1
  * 
  */
 public class PlainTextValidator extends AbstractL10nValidator implements L10nValidator<Property> {

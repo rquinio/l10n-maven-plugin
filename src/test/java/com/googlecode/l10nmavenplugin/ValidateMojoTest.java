@@ -25,10 +25,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
 
 /**

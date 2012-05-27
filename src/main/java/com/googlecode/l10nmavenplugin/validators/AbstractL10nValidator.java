@@ -2,7 +2,14 @@ package com.googlecode.l10nmavenplugin.validators;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 
-public class AbstractL10nValidator {
+/**
+ * Abstract class for {@link L10nValidator}
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
+public abstract class AbstractL10nValidator {
 
   protected final L10nValidatorLogger logger;
 

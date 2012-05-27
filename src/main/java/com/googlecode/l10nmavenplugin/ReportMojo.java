@@ -21,8 +21,8 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
 
 /**
  * Creates a report on l10n Properties files validation result.
@@ -32,6 +32,7 @@ import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
  * 
  * @goal report
  * @phase site
+ * @since 1.2
  * @author romain.quinio
  */
 public class ReportMojo extends AbstractMavenReport implements L10nValidationConfiguration {

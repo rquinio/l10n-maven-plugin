@@ -15,8 +15,8 @@ import java.util.Map;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 
 /**
  * Basic logger that ensures consistency in logging.
@@ -61,6 +61,14 @@ public class L10nValidatorLogger {
     this.logger.error(buildLogMessage(propertiesName, key, logMessage, message, formattedMessage));
   }
 
+  /**
+   * Log an L10nReportItem, for progressive display of validation issues.
+   * 
+   * To avoid too long console I/O for bundles with many validation info/warn (> 5000), use a threshold after which the item of a
+   * given type are no longer logged. Errors are always logged.
+   * 
+   * @param reportItem
+   */
   public void log(L10nReportItem reportItem) {
     Integer nbLogged = occurences.get(reportItem.getItemType());
     if (nbLogged == null) {
@@ -86,7 +94,7 @@ public class L10nValidatorLogger {
             reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
       }
       break;
-    case ERROR:
+    default:
       // Report all errors
       this.error(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
           reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
@@ -94,6 +102,12 @@ public class L10nValidatorLogger {
     }
   }
 
+  /**
+   * Utility to log a general message based on severity.
+   * 
+   * @param severity
+   * @param message
+   */
   public void log(Severity severity, String message) {
     switch (severity) {
     case INFO:
@@ -102,24 +116,26 @@ public class L10nValidatorLogger {
     case WARN:
       logger.warn(message);
       break;
-    case ERROR:
+    default:
       logger.error(message);
       break;
     }
   }
 
   /**
-   * Log in a consistent way for all validators.
+   * Log a property validation issue in a consistent way for all validators.
    * 
    * @param logLevel
    * @param propertiesName
+   *          the applicable properties file(s) containing the property
    * @param key
-   *          optional
+   *          optional, the key of the property
    * @param logMessage
+   *          the error message with detailed cause
    * @param message
-   *          optional
+   *          optional, the original property value that failed validation
    * @param formattedMessage
-   *          optional
+   *          optional, the altered property value actually used for validation, for instance with formatting parameters replaced
    */
   private String buildLogMessage(String propertiesName, String key, String logMessage, String message, String formattedMessage) {
     StringBuffer sb = new StringBuffer();

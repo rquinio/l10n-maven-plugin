@@ -38,19 +38,29 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.validators.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
 
 /**
- * Performs XHTML validation of a property.
+ * Validator to perform XHTML validation of a property and delegates to {@link SpellCheckValidator} for text nodes.
  * 
+ * The XML schema to be used is configurable, with most common schema being pre-defined:
+ * <ul>
+ * <li>XHTML 1.0-transitional</li>
+ * <li>XHTML 1.0-strict</li>
+ * <li>XHTML5, based on http://www.xmlmind.com/xhtml5_resources.shtml</li>
+ * </ul>
+ * 
+ * @see {@link com.googlecode.l10nmavenplugin.validators.bundle.HtmlTagCoherenceValidator}
+ * @since 1.0
  * @author romain.quinio
+ * 
  */
 public class HtmlValidator extends AbstractL10nValidator implements L10nValidator<Property> {
 
@@ -134,8 +144,8 @@ public class HtmlValidator extends AbstractL10nValidator implements L10nValidato
           schemaURL = this.getClass().getClassLoader().getResource(XHTML1_TRANSITIONAL.getName());
         }
         schema = factory.newSchema(schemaURL);
-        xhtmlValidator = schema.newValidator();
       }
+      xhtmlValidator = schema.newValidator();
 
       // Initialize SAX parser
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
@@ -152,7 +162,11 @@ public class HtmlValidator extends AbstractL10nValidator implements L10nValidato
   /**
    * Validate HTML text using XHTML validator.
    * 
-   * Performs a MessageFormat if needed.
+   * <ul>
+   * <li>Performs a MessageFormat if resource is parametric.</li>
+   * <li>Removes HTML5 data-* attributes, as this is a limitation to express these using W3C XML schema.</li>
+   * <li>Then wraps the resource into an XHTML document body and validate with JAXP.</li>
+   * </ul>
    * 
    * @param key
    * @param message
@@ -218,7 +232,7 @@ public class HtmlValidator extends AbstractL10nValidator implements L10nValidato
    * SAX parser to extract text inside XHTML elements.
    * 
    */
-  class SpellCheckValidationHandler extends DefaultHandler {
+  private class SpellCheckValidationHandler extends DefaultHandler {
 
     private Property property;
     private List<L10nReportItem> reportItems;
@@ -246,7 +260,9 @@ public class HtmlValidator extends AbstractL10nValidator implements L10nValidato
    * Handler of all XHTML validation errors
    * 
    */
-  private class ReportingErrorHandler implements ErrorHandler {
+  private static class ReportingErrorHandler implements ErrorHandler {
+
+    private static final int NB_ERROR_MAX_CHAR = 140;
 
     private List<L10nReportItem> reportItems;
 
@@ -293,8 +309,8 @@ public class HtmlValidator extends AbstractL10nValidator implements L10nValidato
       if (Severity.ERROR.equals(severity)) {
         nbErrors++;
       }
-      L10nReportItem reportItem = new L10nReportItem(severity, type, errorText + StringUtils.abbreviate(e.getMessage(), 140),
-          property, formattedMessage);
+      L10nReportItem reportItem = new L10nReportItem(severity, type, errorText
+          + StringUtils.abbreviate(e.getMessage(), NB_ERROR_MAX_CHAR), property, formattedMessage);
       reportItems.add(reportItem);
       logger.log(reportItem);
     }

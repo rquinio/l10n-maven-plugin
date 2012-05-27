@@ -21,6 +21,14 @@ import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 
+/**
+ * {@link java.util.ResourceBundle} based implementation of {@link PropertiesFile}, using file suffix convention to get the
+ * locale.
+ * 
+ * @since 1.4
+ * @author romain.quinio
+ * 
+ */
 public class BundlePropertiesFile implements PropertiesFile {
 
   private String fileName;

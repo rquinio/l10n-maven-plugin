@@ -8,11 +8,12 @@ import java.util.Properties;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 
 /**
- * Abstract class for {@link L10nValidator} unit tests.
+ * Abstract class for {@link L10nValidator} unit tests, to share common initializations and pre-defined constants.
  * 
  * @author romain.quinio
  * 
