@@ -10,6 +10,8 @@
 package com.googlecode.l10nmavenplugin;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,12 +22,15 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
@@ -42,9 +47,19 @@ public class ValidateMojoTest {
 
   private static final String BUNDLE = "Junit.properties";
 
+  /**
+   * Mocked mojo to test failures/Exception handling and skip/ignore flags
+   */
+  private ValidateMojo failingMojo;
+
+  /**
+   * Real mojo
+   */
   private ValidateMojo plugin;
 
   private List<L10nReportItem> items;
+
+  private Log log;
 
   @Before
   public void setUp() {
@@ -56,13 +71,22 @@ public class ValidateMojoTest {
     File dictionaryDir = new File(this.getClass().getClassLoader().getResource("").getFile());
     plugin.setDictionaryDir(dictionaryDir);
 
-    plugin.setLog(new SystemStreamLog());
+    log = spy(new SystemStreamLog());
+    plugin.setLog(log);
 
     CustomPattern listPattern = new CustomPattern("List", "([A-Z](:[A-Z])+)?", ".list.");
-    plugin.setCustomPatterns(new CustomPattern[] { listPattern });
+    CustomPattern anotherPattern = new CustomPattern("List", "([A-Z](:[A-Z])+)?", new String[] { ".pattern1.", ".pattern2." });
+    plugin.setCustomPatterns(new CustomPattern[] { listPattern, anotherPattern });
 
     // Use default configuration for the rest
     plugin.initialize();
+
+    failingMojo = new ValidateMojo() {
+      @Override
+      public int validateProperties(File directory, List<L10nReportItem> reportItems) throws MojoExecutionException {
+        return 1;
+      }
+    };
   }
 
   /**
@@ -85,10 +109,10 @@ public class ValidateMojoTest {
     properties.put("ALLP.text.valid.3", "<a href=\"www.google.fr\" target=\"_blank\">Google</a>");
     properties.put("ALLP.text.valid.4", "&nbsp;&copy;&ndash;");
     properties.put("ALLP.text.valid.5", "<a href='http://example.com'>link</a>");
-
     PropertiesFile propertiesFile = new BundlePropertiesFile(BUNDLE, properties);
 
     int nbErrors = plugin.validatePropertiesFile(propertiesFile, items);
+
     assertEquals(0, nbErrors);
   }
 
@@ -115,29 +139,35 @@ public class ValidateMojoTest {
     Properties properties = new Properties();
     File file = getFile(fileName);
     properties.load(new FileInputStream(file));
-
     PropertiesFile propertiesFile = new BundlePropertiesFile(fileName, properties);
 
     int nbErrors = plugin.validatePropertiesFile(propertiesFile, items);
+
     assertEquals(3, nbErrors);
   }
 
   @Test
-  public void testBundleLocale() throws MojoExecutionException {
+  public void testBundlePropertiesFamilyLoading() throws MojoExecutionException {
     File directory = getFile("locales");
+
     PropertiesFamily propertiesFamily = plugin.loadPropertiesFamily(directory);
 
     assertEquals("Bundle", propertiesFamily.getBaseName());
     assertEquals(3, propertiesFamily.getNbPropertiesFiles());
     assertNotNull(propertiesFamily.getRootPropertiesFile());
+  }
 
-    plugin.validatePropertiesFamily(propertiesFamily, items);
+  @Test
+  public void testBundlePropertiesFamilySpellcheck() throws MojoExecutionException {
+    File directory = getFile("locales");
+
+    plugin.validateProperties(directory, items);
     // SpellCheck warnings
     assertEquals(2, items.size());
   }
 
   @Test
-  public void testMalfomedProperties() throws MojoExecutionException {
+  public void malfomedPropertiesShouldFailExecution() throws MojoExecutionException {
     File file = getFile("malformed/malformed.properties");
     try {
       plugin.loadPropertiesFile(file);
@@ -145,6 +175,47 @@ public class ValidateMojoTest {
     } catch (IllegalArgumentException e) {
       e.printStackTrace();
     }
+  }
+
+  @Test
+  public void testLogSummary() {
+    items.add(new L10nReportItem(Severity.ERROR, Type.HTML_VALIDATION, "", "", "", "", ""));
+    items.add(new L10nReportItem(Severity.WARN, Type.INCOHERENT_TAGS, "", "", "", "", ""));
+    items.add(new L10nReportItem(Severity.INFO, Type.EXCLUDED, "", "", "", "", ""));
+
+    plugin.logSummary(items);
+
+    verify(log, atLeast(4)).info(any(CharSequence.class));
+    verify(log, atLeast(1)).warn(any(CharSequence.class));
+    verify(log, atLeast(1)).error(any(CharSequence.class));
+  }
+
+  @Test
+  public void testSkip() throws MojoExecutionException, MojoFailureException {
+    failingMojo.setSkip(true);
+
+    failingMojo.execute();
+
+    assertTrue(true);
+  }
+
+  @Test
+  public void testFailure() throws MojoExecutionException {
+    try {
+      failingMojo.executeInternal();
+      fail("Exceution should have raised a failure");
+    } catch (MojoFailureException e) {
+      assertTrue(true);
+    }
+  }
+
+  @Test
+  public void testIgnoreFailure() throws MojoExecutionException, MojoFailureException {
+    failingMojo.setIgnoreFailure(true);
+
+    failingMojo.executeInternal();
+
+    assertTrue(true);
   }
 
   private File getFile(String path) {

@@ -52,7 +52,7 @@ public class BundlePropertyFamilyTest {
   }
 
   @Test
-  public void testIdentical() {
+  public void identicalValuesShouldBeGroupedIntoSingleProperty() {
     bundleA.put(KEY, "value");
     bundleB.put(KEY, "value");
     bundleC.put(KEY, "value");
@@ -60,13 +60,15 @@ public class BundlePropertyFamilyTest {
 
     assertEquals(4, propertyFamily.getExistingPropertyFiles().size());
     assertEquals(1, propertyFamily.getMissingPropertyFiles().size());
+
     Collection<Property> values = propertyFamily.getValues();
+
     assertEquals(1, values.size());
     assertEquals(4, values.iterator().next().getContainingPropertiesFiles().size());
   }
 
   @Test
-  public void testDifferent() {
+  public void differentValuesShouldNotBeGrouped() {
     bundleA.put(KEY, "value1");
     bundleB.put(KEY, "value2");
     bundleC.put(KEY, "value3");

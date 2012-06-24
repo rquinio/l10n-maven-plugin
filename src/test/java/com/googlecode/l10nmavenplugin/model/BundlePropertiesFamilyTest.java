@@ -31,6 +31,7 @@ public class BundlePropertiesFamilyTest {
     propertiesFiles.add(new BundlePropertiesFile("bundle.properties", null));
     propertiesFiles.add(new BundlePropertiesFile("bundle_EN_GB.properties", null));
     propertiesFiles.add(new BundlePropertiesFile("bundle_FR.properties", null));
+
     PropertiesFamily propertiesFamily = new BundlePropertiesFamily(propertiesFiles);
 
     assertEquals("bundle", propertiesFamily.getBaseName());
@@ -42,6 +43,7 @@ public class BundlePropertiesFamilyTest {
   public void testNoRootBundle() {
     propertiesFiles.add(new BundlePropertiesFile("bundle_EN_GB.properties", null));
     propertiesFiles.add(new BundlePropertiesFile("bundle_FR.properties", null));
+
     PropertiesFamily propertiesFamily = new BundlePropertiesFamily(propertiesFiles);
 
     assertEquals("bundle", propertiesFamily.getBaseName());

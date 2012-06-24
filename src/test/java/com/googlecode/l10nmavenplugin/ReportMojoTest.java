@@ -1,5 +1,7 @@
 package com.googlecode.l10nmavenplugin;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -48,7 +50,7 @@ public class ReportMojoTest {
   }
 
   @Test
-  public void testNoPropertiesResources() throws MavenReportException {
+  public void reportNoPropertiesResourcesShouldGenerateNoReport() throws MavenReportException {
     plugin.setPropertyDir(new File("non-existing"));
     plugin.executeReport(Locale.ENGLISH);
 
@@ -57,12 +59,19 @@ public class ReportMojoTest {
   }
 
   @Test
-  public void testBundle() throws MavenReportException {
+  public void reportBundleShouldGenerateAReport() throws MavenReportException {
     plugin.setPropertyDir(getFile("bundle"));
     plugin.executeReport(Locale.ENGLISH);
 
     // assertTrue(reportFile.exists());
     // assertTrue(reportFile.length() > 0);
+  }
+
+  @Test
+  public void testReport() {
+    assertNotNull(plugin.getDescription(Locale.ENGLISH));
+    assertNotNull(plugin.getName(Locale.ENGLISH));
+    assertNotNull(plugin.getOutputName());
   }
 
   private File getFile(String path) {

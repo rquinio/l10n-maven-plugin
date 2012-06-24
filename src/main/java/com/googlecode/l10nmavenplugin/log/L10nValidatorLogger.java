@@ -31,7 +31,7 @@ public class L10nValidatorLogger {
   /**
    * Max number of time a given type id logged
    */
-  private static final int THRESOLD = 30;
+  protected static final int THRESOLD = 30;
 
   private Log logger;
 
@@ -77,19 +77,19 @@ public class L10nValidatorLogger {
       nbLogged++;
     }
     occurences.put(reportItem.getItemType(), nbLogged);
-    if (nbLogged == THRESOLD) {
+    if (nbLogged == THRESOLD + 1) {
       this.logger.warn("Info/Warn of type " + reportItem.getItemType() + " exceed the threshold, items will no more be logged.");
     }
 
     switch (reportItem.getItemSeverity()) {
     case INFO:
-      if (nbLogged < THRESOLD) {
+      if (nbLogged <= THRESOLD) {
         this.info(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
             reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
       }
       break;
     case WARN:
-      if (nbLogged < THRESOLD) {
+      if (nbLogged <= THRESOLD) {
         this.warn(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
             reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
       }

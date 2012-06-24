@@ -86,15 +86,15 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
       Map<List<Integer>, Collection<PropertiesFile>> reverseMap = PropertiesFileUtils.reverseMap(resourceParameters);
       if (reverseMap.size() > 1) {
         List<Integer> majorityKey = PropertiesFileUtils.getMajorityKey(reverseMap);
-        String majorityKeyMessage = displayParameters(majorityKey);
         Collection<PropertiesFile> majorityPropertiesNames = reverseMap.get(majorityKey);
         for (Entry<List<Integer>, Collection<PropertiesFile>> entry : reverseMap.entrySet()) {
           if (!entry.getKey().equals(majorityKey)) {
             Collection<PropertiesFile> faultyPropertiesFiles = entry.getValue();
             // Only warn for now, need more feedback before moving to error.
             L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.INCOHERENT_PARAMETERS,
-                "Incoherent usage of parameters: " + displayParameters(entry.getKey()) + " versus " + majorityKeyMessage
-                    + " in <" + majorityPropertiesNames + ">", faultyPropertiesFiles.toString(), key, null, null);
+                "Incoherent usage of parameters: " + displayParameters(entry.getKey()) + " versus "
+                    + displayParameters(majorityKey) + " in <" + majorityPropertiesNames + ">", faultyPropertiesFiles.toString(),
+                key, null, null);
             reportItems.add(reportItem);
             logger.log(reportItem);
           }

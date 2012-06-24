@@ -72,7 +72,7 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  * 
  * In case multiple checks are performed on a resource (ex: client side resource with parameters), the order above applies.
  * 
- * The syntax of properties file is not checked but it relies on loading them successfully as Properties.
+ * The syntax of properties file itself is not checked, but it relies on loading them successfully as {@link Properties}.
  * 
  * 
  * @note References for escape sequences and special characters:
@@ -341,7 +341,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    * 
    * @param reportItems
    */
-  private void logSummary(List<L10nReportItem> reportItems) {
+  protected void logSummary(List<L10nReportItem> reportItems) {
     getLog().info("--------------------");
     getLog().info("Validation summary: " + reportItems.size() + " issues.");
 
