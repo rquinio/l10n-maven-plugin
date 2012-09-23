@@ -17,8 +17,6 @@ import java.util.Properties;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
@@ -81,7 +79,6 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  * @author romain.quinio
  * 
  */
-@Component(role = ValidateMojo.class)
 public class ValidateMojo extends AbstractMojo implements L10nValidationConfiguration {
 
   /**
@@ -198,10 +195,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    */
   private File reportsDir;
 
-  @Requirement(hint = "directory")
   private L10nValidator<File> directoryValidator;
 
-  @Requirement
   private L10nValidatorLogger logger;
 
   /**

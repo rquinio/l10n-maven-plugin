@@ -22,9 +22,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.codehaus.plexus.PlexusContainerException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -54,7 +51,7 @@ public class ValidateMojoTest {
   private Log log;
 
   @Before
-  public void setUp() throws IOException, PlexusContainerException, ComponentLookupException, PlexusConfigurationException {
+  public void setUp() throws IOException {
     items = new ArrayList<L10nReportItem>();
     plugin = new ValidateMojo();
 
