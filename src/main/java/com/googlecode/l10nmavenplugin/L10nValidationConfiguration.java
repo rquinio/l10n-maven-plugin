@@ -66,4 +66,8 @@ public interface L10nValidationConfiguration {
   void setSkip(boolean skip);
 
   boolean getSkip();
+
+  void setReportsDir(File reportsDir);
+
+  File getReportsDir();
 }

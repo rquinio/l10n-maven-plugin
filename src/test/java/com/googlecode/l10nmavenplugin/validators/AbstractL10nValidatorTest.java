@@ -1,14 +1,22 @@
 package com.googlecode.l10nmavenplugin.validators;
 
+import static org.mockito.Mockito.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 
@@ -22,16 +30,20 @@ import com.googlecode.l10nmavenplugin.model.PropertiesFile;
  */
 public abstract class AbstractL10nValidatorTest<T> {
 
+  protected static final String BUNDLE = "Junit.properties";
+
   protected static final String KEY_OK = "key.ok";
   protected static final String KEY_KO = "key.ko";
 
-  protected static final PropertiesFile FILE = new BundlePropertiesFile("junit.properties", null);
+  protected static final PropertiesFile FILE = new BundlePropertiesFile(BUNDLE, null);
 
   protected List<L10nReportItem> items;
 
   protected L10nValidator<T> validator;
 
   protected L10nValidatorLogger logger;
+
+  protected Log log;
 
   protected PropertiesFamily propertiesFamily;
 
@@ -46,7 +58,9 @@ public abstract class AbstractL10nValidatorTest<T> {
    * Initializes some pre-defined {@link Properties}.
    */
   public void setUp() {
-    logger = new L10nValidatorLogger();
+    log = spy(new SystemStreamLog());
+    logger = new L10nValidatorLogger(log);
+
     items = new ArrayList<L10nReportItem>();
 
     Collection<PropertiesFile> propertiesFiles = new ArrayList<PropertiesFile>();
@@ -66,5 +80,79 @@ public abstract class AbstractL10nValidatorTest<T> {
     propertiesFiles.add(new BundlePropertiesFile("Bundle_E", bundleE));
 
     propertiesFamily = new BundlePropertiesFamily(propertiesFiles);
+  }
+
+  public class ItemTypeMatcher extends BaseMatcher<L10nReportItem> {
+
+    private final Type expectedType;
+
+    public ItemTypeMatcher(Type expectedType) {
+      this.expectedType = expectedType;
+    }
+
+    public boolean matches(Object obj) {
+      return expectedType.equals(((L10nReportItem) obj).getItemType());
+    }
+
+    public void describeTo(Description description) {
+      description.appendText("an L10nReportItem with type ").appendText(expectedType.name());
+    }
+
+  }
+
+  /**
+   * Used to inject a "neutral" nested validator for tests
+   * 
+   */
+  protected static class AlwaysSucceedValidator<T> implements L10nValidator<T> {
+
+    public AlwaysSucceedValidator() {
+    }
+
+    public int validate(T toValidate, List<L10nReportItem> reportItems) throws L10nValidationException {
+      return 0;
+    }
+
+    public boolean shouldValidate(T toValidate) {
+      return true;
+    }
+  }
+
+  /**
+   * Used to test propagation of errors, when nesting validators
+   * 
+   */
+  protected static class AlwaysFailingValidator<T> implements L10nValidator<T> {
+
+    public AlwaysFailingValidator() {
+    }
+
+    public int validate(T toValidate, List<L10nReportItem> reportItems) throws L10nValidationException {
+      return 1;
+    }
+
+    public boolean shouldValidate(T toValidate) {
+      return true;
+    }
+
+  }
+
+  /**
+   * Used to test handling of ignored properties
+   * 
+   */
+  protected static class AlwaysRefusingValidator<T> implements L10nValidator<T> {
+
+    public AlwaysRefusingValidator() {
+    }
+
+    public int validate(T toValidate, List<L10nReportItem> reportItems) throws L10nValidationException {
+      return 1;
+    }
+
+    public boolean shouldValidate(T toValidate) {
+      return false;
+    }
+
   }
 }

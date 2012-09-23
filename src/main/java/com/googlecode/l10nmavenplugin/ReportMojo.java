@@ -27,8 +27,8 @@ import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
 /**
  * Creates a report on l10n Properties files validation result.
  * 
- * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via {@link L10nReportRenderer}. It uses
- * a subset of {@link ValidateMojo} configuration, as ignoreFailures and excludedKey are not applicable for a report.
+ * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via {@link L10nReportRenderer}. It uses a subset of
+ * {@link ValidateMojo} configuration, as ignoreFailures and excludedKey are not applicable for a report.
  * 
  * @goal report
  * @phase site
@@ -154,7 +154,7 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
     int nbErrors = 0;
 
     try {
-      nbErrors = validateMojo.validateProperties(propertyDir, reportItems);
+      nbErrors = validateMojo.validate(propertyDir, reportItems);
 
     } catch (MojoExecutionException e) {
       throw new MavenReportException("Could not exceute ValidateMojo", e);
@@ -303,6 +303,15 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   public boolean getSkip() {
     // Ignored for reporting
     return false;
+  }
+
+  public void setReportsDir(File reportsDir) {
+    // Ignored for reporting
+  }
+
+  public File getReportsDir() {
+    // Ignored for reporting
+    return null;
   }
 
 }
