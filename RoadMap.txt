@@ -1,0 +1,22 @@
+
+Spellchecking:
+- Support for Hunspell dictionaries (pending https://github.com/dren-dk/HunspellJNA/issues/2)
+- No spellcheck on root bundle ?
+
+Existing validators:
+- Check for URLs in html validator ? What is XHTML schema validating for href / src ?
+- HTML tag coherence to check tag attributes ?
+
+New validators:
+- PropertyKeyNamingConventionValidator  / PropertyKeyNamingConventionCoherenceValidator ?
+- activate DuplicationValidator once performance issue is solved
+- Add a formating attempt to all resources ?
+- Check resource defined both in root and language ?
+
+Refactoring:
+- Refactor using chains of validators/transformators for nested validation ?
+
+Other:
+- Use plugin to validate its own translation !?
+- Document re-use configuration for build and reporting (is it possible ? what about maven 3 new reporting configuration ?)
+
