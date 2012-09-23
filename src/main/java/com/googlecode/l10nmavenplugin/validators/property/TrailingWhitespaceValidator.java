@@ -11,7 +11,7 @@ package com.googlecode.l10nmavenplugin.validators.property;
 
 import java.util.List;
 
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
@@ -44,7 +44,7 @@ public class TrailingWhitespaceValidator extends AbstractL10nValidator implement
       Character tail = message.charAt(message.length() - 1);
       if (Character.isWhitespace(tail)) {
         L10nReportItem reportItem = new L10nReportItem(Type.TRAILING_WHITESPACE, "Resource ends with whitespace character ["
-            + StringUtils.escape(tail.toString()) + "] which may indicate some resources concatenation", property, null);
+            + StringEscapeUtils.escapeJava(tail.toString()) + "] which may indicate some resources concatenation", property, null);
         reportItems.add(reportItem);
         logger.log(reportItem);
       }
