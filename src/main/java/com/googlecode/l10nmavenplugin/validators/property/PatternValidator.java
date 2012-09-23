@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.googlecode.l10nmavenplugin.CustomPattern;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
-import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
+import com.googlecode.l10nmavenplugin.validators.PropertiesKeyConventionValidator;
 
 /**
  * Validator to check properties against a customizable Regex.
@@ -29,15 +29,15 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
  * @author romain.quinio
  * @since 1.3
  */
-public class PatternValidator extends AbstractL10nValidator implements L10nValidator<Property> {
+public class PatternValidator extends PropertiesKeyConventionValidator implements L10nValidator<Property> {
 
-  private String name;
-  private Pattern pattern;
+  private final String name;
+  private final Pattern pattern;
 
-  public PatternValidator(L10nValidatorLogger logger, String name, String regex) {
-    super(logger);
-    this.pattern = Pattern.compile(regex);
-    this.name = name;
+  public PatternValidator(L10nValidatorLogger logger, CustomPattern customPattern) {
+    super(logger, customPattern.getKeys());
+    this.pattern = Pattern.compile(customPattern.getRegex());
+    this.name = customPattern.getName();
   }
 
   /**
@@ -47,12 +47,16 @@ public class PatternValidator extends AbstractL10nValidator implements L10nValid
     int nbErrors = 0;
     Matcher m = pattern.matcher(property.getMessage());
     if (!m.matches()) {
-      L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.CUSTOM_PATTERN, "Failed to match pattern '" + name
-          + "' with regex " + pattern.pattern(), property, null);
+      L10nReportItem reportItem = new L10nReportItem(Type.CUSTOM_PATTERN, "Failed to match pattern '" + name + "' with regex " + pattern.pattern(), property,
+          null);
       reportItems.add(reportItem);
       logger.log(reportItem);
       nbErrors++;
     }
     return nbErrors;
+  }
+
+  public boolean shouldValidate(Property property) {
+    return matches(property.getKey());
   }
 }

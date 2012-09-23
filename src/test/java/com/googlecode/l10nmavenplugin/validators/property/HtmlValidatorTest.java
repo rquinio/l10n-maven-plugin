@@ -14,13 +14,11 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
@@ -35,14 +33,8 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void setUp() {
     super.setUp();
     // Use XHTML5 schema as it is much faster
-    validator = new HtmlValidator(HtmlValidator.XHTML5, logger, null);
-
-    L10nValidator<Property> spellCheckValidator = new L10nValidator<Property>() {
-      public int validate(Property toValidate, List<L10nReportItem> reportItems) {
-        return 0;
-      }
-    };
-    validator.setSpellCheckValidator(spellCheckValidator);
+    validator = new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." });
+    validator.setSpellCheckValidator(new AlwaysSucceedValidator<Property>());
   }
 
   @Test
@@ -67,10 +59,8 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Test
   public void testValidHtml() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some text", FILE), items));
-    assertEquals(0,
-        validator.validate(new PropertyImpl(KEY_OK, "<div>Some Text on<a href=\"www.google.fr\">Google</a></div>", FILE), items));
-    assertEquals(0,
-        validator.validate(new PropertyImpl(KEY_OK, "<a href=\"www.google.fr\" target=\"_blank\">Google</a>", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "<div>Some Text on<a href=\"www.google.fr\">Google</a></div>", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "<a href=\"www.google.fr\" target=\"_blank\">Google</a>", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "&nbsp;&copy;&ndash;", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "<a href='http://example.com'>link</a>", FILE), items));
     // Nested HTML escaping "
@@ -85,8 +75,7 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
 
   @Test
   public void testUnescapedHtmlEntity() {
-    assertEquals(1,
-        validator.validate(new PropertyImpl(KEY_KO, "<a href='http://example.com?param1=1&param2=2'>Text<a>", FILE), items));
+    assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "<a href='http://example.com?param1=1&param2=2'>Text<a>", FILE), items));
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "A & B", FILE), items));
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "&nbsp;&nbsp", FILE), items));
   }
@@ -132,13 +121,7 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
 
   @Test
   public void testSpellCheckChaining() {
-    L10nValidator<Property> spellCheckValidator = new L10nValidator<Property>() {
-      public int validate(Property toValidate, List<L10nReportItem> reportItems) {
-        new L10nValidatorLogger().getLogger().debug("Validating :" + toValidate.getMessage());
-        return 1;
-      }
-    };
-    validator.setSpellCheckValidator(spellCheckValidator);
+    validator.setSpellCheckValidator(new AlwaysFailingValidator<Property>());
 
     assertEquals(2, validator.validate(new PropertyImpl(KEY_KO, "<div>Text1<a href=\"http://\">Text2</a></div>", FILE), items));
   }
@@ -155,5 +138,11 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
 
     validator.validate(new PropertyImpl(KEY_KO, "<div>Blablaplop<a href=\"http://\">Englis</a></div>", FILE), items);
     assertEquals(2, items.size());
+  }
+
+  @Test
+  public void testShouldValidate() {
+    assertTrue(validator.shouldValidate(new PropertyImpl("page.text.key", "Some text", FILE)));
+    assertFalse(validator.shouldValidate(new PropertyImpl(KEY_OK, "Some text", FILE)));
   }
 }

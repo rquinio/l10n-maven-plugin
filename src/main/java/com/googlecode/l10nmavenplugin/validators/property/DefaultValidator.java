@@ -9,11 +9,11 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.validators.property;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
@@ -22,8 +22,8 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 /**
  * Default validator, used in case no other specific validator was triggered.
  * 
- * It should detect if the resource could have been validated by another validator, meaning either that the keys naming convention
- * was not followed, or that the plugin configuration might not be correct.
+ * It should detect if the resource could have been validated by another validator, meaning either that the keys naming convention was not followed, or that the
+ * plugin configuration might not be correct.
  * 
  * @author romain.quinio
  * @since 1.0
@@ -31,8 +31,14 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
  */
 public class DefaultValidator extends AbstractL10nValidator implements L10nValidator<Property> {
 
-  public DefaultValidator(L10nValidatorLogger logger) {
+  private final String[] htmlKeys;
+
+  private final String[] urlKeys;
+
+  public DefaultValidator(L10nValidatorLogger logger, String[] htmlKeys, String[] urlKeys) {
     super(logger);
+    this.htmlKeys = htmlKeys;
+    this.urlKeys = urlKeys;
   }
 
   /**
@@ -44,19 +50,24 @@ public class DefaultValidator extends AbstractL10nValidator implements L10nValid
   public int validate(Property property, List<L10nReportItem> reportItems) {
     int nbErrors = 0;
     if (PlainTextValidator.isHtml(property.getMessage())) {
-      L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.UNDECLARED_HTML_RESOURCE,
-          "Resource may contain HTML, but is not declared as such. No validation was performed.", property.getPropertiesFile()
-              .toString(), property.getKey(), property.getMessage(), null);
+      L10nReportItem reportItem = new L10nReportItem(Type.UNDECLARED_HTML_RESOURCE, "Resource may contain HTML, but key does not match expected pattern "
+          + Arrays.toString(htmlKeys) + ". No validation was performed.", property.getPropertiesFile().toString(), property.getKey(), property.getMessage(),
+          null);
       reportItems.add(reportItem);
       logger.log(reportItem);
 
     } else if (PlainTextValidator.isUrl(property.getMessage())) {
-      L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.UNDECLARED_URL_RESOURCE,
-          "Resource may contain URL, but is not declared as such. No validation was performed.", property.getPropertiesFile()
-              .toString(), property.getKey(), property.getMessage(), null);
+      L10nReportItem reportItem = new L10nReportItem(Type.UNDECLARED_URL_RESOURCE, "Resource may contain URL, but key does not match expected pattern "
+          + Arrays.toString(urlKeys) + ". No validation was performed.", property.getPropertiesFile().toString(), property.getKey(), property.getMessage(),
+          null);
       reportItems.add(reportItem);
       logger.log(reportItem);
     }
     return nbErrors;
+  }
+
+  public boolean shouldValidate(Property property) {
+    // Always validate
+    return true;
   }
 }

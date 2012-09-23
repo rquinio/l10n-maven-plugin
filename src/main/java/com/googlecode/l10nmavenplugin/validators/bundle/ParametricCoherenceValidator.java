@@ -23,7 +23,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.PropertiesFileUtils;
@@ -34,8 +33,8 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 /**
  * Validator to check the coherence of parametric properties, i.e. properties containing formatting parameters ({0},{1},...).
  * 
- * Even if the order of the parameters can vary in translations, the number of parameters and the index should usually remain
- * identical, or some info from the original language would be lost.
+ * Even if the order of the parameters can vary in translations, the number of parameters and the index should usually remain identical, or some info from the
+ * original language would be lost.
  * 
  * @since 1.2
  * @author romain.quinio
@@ -91,10 +90,8 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
           if (!entry.getKey().equals(majorityKey)) {
             Collection<PropertiesFile> faultyPropertiesFiles = entry.getValue();
             // Only warn for now, need more feedback before moving to error.
-            L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.INCOHERENT_PARAMETERS,
-                "Incoherent usage of parameters: " + displayParameters(entry.getKey()) + " versus "
-                    + displayParameters(majorityKey) + " in <" + majorityPropertiesNames + ">", faultyPropertiesFiles.toString(),
-                key, null, null);
+            L10nReportItem reportItem = new L10nReportItem(Type.INCOHERENT_PARAMETERS, "Incoherent usage of parameters: " + displayParameters(entry.getKey())
+                + " versus " + displayParameters(majorityKey) + " in <" + majorityPropertiesNames + ">", faultyPropertiesFiles.toString(), key, null, null);
             reportItems.add(reportItem);
             logger.log(reportItem);
           }
@@ -142,5 +139,10 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
     }
     sb.append("]");
     return sb.toString();
+  }
+
+  public boolean shouldValidate(PropertyFamily propertyFamily) {
+    // Always validate
+    return true;
   }
 }

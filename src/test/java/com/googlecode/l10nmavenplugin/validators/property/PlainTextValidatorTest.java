@@ -11,17 +11,13 @@ package com.googlecode.l10nmavenplugin.validators.property;
 
 import static org.junit.Assert.*;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
-import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 public class PlainTextValidatorTest extends AbstractL10nValidatorTest<Property> {
 
@@ -29,13 +25,7 @@ public class PlainTextValidatorTest extends AbstractL10nValidatorTest<Property> 
   @Before
   public void setUp() {
     super.setUp();
-
-    L10nValidator<Property> spellCheckValidator = new L10nValidator<Property>() {
-      public int validate(Property toValidate, List<L10nReportItem> reportItems) {
-        return 0;
-      }
-    };
-    validator = new PlainTextValidator(logger, spellCheckValidator);
+    validator = new PlainTextValidator(logger, new AlwaysSucceedValidator<Property>(), new String[] { ".title." });
   }
 
   @Test
@@ -71,13 +61,14 @@ public class PlainTextValidatorTest extends AbstractL10nValidatorTest<Property> 
 
   @Test
   public void testSpellCheckChaining() {
-    L10nValidator<Property> spellCheckValidator = new L10nValidator<Property>() {
-      public int validate(Property toValidate, List<L10nReportItem> reportItems) {
-        return 1;
-      }
-    };
-    validator = new PlainTextValidator(new L10nValidatorLogger(), spellCheckValidator);
+    validator = new PlainTextValidator(new L10nValidatorLogger(), new AlwaysFailingValidator<Property>(), new String[] { ".title." });
 
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some stange text.", FILE), items));
+  }
+
+  @Test
+  public void testShouldValidate() {
+    assertTrue(validator.shouldValidate(new PropertyImpl("page.title.text", "Some text", FILE)));
+    assertFalse(validator.shouldValidate(new PropertyImpl(KEY_OK, "Some text", FILE)));
   }
 }

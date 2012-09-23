@@ -14,6 +14,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.CustomPattern;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
@@ -24,12 +25,19 @@ public class PatternValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Before
   public void setUp() {
     super.setUp();
-    validator = new PatternValidator(logger, "List validator", "([A-Z](:[A-Z])+)?");
+    CustomPattern listPattern = new CustomPattern("List validator", "([A-Z](:[A-Z])+)?", ".list");
+    validator = new PatternValidator(logger, listPattern);
   }
 
   @Test
   public void test() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "A:B:C:D", FILE), items));
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, " A:B:C:D ", FILE), items));
+  }
+
+  @Test
+  public void testShouldValidate() {
+    assertTrue(validator.shouldValidate(new PropertyImpl("page.list.key", "Some text", FILE)));
+    assertFalse(validator.shouldValidate(new PropertyImpl(KEY_OK, "Some text", FILE)));
   }
 }

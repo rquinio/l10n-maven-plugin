@@ -15,11 +15,10 @@ import java.util.regex.Pattern;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
-import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
+import com.googlecode.l10nmavenplugin.validators.PropertiesKeyConventionValidator;
 
 /**
  * Performs validation of plain text properties (non HTML, non URL).
@@ -30,7 +29,7 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
  * @since 1.1
  * 
  */
-public class PlainTextValidator extends AbstractL10nValidator implements L10nValidator<Property> {
+public class PlainTextValidator extends PropertiesKeyConventionValidator implements L10nValidator<Property> {
 
   /**
    * Basic detection of HTML tags
@@ -47,8 +46,8 @@ public class PlainTextValidator extends AbstractL10nValidator implements L10nVal
 
   private L10nValidator<Property> spellCheckValidator;
 
-  public PlainTextValidator(L10nValidatorLogger logger, L10nValidator<Property> spellCheckValidator) {
-    super(logger);
+  public PlainTextValidator(L10nValidatorLogger logger, L10nValidator<Property> spellCheckValidator, String[] textKeys) {
+    super(logger, textKeys);
     this.spellCheckValidator = spellCheckValidator;
   }
 
@@ -64,15 +63,13 @@ public class PlainTextValidator extends AbstractL10nValidator implements L10nVal
     int nbErrors = 0;
     if (isHtml(property.getMessage())) {
       nbErrors++;
-      L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.TEXT_VALIDATION_NO_HTML,
-          "Text resource must not contain HTML.", property, null);
+      L10nReportItem reportItem = new L10nReportItem(Type.TEXT_VALIDATION_NO_HTML, "Text resource must not contain HTML.", property, null);
       reportItems.add(reportItem);
       logger.log(reportItem);
 
     } else if (isUrl(property.getMessage())) {
       nbErrors++;
-      L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.TEXT_VALIDATION_NO_URL,
-          "Text resource must not contain URL.", property, null);
+      L10nReportItem reportItem = new L10nReportItem(Type.TEXT_VALIDATION_NO_URL, "Text resource must not contain URL.", property, null);
       reportItems.add(reportItem);
       logger.log(reportItem);
 
@@ -81,6 +78,10 @@ public class PlainTextValidator extends AbstractL10nValidator implements L10nVal
       nbErrors += spellCheckValidator.validate(property, reportItems);
     }
     return nbErrors;
+  }
+
+  public boolean shouldValidate(Property property) {
+    return matches(property.getKey());
   }
 
   public static boolean isHtml(String message) {

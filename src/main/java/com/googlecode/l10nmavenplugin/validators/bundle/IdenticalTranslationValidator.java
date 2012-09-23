@@ -15,7 +15,6 @@ import java.util.List;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.Property;
@@ -26,11 +25,11 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 /**
  * Validator to check for identical and almost identical translations.
  * 
- * Identical translation increases the maintenance in case of modifications, and would better be moved to a root bundle if
- * property non-language dependent. The property can still be overridden later for a specific language.
+ * Identical translation increases the maintenance in case of modifications, and would better be moved to a root bundle if property is non-language dependent.
+ * The property can still be overridden later for a specific language.
  * 
- * Almost identical translation can indicate a copy/paste mistake on property that is not actually language dependent. Or if it is
- * language dependent, it means it it is not translated in some languages.
+ * Almost identical translation can indicate a copy/paste mistake on property that is not actually language dependent. Or if it is language dependent, it means
+ * it is not translated in some languages.
  * 
  * @since 1.4
  * @author romain.quinio
@@ -43,8 +42,7 @@ public class IdenticalTranslationValidator extends AbstractL10nValidator impleme
   }
 
   /**
-   * INFO for property that have same translation in all languages (if > 1 and excluding language for which value is missing or
-   * empty)
+   * INFO for property that have same translation in all languages (if > 1 and excluding language for which value is missing or empty)
    * 
    * WARNING for property that have same translation in most languages except a few.
    * 
@@ -64,22 +62,20 @@ public class IdenticalTranslationValidator extends AbstractL10nValidator impleme
 
       if (nbDifferentValues == 1) {
         // All properties have same value
-        L10nReportItem reportItem = new L10nReportItem(Severity.INFO, Type.IDENTICAL_TRANSLATION,
-            "Resource has identical translation in all languages, it could be defined in a root bundle",
-            mostIdenticalPropertiesFiles.toString(), propertyFamily.getKey(), mostIdenticalProp.getMessage(), null);
+        L10nReportItem reportItem = new L10nReportItem(Type.IDENTICAL_TRANSLATION,
+            "Resource has identical translation in all languages, it could be defined in a root bundle", mostIdenticalPropertiesFiles.toString(),
+            propertyFamily.getKey(), mostIdenticalProp.getMessage(), null);
         reportItems.add(reportItem);
         logger.log(reportItem);
 
       } else if (nbDifferentValues > 0 && mostIdenticalPropertiesFiles.size() > nbProperties / 2) {
         // Properties have few different values
-        Collection<PropertiesFile> notIdenticalPropertiesFiles = new ArrayList<PropertiesFile>(
-            propertyFamily.getExistingPropertyFiles());
+        Collection<PropertiesFile> notIdenticalPropertiesFiles = new ArrayList<PropertiesFile>(propertyFamily.getExistingPropertyFiles());
         notIdenticalPropertiesFiles.removeAll(mostIdenticalPropertiesFiles);
 
-        L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.ALMOST_IDENTICAL_TRANSLATION,
-            "Resource has identical translation in " + mostIdenticalPropertiesFiles.size() + " languages, but "
-                + (nbDifferentValues - 1) + " different value(s) in the other languages " + notIdenticalPropertiesFiles,
-            mostIdenticalPropertiesFiles.toString(), propertyFamily.getKey(), mostIdenticalProp.getMessage(), null);
+        L10nReportItem reportItem = new L10nReportItem(Type.ALMOST_IDENTICAL_TRANSLATION, "Resource has identical translation in "
+            + mostIdenticalPropertiesFiles.size() + " languages, but " + (nbDifferentValues - 1) + " different value(s) in the other languages "
+            + notIdenticalPropertiesFiles, mostIdenticalPropertiesFiles.toString(), propertyFamily.getKey(), mostIdenticalProp.getMessage(), null);
         reportItems.add(reportItem);
         logger.log(reportItem);
       }
@@ -104,5 +100,10 @@ public class IdenticalTranslationValidator extends AbstractL10nValidator impleme
       }
     }
     return mostIdenticalProp;
+  }
+
+  public boolean shouldValidate(PropertyFamily propertyFamily) {
+    // Always validate
+    return true;
   }
 }

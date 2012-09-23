@@ -24,7 +24,7 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Before
   public void setUp() {
     super.setUp();
-    validator = new UrlValidator(logger);
+    validator = new UrlValidator(logger, new String[] { ".url." });
   }
 
   @Test
@@ -45,12 +45,10 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void testValidUrl() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "//www.google.com", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "https://www.google.com/search", FILE), items));
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK,
-        "http://www.google.com.au/search/misc/help_search/detect-context", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://www.google.com.au/search/misc/help_search/detect-context", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://www.google.au?param1=value1&param2=value2", FILE), items));
     // URL should allow HTML escaping
-    assertEquals(0,
-        validator.validate(new PropertyImpl(KEY_OK, "http://www.google.au?param1=value1&amp;param2=value2", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://www.google.au?param1=value1&amp;param2=value2", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "//www.google.com/file.js#anchor", FILE), items));
   }
 
@@ -92,5 +90,11 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
     // html/htm extensions should be ignored
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://host/link.html", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://host/link.htm", FILE), items));
+  }
+
+  @Test
+  public void testShouldValidate() {
+    assertTrue(validator.shouldValidate(new PropertyImpl("page.url.text", "Some text", FILE)));
+    assertFalse(validator.shouldValidate(new PropertyImpl(KEY_OK, "Some text", FILE)));
   }
 }

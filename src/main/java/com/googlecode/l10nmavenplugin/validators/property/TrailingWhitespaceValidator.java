@@ -15,7 +15,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
@@ -44,13 +43,17 @@ public class TrailingWhitespaceValidator extends AbstractL10nValidator implement
     if (message.length() > 0) {
       Character tail = message.charAt(message.length() - 1);
       if (Character.isWhitespace(tail)) {
-        L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.TRAILING_WHITESPACE,
-            "Resource ends with whitespace character [" + StringUtils.escape(tail.toString())
-                + "] which may indicate some resources concatenation", property, null);
+        L10nReportItem reportItem = new L10nReportItem(Type.TRAILING_WHITESPACE, "Resource ends with whitespace character ["
+            + StringUtils.escape(tail.toString()) + "] which may indicate some resources concatenation", property, null);
         reportItems.add(reportItem);
         logger.log(reportItem);
       }
     }
     return 0;
+  }
+
+  public boolean shouldValidate(Property property) {
+    // Always validate
+    return true;
   }
 }

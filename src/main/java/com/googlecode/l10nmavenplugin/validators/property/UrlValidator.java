@@ -21,11 +21,10 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
-import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
+import com.googlecode.l10nmavenplugin.validators.PropertiesKeyConventionValidator;
 import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
 
 /**
@@ -36,14 +35,14 @@ import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValid
  * <li>A scheme relative URL, starting with //</li>
  * </ul>
  * 
- * Also checks for HTML import URLs, based on file extensions (.js, .css, .png, ...) that would not support HTTPS context, causing
- * mixed content warnings in browsers.
+ * Also checks for HTML import URLs, based on file extensions (.js, .css, .png, ...) that would not support HTTPS context, causing mixed content warnings in
+ * browsers.
  * 
  * @since 1.0
  * @author romain.quinio
  * 
  */
-public class UrlValidator extends AbstractL10nValidator implements L10nValidator<Property> {
+public class UrlValidator extends PropertiesKeyConventionValidator implements L10nValidator<Property> {
 
   /**
    * URL regex validation (cf ESAPI.properties)
@@ -55,21 +54,19 @@ public class UrlValidator extends AbstractL10nValidator implements L10nValidator
    */
   private static final String EMAIL_VALIDATION_REGEXP = "[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[a-zA-Z]{2,4}";
 
-  private static final List<String> HTML_URL_INCLUDE_EXTESIONS = Arrays.asList(new String[] { "js", "css", "gif", "jpg", "png",
-      "ico" });
+  private static final List<String> HTML_URL_INCLUDE_EXTESIONS = Arrays.asList(new String[] { "js", "css", "gif", "jpg", "png", "ico" });
 
   /**
    * Validation of an absolute URL.
    * 
    * Protocol must be included in URL (either http(s), mailto, or scheme relative)
    */
-  private static final String URL_VALIDATION_REGEXP = "^(((ht|f)tp(s?):)?" + RELATIVE_URL_VALIDATION_REGEXP + ")|(mailto:)"
-      + EMAIL_VALIDATION_REGEXP + ".*$";
+  private static final String URL_VALIDATION_REGEXP = "^(((ht|f)tp(s?):)?" + RELATIVE_URL_VALIDATION_REGEXP + ")|(mailto:)" + EMAIL_VALIDATION_REGEXP + ".*$";
 
   protected static final Pattern URL_VALIDATION_PATTERN = Pattern.compile(URL_VALIDATION_REGEXP);
 
-  public UrlValidator(L10nValidatorLogger logger) {
-    super(logger);
+  public UrlValidator(L10nValidatorLogger logger, String[] urlKeys) {
+    super(logger, urlKeys);
   }
 
   /**
@@ -100,8 +97,7 @@ public class UrlValidator extends AbstractL10nValidator implements L10nValidator
 
       if (!m.matches()) {
         nbErrors++;
-        L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.URL_VALIDATION, "Invalid URL syntax.", property,
-            formattedMessage);
+        L10nReportItem reportItem = new L10nReportItem(Type.URL_VALIDATION, "Invalid URL syntax.", property, formattedMessage);
         reportItems.add(reportItem);
         logger.log(reportItem);
 
@@ -114,8 +110,8 @@ public class UrlValidator extends AbstractL10nValidator implements L10nValidator
         String extension = FilenameUtils.getExtension(resultingURL.getPath());
         if (HTML_URL_INCLUDE_EXTESIONS.contains(extension) && !"https".equals(resultingURL.getProtocol())) {
           nbErrors++;
-          L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.URL_VALIDATION, "URL for external HTML import [."
-              + extension + "] must be scheme relative to avoid mixed content in HTTPS context.", property, formattedMessage);
+          L10nReportItem reportItem = new L10nReportItem(Type.URL_VALIDATION, "URL for external HTML import [." + extension
+              + "] must be scheme relative to avoid mixed content in HTTPS context.", property, formattedMessage);
           reportItems.add(reportItem);
           logger.log(reportItem);
         }
@@ -124,18 +120,21 @@ public class UrlValidator extends AbstractL10nValidator implements L10nValidator
     } catch (IllegalArgumentException e) {
       // Catch MessageFormat errors in case of malformed message
       nbErrors++;
-      L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.MALFORMED_PARAMETER,
-          "URL contains malformed parameters: " + e.getMessage(), property, formattedMessage);
+      L10nReportItem reportItem = new L10nReportItem(Type.MALFORMED_PARAMETER, "URL contains malformed parameters: " + e.getMessage(), property,
+          formattedMessage);
       reportItems.add(reportItem);
       logger.log(reportItem);
     } catch (MalformedURLException e) {
       nbErrors++;
-      L10nReportItem reportItem = new L10nReportItem(Severity.ERROR, Type.URL_VALIDATION, "Malformed URL: " + e.getMessage(),
-          property, formattedMessage);
+      L10nReportItem reportItem = new L10nReportItem(Type.URL_VALIDATION, "Malformed URL: " + e.getMessage(), property, formattedMessage);
       reportItems.add(reportItem);
       logger.log(reportItem);
     }
 
     return nbErrors;
+  }
+
+  public boolean shouldValidate(Property property) {
+    return matches(property.getKey());
   }
 }

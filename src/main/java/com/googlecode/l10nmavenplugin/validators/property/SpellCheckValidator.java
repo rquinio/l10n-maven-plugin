@@ -14,10 +14,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -25,15 +23,16 @@ import org.apache.commons.lang.StringUtils;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFileUtils;
 import com.googlecode.l10nmavenplugin.model.Property;
+import com.googlecode.l10nmavenplugin.model.spellcheck.LocaleSpellCheckerRepository;
+import com.googlecode.l10nmavenplugin.model.spellcheck.LocaleTreeSpellCheckerRepository;
+import com.googlecode.l10nmavenplugin.model.spellcheck.SpellCheckError;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
-import com.swabunga.spell.engine.Word;
 import com.swabunga.spell.event.SpellCheckEvent;
 import com.swabunga.spell.event.SpellCheckListener;
 import com.swabunga.spell.event.SpellChecker;
@@ -42,11 +41,11 @@ import com.swabunga.spell.event.StringWordTokenizer;
 /**
  * Validator to check for spelling mistakes based on a dictionary of words.
  * 
- * Implementation is based on Jazzy {@link SpellChecker} based on one or multiple {@link SpellDictionary}. Unfortunately
- * dictionaries are not uploaded into maven, so they have to provided via file system...
+ * Implementation is based on Jazzy {@link SpellChecker} based on one or multiple {@link SpellDictionary}. Unfortunately dictionaries are not uploaded into
+ * maven, so they have to provided via file system...
  * 
- * For a given {@link java.util.Locale} from a {@link com.googlecode.l10nmavenplugin.model.PropertiesFile}, all the dictionary
- * associated to the locale or any "parent" locale are used, including any non-locale dependent dictionary at root.
+ * For a given {@link java.util.Locale} from a {@link com.googlecode.l10nmavenplugin.model.PropertiesFile}, all the dictionary associated to the locale or any
+ * "parent" locale are used, including any non-locale dependent dictionary at root.
  * 
  * @since 1.4
  * @author romain.quinio
@@ -54,7 +53,7 @@ import com.swabunga.spell.event.StringWordTokenizer;
  */
 public class SpellCheckValidator extends AbstractL10nValidator implements L10nValidator<Property> {
 
-  private SpellCheckerLocaleRepository spellCheckerLocaleRepository;
+  private final LocaleSpellCheckerRepository spellCheckerLocaleRepository;
 
   /**
    * Initialize by loading dictionaries following {@link Locale} naming convention
@@ -65,14 +64,13 @@ public class SpellCheckValidator extends AbstractL10nValidator implements L10nVa
    */
   public SpellCheckValidator(L10nValidatorLogger logger, File directory) {
     super(logger);
-    spellCheckerLocaleRepository = new SpellCheckerLocaleRepository(logger);
+    spellCheckerLocaleRepository = new LocaleTreeSpellCheckerRepository(logger);
 
     if (directory != null) {
       logger.getLogger().info("Looking for .dic files in: " + directory.getAbsolutePath());
       File[] files = directory.listFiles((FilenameFilter) new SuffixFileFilter(".dic"));
       if (files == null || files.length == 0) {
-        logger.getLogger().warn(
-            "No dictionary file under folder " + directory.getAbsolutePath() + ". Skipping spellcheck validation.");
+        logger.getLogger().warn("No dictionary file under folder " + directory.getAbsolutePath() + ". Skipping spellcheck validation.");
 
       } else {
         // Load each dictionary, using file name to detect associated locale
@@ -142,7 +140,7 @@ public class SpellCheckValidator extends AbstractL10nValidator implements L10nVa
           sb.append(" Suggested correction: [").append(correction).append("]");
         }
 
-        L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.SPELLCHECK, sb.toString(), property, null);
+        L10nReportItem reportItem = new L10nReportItem(Type.SPELLCHECK, sb.toString(), property, null);
         reportItems.add(reportItem);
         logger.log(reportItem);
       }
@@ -158,9 +156,9 @@ public class SpellCheckValidator extends AbstractL10nValidator implements L10nVa
    */
   private static class ListSpellCheckErrorListener implements SpellCheckListener {
 
-    private Collection<SpellCheckError> spellCheckErrors = new ArrayList<SpellCheckError>();
+    private final Collection<SpellCheckError> spellCheckErrors = new ArrayList<SpellCheckError>();
 
-    private SpellChecker spellChecker;
+    private final SpellChecker spellChecker;
 
     public ListSpellCheckErrorListener(SpellChecker spellChecker) {
       this.spellChecker = spellChecker;
@@ -175,158 +173,8 @@ public class SpellCheckValidator extends AbstractL10nValidator implements L10nVa
     };
   }
 
-  /**
-   * Wrapper around SpellCheckEvent
-   * 
-   */
-  private static class SpellCheckError {
-    private String error;
-    private String suggestion;
-    private int position;
-
-    public SpellCheckError(SpellCheckEvent event, SpellChecker spellChecker) {
-      this.error = event.getInvalidWord();
-      this.position = event.getWordContextPosition();
-
-      // List<String> suggestions = event.getSuggestions();
-      List<Word> suggestions = spellChecker.getSuggestions(error, 1);
-
-      if (suggestions != null && suggestions.size() > 0) {
-        String firstSuggestion = suggestions.get(0).getWord();
-        if (!firstSuggestion.equals(this.error)) {
-          this.suggestion = firstSuggestion;
-        }
-      }
-    }
-
-    /**
-     * @return the error
-     */
-    public String getError() {
-      return error;
-    }
-
-    /**
-     * @return the suggestion
-     */
-    public String getSuggestion() {
-      return suggestion;
-    }
-
-    /**
-     * @return the position
-     */
-    public int getPosition() {
-      return position;
-    }
-
-    @Override
-    public String toString() {
-      return error;
-      // StringBuffer sb = new StringBuffer();
-      // sb.append(error);
-      // if (suggestion != null) {
-      // sb.append(" (suggestion: ").append(suggestion).append(")");
-      // }
-      // return sb.toString();
-    }
+  public boolean shouldValidate(Property property) {
+    // Always validate
+    return true;
   }
-
-  /**
-   * Handles the hierarchy of loacles and dictionaries.
-   * 
-   * Non-locale dependent dictionaries (typically containing proper nouns or international acronyms) are stored with the null key.
-   * 
-   * @author romain.quinio
-   * 
-   */
-  private static class SpellCheckerLocaleRepository {
-
-    private final Map<Locale, Collection<SpellDictionary>> spellDictionaries = new HashMap<Locale, Collection<SpellDictionary>>();
-
-    private L10nValidatorLogger logger;
-
-    public SpellCheckerLocaleRepository(L10nValidatorLogger logger) {
-      this.logger = logger;
-    }
-
-    /**
-     * Cache of SpellChecker
-     */
-    private final Map<Locale, SpellChecker> spellCheckers = new HashMap<Locale, SpellChecker>();
-
-    private final Map<Locale, Boolean> resolvedLocales = new HashMap<Locale, Boolean>();
-
-    public void addDictionary(Locale locale, SpellDictionary dictionary) {
-      Collection<SpellDictionary> dictionaries = spellDictionaries.get(locale);
-      if (dictionaries == null) {
-        dictionaries = new ArrayList<SpellDictionary>();
-        spellDictionaries.put(locale, dictionaries);
-      }
-      dictionaries.add(dictionary);
-    }
-
-    /**
-     * 
-     * @param locale
-     * @return never null
-     */
-    private Collection<SpellDictionary> getDictionaries(Locale locale) {
-      Collection<SpellDictionary> dictionaries = spellDictionaries.get(locale);
-      if (dictionaries == null) {
-        dictionaries = new ArrayList<SpellDictionary>();
-      }
-      return dictionaries;
-    }
-
-    /**
-     * Returns the dictionaries of the local hierarchy.
-     * 
-     * @param locale
-     * @return
-     */
-    private Collection<SpellDictionary> getHierarchyDictionaries(Locale locale) {
-      Collection<SpellDictionary> dictionaries = new ArrayList<SpellDictionary>();
-
-      Locale currentLocale = locale;
-      while (currentLocale != null) {
-        dictionaries.addAll(getDictionaries(currentLocale));
-        currentLocale = PropertiesFileUtils.getParentLocale(currentLocale);
-      }
-
-      // Add root dictionaries, if there is at least another locale dependent dictionary
-      if (dictionaries.size() > 0) {
-        dictionaries.addAll(getDictionaries(null));
-      }
-      return dictionaries;
-    }
-
-    /**
-     * Builds a SpellChecker to match the locale and any parent locale.
-     * 
-     * @param locale
-     * @return hierarchical spellChecker, or null if no matching dictionary
-     */
-    public SpellChecker getSpellChecker(Locale locale) {
-      SpellChecker spellChecker = null;
-      if (resolvedLocales.get(locale) == null) {
-        Collection<SpellDictionary> dictionaries = getHierarchyDictionaries(locale);
-        this.logger.getLogger().info(
-            "Building SpellChecker for locale <" + locale + "> : found " + dictionaries.size() + " dictionaries");
-        if (dictionaries.size() > 0) {
-          spellChecker = new SpellChecker();
-          for (SpellDictionary dictionary : dictionaries) {
-            spellChecker.addDictionary(dictionary);
-          }
-          spellCheckers.put(locale, spellChecker);
-        }
-        resolvedLocales.put(locale, true);
-
-      } else {
-        spellChecker = spellCheckers.get(locale);
-      }
-      return spellChecker;
-    }
-  }
-
 }

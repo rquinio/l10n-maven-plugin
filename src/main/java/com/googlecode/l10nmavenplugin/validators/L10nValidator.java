@@ -19,13 +19,11 @@ import com.googlecode.l10nmavenplugin.model.L10nReportItem;
  * <li>The syntax of a single {@link com.googlecode.l10nmavenplugin.model.Property}</li>
  * <li>The coherence of translation of a property across languages ({@link com.googlecode.l10nmavenplugin.model.PropertyFamily})</li>
  * <li>The coherence of a ({@link com.googlecode.l10nmavenplugin.model.PropertiesFile})</li>
- * <li>The coherence of the whole bundle (a group of Properties files, (
- * {@link com.googlecode.l10nmavenplugin.model.PropertiesFamily}))</li>
+ * <li>The coherence of the whole bundle (a group of Properties files, ( {@link com.googlecode.l10nmavenplugin.model.PropertiesFamily}))</li>
  * <li>etc.</li>
  * </ul>
  * 
- * Note: the limitation of using Java templates is that a given {@link L10nValidator} won't be able to implement more than 1 scope
- * of validation.
+ * Note: the limitation of using Java templates is that a given {@link L10nValidator} won't be able to implement more than 1 scope of validation.
  * 
  * @since 1.4
  * @author romain.quinio
@@ -36,14 +34,31 @@ import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 public interface L10nValidator<T> {
 
   /**
-   * Validate the syntax/coherence of T
+   * Validate the syntax/coherence/elements of T
    * 
    * @param toValidate
    *          the property/group/bundle to validate
    * @param reportItems
    *          list of items to which validation issues should be added.
    * @return number of reportItems with a severity {@link L10nReportItem.Severity#ERROR}
+   * 
+   * @throws L10nValidationException
+   *           in case of unexpected situation preventing from completing the validation
    */
-  int validate(T toValidate, List<L10nReportItem> reportItems);
+  int validate(T toValidate, List<L10nReportItem> reportItems) throws L10nValidationException;
+
+  /**
+   * Tells whether the validator should validate T.
+   * 
+   * The plugin is based on a convention on Properties keys to know the type of validation it should perform.
+   * 
+   * If yes, client would typically call {@link #validate(Object, List)}.
+   * 
+   * If no, client would typically default to another validator, or skip validation for T.
+   * 
+   * @param key
+   * @return
+   */
+  boolean shouldValidate(T toValidate);
 
 }

@@ -23,7 +23,6 @@ import java.util.List;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
@@ -33,8 +32,8 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 /**
  * Validator to check for resources that are missing translations.
  * 
- * As the behavior is normal for new resources when developers only define a default translation in development language, it only
- * applies if number of translations is more than 1.
+ * As the behavior is normal for new resources when developers only define a default translation in development language, it only applies if number of
+ * translations is more than 1.
  * 
  * Root bundle should be excluded, as it usually contains non language dependent resources.
  * 
@@ -66,13 +65,17 @@ public class MissingTranslationValidator extends AbstractL10nValidator implement
     // Ignore resource existing only in 1 language (reference language)
     if (nbMissingTranslations < nbProperties - 1 && nbMissingTranslations > 0) {
 
-      L10nReportItem reportItem = new L10nReportItem(Severity.WARN, Type.MISSING_TRANSLATION,
-          "Resource is not translated, although there are translations in " + (nbProperties - nbMissingTranslations)
-              + " other languages", missingPropertyFiles.toString(), propertyFamilyNoRoot.getKey(), null, null);
+      L10nReportItem reportItem = new L10nReportItem(Type.MISSING_TRANSLATION, "Resource is not translated, although there are translations in "
+          + (nbProperties - nbMissingTranslations) + " other languages", missingPropertyFiles.toString(), propertyFamilyNoRoot.getKey(), null, null);
       reportItems.add(reportItem);
       logger.log(reportItem);
     }
 
     return 0;
+  }
+
+  public boolean shouldValidate(PropertyFamily propertyFamily) {
+    // Always validate
+    return true;
   }
 }

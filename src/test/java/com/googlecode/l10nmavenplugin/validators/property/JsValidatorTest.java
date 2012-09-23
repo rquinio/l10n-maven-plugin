@@ -25,7 +25,7 @@ public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void setUp() {
     super.setUp();
     // Double quoted by default
-    validator = new JsValidator(new HtmlValidator(HtmlValidator.XHTML5, logger, null), logger);
+    validator = new JsValidator(new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." }), logger, new String[] { ".js." });
   }
 
   @Test
@@ -52,13 +52,12 @@ public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Test
   public void testValidJsDoubleQuoted() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some 'text' ", FILE), items));
-    assertEquals(0,
-        validator.validate(new PropertyImpl(KEY_OK, "<a href='www.google.fr' target='_blank'>Google</a>", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "<a href='www.google.fr' target='_blank'>Google</a>", FILE), items));
   }
 
   @Test
   public void testValidJsSingleQuoted() {
-    validator = new JsValidator(false, new HtmlValidator(HtmlValidator.XHTML5, logger, null), logger);
+    validator = new JsValidator(false, new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." }), logger, new String[] { ".js." });
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some \"text\" ", FILE), items));
   }
 
@@ -66,6 +65,7 @@ public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void testJsSpecialCharacters() {
     // Unescaped "
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some \"badly escaped text\"", FILE), items));
+    assertEquals(1, items.size());
 
     // Note: this only works because Properties#load is by passed
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some \\\"js escaped text\\\" ", FILE), items));
@@ -77,5 +77,11 @@ public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void testInvalidHtmlInsideJs() {
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some error <a href=''>Text<a>", FILE), items));
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some Text <br>", FILE), items));
+  }
+
+  @Test
+  public void testShouldValidate() {
+    assertTrue(validator.shouldValidate(new PropertyImpl("page.js.key", "Some text", FILE)));
+    assertFalse(validator.shouldValidate(new PropertyImpl(KEY_OK, "Some text", FILE)));
   }
 }

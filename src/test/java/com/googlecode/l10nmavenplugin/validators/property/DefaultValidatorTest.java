@@ -24,7 +24,7 @@ public class DefaultValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Before
   public void setUp() {
     super.setUp();
-    validator = new DefaultValidator(logger);
+    validator = new DefaultValidator(logger, new String[] { ".text." }, new String[] { ".url." });
   }
 
   @Test

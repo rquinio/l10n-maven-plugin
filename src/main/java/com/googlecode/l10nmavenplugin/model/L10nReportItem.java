@@ -10,11 +10,14 @@
 package com.googlecode.l10nmavenplugin.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * Single unit of reporting during validation.
@@ -42,47 +45,47 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     INFO,
   }
 
-  private Severity itemSeverity;
-
   /**
    * Ordered error types by severity
    */
   public enum Type {
     // Errors
-    MALFORMED_PARAMETER("message.malformedParameters.title", "message.malformedParameters.description"), //
-    JS_DOUBLE_QUOTED_VALIDATION("message.jsDoubleQuotedValidation.title", "message.jsDoubleQuotedValidation.description"), //
-    JS_SINGLE_QUOTED_VALIDATION("message.jsSingleQuotedValidation.title", "message.jsSingleQuotedValidation.description"), //
-    JS_NEWLINE_VALIDATION("message.jsNewlineValidation.title", "message.jsNewlineValidation.description"), //
-    UNESCAPED_QUOTE_WITH_PARAMETERS("message.UnescapedQuotesParams.title", "message.UnescapedQuotesParams.description"), //
-    HTML_VALIDATION("message.htmlValidation.title", "message.htmlValidation.description"), //
-    TEXT_VALIDATION_NO_HTML("message.plainTextWithHtml.title", "message.plainTextWithHtml.description"), //
-    URL_VALIDATION("message.urlValidation.title", "message.urlValidation.description"), //
-    TEXT_VALIDATION_NO_URL("message.plainTextWithUrl.title", "message.plainTextWithUrl.description"), //
-    CUSTOM_PATTERN("message.customPattern.title", "message.customPattern.description"),
+    MALFORMED_PARAMETER("message.malformedParameters.title", "message.malformedParameters.description", Severity.ERROR), //
+    JS_DOUBLE_QUOTED_VALIDATION("message.jsDoubleQuotedValidation.title", "message.jsDoubleQuotedValidation.description", Severity.ERROR), //
+    JS_SINGLE_QUOTED_VALIDATION("message.jsSingleQuotedValidation.title", "message.jsSingleQuotedValidation.description", Severity.ERROR), //
+    JS_NEWLINE_VALIDATION("message.jsNewlineValidation.title", "message.jsNewlineValidation.description", Severity.ERROR), //
+    UNESCAPED_QUOTE_WITH_PARAMETERS("message.UnescapedQuotesParams.title", "message.UnescapedQuotesParams.description", Severity.ERROR), //
+    HTML_VALIDATION("message.htmlValidation.title", "message.htmlValidation.description", Severity.ERROR), //
+    TEXT_VALIDATION_NO_HTML("message.plainTextWithHtml.title", "message.plainTextWithHtml.description", Severity.ERROR), //
+    URL_VALIDATION("message.urlValidation.title", "message.urlValidation.description", Severity.ERROR), //
+    TEXT_VALIDATION_NO_URL("message.plainTextWithUrl.title", "message.plainTextWithUrl.description", Severity.ERROR), //
+    CUSTOM_PATTERN("message.customPattern.title", "message.customPattern.description", Severity.ERROR),
 
     // Warnings
-    ESCAPED_QUOTE_WITHOUT_PARAMETER("message.escapedQuoteWithoutParam.title", "message.escapedQuoteWithoutParam.description"), //
-    INCOHERENT_PARAMETERS("message.incoherentParams.title", "message.incoherentParams.description"), //
-    MISSING_TRANSLATION("message.missingTranslation.title", "message.missingTranslation.description"), //
-    UNDECLARED_HTML_RESOURCE("message.undeclaredHtml.title", "message.undeclaredHtml.description"), //
-    UNDECLARED_URL_RESOURCE("message.undeclaredUrl.title", "message.undeclaredUrl.description"), //
-    TRAILING_WHITESPACE("message.trailingWhitespace.title", "message.trailingWhitespace.description"), //
-    ALMOST_DUPLICATED_RESOURCE("message.almostDuplicatedResource.title", "message.almostDuplicatedResource.description"), //
-    ALMOST_IDENTICAL_TRANSLATION("message.almostIdenticalTranslation.title", "message.almostIdenticalTranslation.description"), //
-    SPELLCHECK("message.spellcheck.title", "message.spellcheck.description"), //
-    INCOHERENT_TAGS("message.incoherentTags.title", "message.incoherentTags.description"),
+    ESCAPED_QUOTE_WITHOUT_PARAMETER("message.escapedQuoteWithoutParam.title", "message.escapedQuoteWithoutParam.description", Severity.WARN), //
+    INCOHERENT_PARAMETERS("message.incoherentParams.title", "message.incoherentParams.description", Severity.WARN), //
+    MISSING_TRANSLATION("message.missingTranslation.title", "message.missingTranslation.description", Severity.WARN), //
+    UNDECLARED_HTML_RESOURCE("message.undeclaredHtml.title", "message.undeclaredHtml.description", Severity.WARN), //
+    UNDECLARED_URL_RESOURCE("message.undeclaredUrl.title", "message.undeclaredUrl.description", Severity.WARN), //
+    TRAILING_WHITESPACE("message.trailingWhitespace.title", "message.trailingWhitespace.description", Severity.WARN), //
+    ALMOST_DUPLICATED_RESOURCE("message.almostDuplicatedResource.title", "message.almostDuplicatedResource.description", Severity.WARN), //
+    ALMOST_IDENTICAL_TRANSLATION("message.almostIdenticalTranslation.title", "message.almostIdenticalTranslation.description", Severity.WARN), //
+    SPELLCHECK("message.spellcheck.title", "message.spellcheck.description", Severity.WARN), //
+    INCOHERENT_TAGS("message.incoherentTags.title", "message.incoherentTags.description", Severity.WARN),
 
     // Infos
-    EXCLUDED("message.excluded.title", "message.excluded.description"), //
-    DUPLICATED_RESOURCE("message.duplicatedResource.title", "message.duplicatedResource.description"), //
-    IDENTICAL_TRANSLATION("message.identicalTranslation.title", "message.identicalTranslation.description");
+    EXCLUDED("message.excluded.title", "message.excluded.description", Severity.INFO), //
+    DUPLICATED_RESOURCE("message.duplicatedResource.title", "message.duplicatedResource.description", Severity.INFO), //
+    IDENTICAL_TRANSLATION("message.identicalTranslation.title", "message.identicalTranslation.description", Severity.INFO);
 
     private final String titleLocKey;
     private final String descriptionLocKey;
+    private Severity severity;
 
-    private Type(String titleLocKey, String descriptionLocKey) {
+    private Type(String titleLocKey, String descriptionLocKey, Severity defaultSeverity) {
       this.titleLocKey = titleLocKey;
       this.descriptionLocKey = descriptionLocKey;
+      this.severity = defaultSeverity;
     }
 
     public String getTitleLocKey() {
@@ -91,6 +94,14 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
 
     public String getDescriptionLocKey() {
       return descriptionLocKey;
+    }
+
+    public Severity getSeverity() {
+      return severity;
+    }
+
+    public void setSeverity(Severity severity) {
+      this.severity = severity;
     }
 
     @Override
@@ -113,42 +124,38 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
   /**
    * Type of error.
    */
-  private Type itemType;
+  private final Type itemType;
 
   /**
    * The error text
    */
-  private String itemMessage;
+  private final String itemMessage;
 
   /**
    * Name of properties file
    */
-  private String propertiesName;
+  private final String propertiesName;
 
   /**
    * Key of the property
    */
-  private String propertiesKey;
+  private final String propertiesKey;
 
   /**
    * Message of the property
    */
-  private String propertiesValue;
+  private final String propertiesValue;
 
   /**
    * The value actually used for validation.
    */
-  private String formattedPropertiesValue;
+  private final String formattedPropertiesValue;
 
-  public L10nReportItem(Severity itemSeverity, Type itemType, String itemMessage, Property property,
-      String formattedPropertiesValue) {
-    this(itemSeverity, itemType, itemMessage, property.getPropertiesFile().toString(), property.getKey(), property.getMessage(),
-        formattedPropertiesValue);
+  public L10nReportItem(Type itemType, String itemMessage, Property property, String formattedPropertiesValue) {
+    this(itemType, itemMessage, property.getPropertiesFile().toString(), property.getKey(), property.getMessage(), formattedPropertiesValue);
   }
 
-  public L10nReportItem(Severity itemSeverity, Type itemType, String itemMessage, String propertiesName, String propertiesKey,
-      String propertiesValue, String formattedPropertiesValue) {
-    this.itemSeverity = itemSeverity;
+  public L10nReportItem(Type itemType, String itemMessage, String propertiesName, String propertiesKey, String propertiesValue, String formattedPropertiesValue) {
     this.itemType = itemType;
     this.itemMessage = itemMessage;
     this.propertiesName = propertiesName;
@@ -158,7 +165,7 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
   }
 
   public Severity getItemSeverity() {
-    return itemSeverity;
+    return itemType.getSeverity();
   }
 
   public Type getItemType() {
@@ -186,7 +193,7 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
   }
 
   public int compareTo(L10nReportItem o) {
-    int result = itemSeverity.compareTo(o.getItemSeverity());
+    int result = getItemSeverity().compareTo(o.getItemSeverity());
     if (result == 0) {
       result = itemType.compareTo(o.getItemType());
     }
@@ -199,11 +206,15 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     return result;
   }
 
-  public static Map<Type, Collection<L10nReportItem>> byType(Collection<L10nReportItem> items) {
-    Map<Type, Collection<L10nReportItem>> mapByType = new TreeMap<Type, Collection<L10nReportItem>>();
+  public static Map<Type, List<L10nReportItem>> byType(List<L10nReportItem> items) {
+    // Order items by Type
+    Collections.sort(items);
+
+    // Use TreeMap to keep Type ordering
+    Map<Type, List<L10nReportItem>> mapByType = new TreeMap<Type, List<L10nReportItem>>();
 
     for (L10nReportItem reportItem : items) {
-      Collection<L10nReportItem> itemsByType = mapByType.get(reportItem.getItemType());
+      List<L10nReportItem> itemsByType = mapByType.get(reportItem.getItemType());
       if (itemsByType == null) {
         itemsByType = new ArrayList<L10nReportItem>();
         mapByType.put(reportItem.getItemType(), itemsByType);
@@ -219,7 +230,6 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((itemSeverity == null) ? 0 : itemSeverity.hashCode());
     result = prime * result + ((itemType == null) ? 0 : itemType.hashCode());
     result = prime * result + ((propertiesKey == null) ? 0 : propertiesKey.hashCode());
     result = prime * result + ((propertiesName == null) ? 0 : propertiesName.hashCode());
@@ -236,5 +246,10 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     } else {
       return this.compareTo((L10nReportItem) obj) == 0;
     }
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this).append("type", itemType.name()).append("severity", getItemSeverity()).toString();
   }
 }
