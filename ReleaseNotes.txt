@@ -1,11 +1,12 @@
-TODO 1.5 ???
-Added generation of CSV file containing keys with warning/error.
-Fix HTML tag coherence : order should not matter + attributes ?
-No spellcheck on root bundle
-Check resource defined both in root and language
-Add summary to report
-Add formating attempt to all resources
 
+1.5 23-Sep-2012
+Added generation of CSV files with keys for each severity (ERROR/WARN/INFO).
+Added a summary to the report, with links to sections
+Added logging of expected html/url key pattern for default validator
+Refactored ValidateMojo logic by splitting the class into 6 orchestrators
+Fixed strange bug where javascript validator would not log errors into the console
+Fixed HTML tag coherence validator to ignore siblings order
+Upgraded xhtml5 schema to XMLmind 1.0.3
 
 1.4 26-May-2012 New validators
 
