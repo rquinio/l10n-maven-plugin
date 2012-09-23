@@ -23,7 +23,7 @@ public class L10nValidationLoggerTest {
 
   @Test
   public void testErrorLogging() {
-    L10nReportItem item = new L10nReportItem(Severity.ERROR, Type.EXCLUDED, "", "", "", "", null);
+    L10nReportItem item = new L10nReportItem(Type.JS_DOUBLE_QUOTED_VALIDATION, "", "", "", "", null);
 
     logger.log(item);
 
@@ -32,7 +32,7 @@ public class L10nValidationLoggerTest {
 
   @Test
   public void testWarnLogging() {
-    L10nReportItem item = new L10nReportItem(Severity.WARN, Type.EXCLUDED, "", "", "", "", null);
+    L10nReportItem item = new L10nReportItem(Type.ESCAPED_QUOTE_WITHOUT_PARAMETER, "", "", "", "", null);
 
     logger.log(item);
 
@@ -41,7 +41,7 @@ public class L10nValidationLoggerTest {
 
   @Test
   public void testInfoLogging() {
-    L10nReportItem item = new L10nReportItem(Severity.INFO, Type.EXCLUDED, "", "", "", "", null);
+    L10nReportItem item = new L10nReportItem(Type.EXCLUDED, "", "", "", "", null);
 
     logger.log(item);
 
@@ -50,7 +50,7 @@ public class L10nValidationLoggerTest {
 
   @Test
   public void loggingThresholdShouldNotBeExceeded() {
-    L10nReportItem item = new L10nReportItem(Severity.INFO, Type.EXCLUDED, "", "", "", "", null);
+    L10nReportItem item = new L10nReportItem(Type.EXCLUDED, "", "", "", "", null);
 
     for (int i = 0; i <= L10nValidatorLogger.THRESOLD + 5; i++) {
       logger.log(item);

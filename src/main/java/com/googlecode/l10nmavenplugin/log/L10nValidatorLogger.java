@@ -35,7 +35,7 @@ public class L10nValidatorLogger {
 
   private Log logger;
 
-  private Map<L10nReportItem.Type, Integer> occurences = new HashMap<L10nReportItem.Type, Integer>();
+  private final Map<L10nReportItem.Type, Integer> occurences = new HashMap<L10nReportItem.Type, Integer>();
 
   public L10nValidatorLogger() {
     this.logger = new SystemStreamLog();
@@ -64,8 +64,8 @@ public class L10nValidatorLogger {
   /**
    * Log an L10nReportItem, for progressive display of validation issues.
    * 
-   * To avoid too long console I/O for bundles with many validation info/warn (> 5000), use a threshold after which the item of a
-   * given type are no longer logged. Errors are always logged.
+   * To avoid too long console I/O for bundles with many validation info/warn (> 5000), use a threshold after which the item of a given type are no longer
+   * logged. Errors are always logged.
    * 
    * @param reportItem
    */
@@ -77,6 +77,7 @@ public class L10nValidatorLogger {
       nbLogged++;
     }
     occurences.put(reportItem.getItemType(), nbLogged);
+
     if (nbLogged == THRESOLD + 1) {
       this.logger.warn("Info/Warn of type " + reportItem.getItemType() + " exceed the threshold, items will no more be logged.");
     }
@@ -84,20 +85,20 @@ public class L10nValidatorLogger {
     switch (reportItem.getItemSeverity()) {
     case INFO:
       if (nbLogged <= THRESOLD) {
-        this.info(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
-            reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
+        this.info(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(), reportItem.getPropertiesValue(),
+            reportItem.getFormattedPropertiesValue());
       }
       break;
     case WARN:
       if (nbLogged <= THRESOLD) {
-        this.warn(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
-            reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
+        this.warn(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(), reportItem.getPropertiesValue(),
+            reportItem.getFormattedPropertiesValue());
       }
       break;
     default:
       // Report all errors
-      this.error(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(),
-          reportItem.getPropertiesValue(), reportItem.getFormattedPropertiesValue());
+      this.error(reportItem.getPropertiesName(), reportItem.getPropertiesKey(), reportItem.getItemMessage(), reportItem.getPropertiesValue(),
+          reportItem.getFormattedPropertiesValue());
       break;
     }
   }
