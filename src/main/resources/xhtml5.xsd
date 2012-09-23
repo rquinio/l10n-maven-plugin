@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- =====================================================================
      A W3C XML Schema for XHTML 5.
-     Corresponds to W3C Working Draft 25 May 2011.
+     Corresponds to W3C Working Draft 29 March 2012.
 
      Author: Olivier Ishacian
 
@@ -577,7 +577,6 @@
   </xs:complexType>
 
   <xs:attributeGroup name="aAttributeGroup">
-    <xs:attribute name="name" type="id"/>
     <xs:attribute name="href" type="uri"/>
     <xs:attribute name="target" type="browsingContextNameOrKeyword"/>
     <xs:attribute name="rel" type="tokens"/>
@@ -630,7 +629,6 @@
       <xs:complexContent>
         <xs:extension base="phrasingContentElement">
 	  <xs:attribute name="datetime" type="dateOrTime"/>
-	  <xs:attribute name="pubdate" type="pubdate"/>
 	</xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -840,6 +838,7 @@
       <!-- Must be empty in XML documents. -->
       <xs:attributeGroup ref="globalAttributeGroup"/>
       <xs:attribute name="src" type="uri"/>
+      <xs:attribute name="srcdoc" type="string"/>
       <xs:attribute name="name" type="browsingContextName"/>
       <xs:attribute name="width" type="nonNegativeInteger"/>
       <xs:attribute name="height" type="nonNegativeInteger"/>
@@ -1258,7 +1257,7 @@
   <xs:element name="th">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="phrasingContentElement">
+        <xs:extension base="flowContentElement">
           <xs:attributeGroup ref="thAttributeGroup"/>
 	  <xs:attribute name="scope" type="scope"/>
 	</xs:extension>
@@ -1795,13 +1794,13 @@
 
           <xs:simpleType>
             <xs:restriction base="xs:token">
-              <xs:pattern value="s:\S+"/>
+              <xs:pattern value="string:\S+"/>
             </xs:restriction>
           </xs:simpleType>
 
           <xs:simpleType>
             <xs:restriction base="xs:token">
-              <xs:pattern value="f:\S+"/>
+              <xs:pattern value="file:\S+"/>
             </xs:restriction>
           </xs:simpleType>
         </xs:union>
