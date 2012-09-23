@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 
 public class L10nReportRendererTest {
@@ -46,8 +45,7 @@ public class L10nReportRendererTest {
 
   @Test
   public void testRenderOneSectionOneItem() {
-    L10nReportItem item = new L10nReportItem(Severity.ERROR, Type.HTML_VALIDATION, "Some text", "test.properties",
-        "ALLP.text.invalid", "<a>", "");
+    L10nReportItem item = new L10nReportItem(Type.HTML_VALIDATION, "Some text", "test.properties", "ALLP.text.invalid", "<a>", "");
 
     reportItems.add(item);
     renderer.setReportItems(reportItems);
@@ -57,8 +55,7 @@ public class L10nReportRendererTest {
   @Test
   public void testRenderOneSectionMultipleItems() {
     renderer.setNbErrors(4);
-    L10nReportItem item = new L10nReportItem(Severity.ERROR, Type.HTML_VALIDATION, "Some text", "test.properties",
-        "ALLP.text.invalid", "<a>", "");
+    L10nReportItem item = new L10nReportItem(Type.HTML_VALIDATION, "Some text", "test.properties", "ALLP.text.invalid", "<a>", "");
 
     reportItems.add(item);
     reportItems.add(item);
@@ -71,12 +68,9 @@ public class L10nReportRendererTest {
   @Test
   public void testRenderMultipleSections() {
     renderer.setNbErrors(3);
-    L10nReportItem item1 = new L10nReportItem(Severity.ERROR, Type.HTML_VALIDATION, "Some text", "test.properties",
-        "ALLP.text.invalid", "<a>", "");
-    L10nReportItem item2 = new L10nReportItem(Severity.ERROR, Type.JS_DOUBLE_QUOTED_VALIDATION, "Some text", "test.properties",
-        "ALLP.js.invalid", "<a>", "");
-    L10nReportItem item3 = new L10nReportItem(Severity.ERROR, Type.URL_VALIDATION, "Some text", "test.properties",
-        "ALLP.url.invalid", "<a>", "");
+    L10nReportItem item1 = new L10nReportItem(Type.HTML_VALIDATION, "Some text", "test.properties", "ALLP.text.invalid", "<a>", "");
+    L10nReportItem item2 = new L10nReportItem(Type.JS_DOUBLE_QUOTED_VALIDATION, "Some text", "test.properties", "ALLP.js.invalid", "<a>", "");
+    L10nReportItem item3 = new L10nReportItem(Type.URL_VALIDATION, "Some text", "test.properties", "ALLP.url.invalid", "<a>", "");
     reportItems.add(item1);
     reportItems.add(item2);
     reportItems.add(item3);

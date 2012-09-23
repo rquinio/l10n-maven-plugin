@@ -10,14 +10,17 @@
 package com.googlecode.l10nmavenplugin.report;
 
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
 import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.util.HtmlTools;
 import org.apache.maven.reporting.AbstractMavenReportRenderer;
 
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
+import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 
 /**
@@ -31,11 +34,6 @@ import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 public class L10nReportRenderer extends AbstractMavenReportRenderer {
 
   /**
-   * Unsorted list of items to be displayed
-   */
-  private List<L10nReportItem> reportItems = null;
-
-  /**
    * List of blocking validations items (type error)
    */
   private int nbErrors;
@@ -43,7 +41,17 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
   /**
    * Localized resources for report content
    */
-  private ResourceBundle bundle;
+  private final ResourceBundle bundle;
+
+  /**
+   * Map by types of items to be displayed
+   */
+  private Map<Type, List<L10nReportItem>> reportItemsByType;
+
+  /**
+   * index of the item
+   */
+  private int index = 1;
 
   /**
    * 
@@ -64,64 +72,118 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
 
   @Override
   protected void renderBody() {
-    if (reportItems.size() > 0) {
+    if (reportItemsByType.size() > 0) {
 
-      // TODO put a breakdown per type summary (with links to sections ?)
-      paragraph(MessageFormat.format(bundle.getString("report.dashboard.text.intro"), nbErrors));
+      renderReportSummary();
 
-      // Need to order report items by Type
-      Collections.sort(reportItems);
-
-      int index = 1;
-      Type previousType = null;
-      for (L10nReportItem reportItem : reportItems) {
-        if (reportItem.getItemType() != previousType) {
-          if (previousType != null) { // Specific case of 1st row
-            endTable();
-            endSection();
-            sink.horizontalRule();
-          }
-          startSection("[" + reportItem.getItemSeverity().toString() + "] "
-              + bundle.getString(reportItem.getItemType().getTitleLocKey()));
-          paragraph(bundle.getString(reportItem.getItemType().getDescriptionLocKey()));
-          startTable();
-          tableHeader(new String[] { "", bundle.getString("report.dashboard.messages.title.propertyKey"),
-              bundle.getString("report.dashboard.messages.title.errorMessage"),
-              bundle.getString("report.dashboard.messages.title.propertyValue") });
-        }
-        // Can't use super.tableRow, as it consumes some {}
-        sink.tableRow();
-        sink.tableCell();
-        sink.text(String.valueOf(index));
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text(reportItem.getPropertiesKey() + "  " + reportItem.getPropertiesName());
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text(reportItem.getItemMessage());
-        sink.tableCell_();
-        sink.tableCell();
-        if (reportItem.getPropertiesValue() != null) {
-          sink.text("[" + reportItem.getPropertiesValue() + "]");
-        }
-        sink.tableCell_();
-        sink.tableRow_();
-
-        previousType = reportItem.getItemType();
-        index++;
-      }
-
-      // Close last section
-      endTable();
-      endSection();
+      renderReportContent();
 
     } else { // Nothing to report
       paragraph(bundle.getString("report.dashboard.text.empty"));
     }
   }
 
+  private void renderReportSummary() {
+    sink.anchor("summary");
+    sink.anchor_();
+
+    // Build a summary, with links to sections
+    paragraph(MessageFormat.format(bundle.getString("report.dashboard.text.intro"), nbErrors));
+
+    sink.list();
+    for (Entry<Type, List<L10nReportItem>> entry : reportItemsByType.entrySet()) {
+      renderReportSummaryEntry(entry.getKey(), entry.getValue().size());
+    }
+    sink.list_();
+  }
+
+  private void renderReportSummaryEntry(Type type, int number) {
+    sink.listItem();
+    font(type.getSeverity());
+    link('#' + HtmlTools.encodeId(type.toString()), bundle.getString(type.getTitleLocKey()));
+    sink.text(" " + String.valueOf(number));
+    font_(type.getSeverity());
+    sink.listItem_();
+  }
+
+  private void font(Severity severity) {
+    switch (severity) {
+    case ERROR:
+      sink.bold();
+      break;
+    case WARN:
+      break;
+    case INFO:
+      sink.italic();
+      break;
+    }
+  }
+
+  private void font_(Severity severity) {
+    switch (severity) {
+    case ERROR:
+      sink.bold_();
+      break;
+    case WARN:
+      break;
+    case INFO:
+      sink.italic_();
+      break;
+    }
+  }
+
+  private void renderReportContent() {
+    for (Entry<Type, List<L10nReportItem>> entry : reportItemsByType.entrySet()) {
+      Type itemType = entry.getKey();
+      List<L10nReportItem> reportItems = entry.getValue();
+
+      // Display 1 section per type
+      renderL10nReportItemType(itemType, reportItems);
+    }
+  }
+
+  private void renderL10nReportItemType(Type itemType, List<L10nReportItem> reportItems) {
+    sink.anchor(HtmlTools.encodeId(itemType.toString()));
+    sink.anchor_();
+
+    startSection("[" + itemType.getSeverity().toString() + "] " + bundle.getString(itemType.getTitleLocKey()));
+    paragraph(bundle.getString(itemType.getDescriptionLocKey()));
+    startTable();
+    tableHeader(new String[] { "", bundle.getString("report.dashboard.messages.title.propertyKey"),
+        bundle.getString("report.dashboard.messages.title.errorMessage"), bundle.getString("report.dashboard.messages.title.propertyValue") });
+
+    for (L10nReportItem reportItem : reportItems) {
+      renderL10nReportItem(reportItem);
+    }
+
+    endTable();
+    endSection();
+    sink.horizontalRule();
+    link("#summary", "Up");
+  }
+
+  private void renderL10nReportItem(L10nReportItem reportItem) {
+    // Can't use super.tableRow, as it consumes some {}
+    sink.tableRow();
+    rendreCell(String.valueOf(index));
+    rendreCell(reportItem.getPropertiesKey() + "  " + reportItem.getPropertiesName());
+    rendreCell(reportItem.getItemMessage());
+    rendreCell(("[" + reportItem.getPropertiesValue() + "]"));
+    sink.tableRow_();
+
+    index++;
+  }
+
+  private void rendreCell(String text) {
+    sink.tableCell();
+    if (text != null) {
+      sink.text(text);
+    }
+    sink.tableCell_();
+  }
+
   public void setReportItems(List<L10nReportItem> reportItems) {
-    this.reportItems = reportItems;
+    this.reportItemsByType = L10nReportItem.byType(reportItems);
   }
 
   public int getNbErrors() {
@@ -130,9 +192,5 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
 
   public void setNbErrors(int nbErrors) {
     this.nbErrors = nbErrors;
-  }
-
-  public List<L10nReportItem> getReportItems() {
-    return reportItems;
   }
 }
