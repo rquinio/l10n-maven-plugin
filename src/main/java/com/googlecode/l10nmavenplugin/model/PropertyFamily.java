@@ -12,7 +12,7 @@ package com.googlecode.l10nmavenplugin.model;
 import java.util.Collection;
 
 /**
- * Representation of the various values/translations of a property across a bundle of {@link java.util.Properties} files.
+ * Representation of a multi-language property, i.e. the various values of a property across a bundle of {@link java.util.Properties} files.
  * 
  * @since 1.4
  * @author romain.quinio
