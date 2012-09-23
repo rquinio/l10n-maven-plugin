@@ -46,7 +46,7 @@ public class PropertiesFamilyValidatorTest extends AbstractL10nValidatorTest<Pro
     // Test with 2 nested directory
     File reportsDir = new File(new TemporaryFolder().newFolder(), "l10n-reports");
 
-    validator = new PropertiesFamilyValidator(logger, reportsDir, new AlwaysSucceedValidator<PropertyFamily>());
+    validator = new PropertiesFamilyValidator(logger, reportsDir, new AlwaysSucceedingValidator<PropertyFamily>());
   }
 
   @Test
@@ -75,7 +75,7 @@ public class PropertiesFamilyValidatorTest extends AbstractL10nValidatorTest<Pro
 
   @Test
   public void csvShouldNotBeGeneratedIfNoReportFolder() {
-    validator = new PropertiesFamilyValidator(logger, null, new AlwaysSucceedValidator<PropertyFamily>());
+    validator = new PropertiesFamilyValidator(logger, null, new AlwaysSucceedingValidator<PropertyFamily>());
 
     File csvFile = validator.generateCsv(items, "base", Severity.ERROR);
     assertNull(csvFile);

@@ -34,7 +34,7 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
     super.setUp();
     // Use XHTML5 schema as it is much faster
     validator = new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." });
-    validator.setSpellCheckValidator(new AlwaysSucceedValidator<Property>());
+    validator.setSpellCheckValidator(new AlwaysSucceedingValidator<Property>());
   }
 
   @Test

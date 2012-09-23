@@ -357,6 +357,10 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     return nbErrors;
   }
 
+  public void setDirectoryValidator(L10nValidator<File> directoryValidator) {
+    this.directoryValidator = directoryValidator;
+  }
+
   public void setPropertyDir(File propertyDir) {
     this.propertyDir = propertyDir;
   }

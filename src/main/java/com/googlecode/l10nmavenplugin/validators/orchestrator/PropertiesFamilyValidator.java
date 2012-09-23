@@ -28,6 +28,7 @@ import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
+import com.googlecode.l10nmavenplugin.validators.L10nValidationException;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
@@ -130,7 +131,7 @@ public class PropertiesFamilyValidator extends AbstractL10nValidator implements 
       writer.close();
 
     } catch (IOException e) {
-      logger.getLogger().error(e);
+      throw new L10nValidationException("Could not write csv file", e);
     }
   }
 

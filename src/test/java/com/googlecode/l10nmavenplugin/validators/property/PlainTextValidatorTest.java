@@ -25,7 +25,7 @@ public class PlainTextValidatorTest extends AbstractL10nValidatorTest<Property> 
   @Before
   public void setUp() {
     super.setUp();
-    validator = new PlainTextValidator(logger, new AlwaysSucceedValidator<Property>(), new String[] { ".title." });
+    validator = new PlainTextValidator(logger, new AlwaysSucceedingValidator<Property>(), new String[] { ".title." });
   }
 
   @Test

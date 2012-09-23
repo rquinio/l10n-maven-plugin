@@ -10,10 +10,13 @@
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
@@ -21,13 +24,27 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 public class PropertyValidatorTest extends AbstractL10nValidatorTest<Property> {
 
-  private L10nValidator<Property> validator;
+  private PropertyValidator validator;
+  private L10nValidator<Property> defaultValidator;
 
   @Override
   @Before
   public void setUp() {
     super.setUp();
     validator = new PropertyValidator(logger, new String[] { ".excluded" });
+
+    validator.setParametricMessageValidator(new AlwaysSucceedingValidator<Property>());
+    validator.setTrailingWhitespaceValidator(new AlwaysSucceedingValidator<Property>());
+
+    validator.setUrlValidator(new AlwaysRefusingValidator<Property>());
+    validator.setHtmlValidator(new AlwaysRefusingValidator<Property>());
+    validator.setJsValidator(new AlwaysRefusingValidator<Property>());
+    validator.setPatternValidators(new L10nValidator[] { new AlwaysRefusingValidator<Property>() });
+    validator.setPlainTextValidator(new AlwaysRefusingValidator<Property>());
+
+    defaultValidator = spy(new AlwaysSucceedingValidator<Property>());
+    validator.setDefaultValidator(defaultValidator);
+
   }
 
   @Test
@@ -39,5 +56,13 @@ public class PropertyValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Test
   public void emptyMessagesShouldBeIgnored() {
     assertEquals(0, validator.validate(new PropertyImpl("ALLP.text.empty", "", FILE), items));
+  }
+
+  @Test
+  public void shouldCallDefaultValidator() {
+    validator.validate(new PropertyImpl("ALLP.default", "Some text", FILE), items);
+
+    verify(defaultValidator).validate(any(Property.class), anyListOf(L10nReportItem.class));
+
   }
 }

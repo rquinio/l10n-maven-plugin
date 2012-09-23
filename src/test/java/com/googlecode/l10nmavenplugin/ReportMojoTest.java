@@ -19,9 +19,11 @@ import org.apache.maven.doxia.module.xhtml.decoration.render.RenderingContext;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.siterenderer.RendererException;
 import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.reporting.MavenReportException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -85,5 +87,13 @@ public class ReportMojoTest {
 
   private File getFile(String path) {
     return new File(this.getClass().getClassLoader().getResource(path).getFile());
+  }
+
+  @Ignore("Cannot easily trigger a failure")
+  @Test(expected = MojoFailureException.class)
+  public void testValidateMojoFailure() throws MavenReportException {
+    plugin.setPropertyDir(new File("non-existing"));
+
+    plugin.executeReport(Locale.ENGLISH);
   }
 }

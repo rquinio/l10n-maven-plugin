@@ -30,7 +30,7 @@ public class PropertiesFileValidatorTest extends AbstractL10nValidatorTest<Prope
   public void setUp() {
     super.setUp();
 
-    validator = new PropertiesFileValidator(logger, new AlwaysSucceedValidator<Property>());
+    validator = new PropertiesFileValidator(logger, new AlwaysSucceedingValidator<Property>());
   }
 
   @Test

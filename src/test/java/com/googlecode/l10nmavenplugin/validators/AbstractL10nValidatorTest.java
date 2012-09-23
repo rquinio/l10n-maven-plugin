@@ -113,9 +113,9 @@ public abstract class AbstractL10nValidatorTest<T> {
    * Used to inject a "neutral" nested validator for tests
    * 
    */
-  protected static class AlwaysSucceedValidator<T> implements L10nValidator<T> {
+  protected static class AlwaysSucceedingValidator<T> implements L10nValidator<T> {
 
-    public AlwaysSucceedValidator() {
+    public AlwaysSucceedingValidator() {
     }
 
     public int validate(T toValidate, List<L10nReportItem> reportItems) throws L10nValidationException {
@@ -156,7 +156,7 @@ public abstract class AbstractL10nValidatorTest<T> {
     }
 
     public int validate(T toValidate, List<L10nReportItem> reportItems) throws L10nValidationException {
-      return 1;
+      throw new L10nValidationException("Should not have called validate");
     }
 
     public boolean shouldValidate(T toValidate) {

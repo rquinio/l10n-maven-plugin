@@ -66,6 +66,7 @@ public class DuplicationValidatorTest extends AbstractL10nValidatorTest<Properti
     validator.validate(propertiesFamily, items);
 
     assertEquals(1, items.size());
+    // assertThat(items, hasItem(new ItemTypeMatcher(Type.DUPLICATED_RESOURCE)));
   }
 
   @Test
@@ -85,6 +86,7 @@ public class DuplicationValidatorTest extends AbstractL10nValidatorTest<Properti
     validator.validate(propertiesFamily, items);
 
     // assertEquals(1, items.size());
+    // assertThat(items, hasItem(new ItemTypeMatcher(Type.ALMOST_DUPLICATED_RESOURCE)));
   }
 
   @Test

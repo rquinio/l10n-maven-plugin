@@ -32,7 +32,15 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   @Before
   public void setUp() {
     super.setUp();
-    validator = new DirectoryValidator(logger, new AlwaysSucceedValidator<PropertiesFamily>());
+    validator = new DirectoryValidator(logger, new AlwaysSucceedingValidator<PropertiesFamily>());
+  }
+
+  /**
+   * Validation should not fail if resource path is empty/do not exist
+   */
+  @Test
+  public void testNoPropertiesResources() {
+    validator.validate(new File("non-existing"), items);
   }
 
   @Test
