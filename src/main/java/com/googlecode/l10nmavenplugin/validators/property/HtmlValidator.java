@@ -45,7 +45,7 @@ import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.PropertiesKeyConventionValidator;
-import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
+import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
 
 /**
  * Validator to perform XHTML validation of a property and delegates to {@link SpellCheckValidator} for text nodes.
@@ -57,7 +57,7 @@ import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValid
  * <li>XHTML5, based on http://www.xmlmind.com/xhtml5_resources.shtml</li>
  * </ul>
  * 
- * @see {@link com.googlecode.l10nmavenplugin.validators.bundle.HtmlTagCoherenceValidator}
+ * @see {@link com.googlecode.l10nmavenplugin.validators.family.HtmlTagCoherenceValidator}
  * @since 1.0
  * @author romain.quinio
  * 

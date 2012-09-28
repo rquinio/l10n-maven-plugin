@@ -25,7 +25,7 @@ import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.PropertiesKeyConventionValidator;
-import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
+import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
 
 /**
  * Validator to check URL is well formed, either being:

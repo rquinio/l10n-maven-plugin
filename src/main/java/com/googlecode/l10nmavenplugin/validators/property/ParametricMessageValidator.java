@@ -20,7 +20,7 @@ import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
-import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator;
+import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
 
 /**
  * Validator to check syntax of parametric resources, i.e properties containing formatting parameters ({0},{1},...).
@@ -32,7 +32,7 @@ import com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValid
  * 
  * @author romain.quinio
  * @since 1.0
- * @see {@link com.googlecode.l10nmavenplugin.validators.bundle.ParametricCoherenceValidator}
+ * @see {@link com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator}
  * 
  */
 public class ParametricMessageValidator extends AbstractL10nValidator implements L10nValidator<Property> {
