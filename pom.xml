@@ -65,6 +65,11 @@
       <artifactId>plexus-utils</artifactId>
       <version>2.0.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.1</version>
+    </dependency>
     <!-- XHTML parser -->
     <dependency>
       <groupId>xerces</groupId>
@@ -163,16 +168,27 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.1</version>
-        <configuration>
-          <goalPrefix>l10n-maven-plugin</goalPrefix>
-        </configuration>
         <executions>
           <execution>
+            <id>mojo-descriptor</id>
+            <goals>
+              <goal>descriptor</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>help-goal</id>
             <goals>
               <goal>helpmojo</goal>
             </goals>
+            <configuration>
+              <goalPrefix>l10n-maven-plugin</goalPrefix>
+          </configuration>
           </execution>
         </executions>
+        <configuration>
+          <!-- Annotations require compiled Mojo, which is not available at  generate-resources phase -->
+          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

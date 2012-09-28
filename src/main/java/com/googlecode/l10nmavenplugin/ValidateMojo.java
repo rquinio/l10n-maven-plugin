@@ -17,6 +17,9 @@ import java.util.Properties;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
@@ -73,44 +76,43 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  *       <li>Java String: {@link http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#101089}</li>
  *       </ul>
  * 
- * @goal validate
- * @phase test
  * @since 1.0
  * @author romain.quinio
  * 
  */
+@Mojo(name = "validate", defaultPhase = LifecyclePhase.TEST)
 public class ValidateMojo extends AbstractMojo implements L10nValidationConfiguration {
 
   /**
    * Directory containing properties file to check
    * 
-   * @parameter default-value="src\\main\\resources"
    * @since 1.0
    */
+  @Parameter(defaultValue = "src/main/resources")
   private File propertyDir;
 
   /**
    * Keys excluded from validation. Default is none.
    * 
-   * @parameter
    * @since 1.0
    */
+  @Parameter
   private String[] excludedKeys = new String[] {};
 
   /**
    * Make validation failure not blocking the build
    * 
-   * @parameter default-value="false"
    * @since 1.0
    */
+  @Parameter(defaultValue = "false")
   private boolean ignoreFailure = false;
 
   /**
    * List of keys to match as text resources used from js. Default is ".js.".
    * 
-   * @parameter
    * @since 1.0
    */
+  @Parameter
   private String[] jsKeys = new String[] { ".js." };
 
   /**
@@ -122,49 +124,49 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    * 
    * Default value is true (double quoted), which complies with JSON format.
    * 
-   * @parameter default-value="true"
    * @since 1.3
    */
+  @Parameter(defaultValue = "true")
   private boolean jsDoubleQuoted = true;
 
   /**
    * List of keys to match as url resources. Default is ".url.".
    * 
-   * @parameter
    * @since 1.0
    */
+  @Parameter
   private String[] urlKeys = new String[] { ".url." };
 
   /**
    * List of keys to match as html text resources. Default is ".text.".
    * 
-   * @parameter
    * @since 1.0
    */
+  @Parameter
   private String[] htmlKeys = new String[] { ".text." };
 
   /**
    * XML Schema to use for html resource validation. Default value is to use XHTML1 transitional.
    * 
-   * @parameter default-value="xhtml1-transitional.xsd"
    * @since 1.3
    */
+  @Parameter(defaultValue = "xhtml1-transitional.xsd")
   private File xhtmlSchema;
 
   /**
    * List of keys to match as non-html text resources. Default is ".title.".
    * 
-   * @parameter
    * @since 1.1
    */
+  @Parameter
   private String[] textKeys = new String[] { ".title." };
 
   /**
    * Custom validation patterns.
    * 
-   * @parameter
    * @since 1.3
    */
+  @Parameter
   private CustomPattern[] customPatterns = new CustomPattern[] {};
 
   /**
@@ -172,9 +174,9 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    * 
    * Defaults to the value of parameter propertyDir.
    * 
-   * @parameter
    * @since 1.4
    */
+  @Parameter
   private File dictionaryDir;
 
   /**
@@ -182,17 +184,17 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
    * 
    * This makes the plugin more controllable from profiles.
    * 
-   * @parameter expression="${l10n.skip}"
    * @since 1.4
    */
+  @Parameter(defaultValue = "${l10n.skip}")
   private boolean skip;
 
   /**
    * Base directory where all reports are written to.
    * 
-   * @parameter expression="${project.build.directory}/l10n-reports"
    * @since 1.5
    */
+  @Parameter(defaultValue = "${project.build.directory}/l10n-reports")
   private File reportsDir;
 
   private L10nValidator<File> directoryValidator;

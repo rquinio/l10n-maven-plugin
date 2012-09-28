@@ -17,6 +17,9 @@ import java.util.ResourceBundle;
 
 import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
@@ -30,27 +33,26 @@ import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
  * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via {@link L10nReportRenderer}. It uses a subset of
  * {@link ValidateMojo} configuration, as ignoreFailures and excludedKey are not applicable for a report.
  * 
- * @goal report
- * @phase site
  * @since 1.2
  * @author romain.quinio
  */
+@Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
 public class ReportMojo extends AbstractMavenReport implements L10nValidationConfiguration {
 
   /**
    * Directory containing properties file to check
    * 
-   * @parameter default-value="src\\main\\resources"
    * @since 1.2
    */
+  @Parameter(defaultValue = "src/main/resources")
   private File propertyDir;
 
   /**
    * List of keys to match as text resources used from js. Default is ".js.".
    * 
-   * @parameter
    * @since 1.2
    */
+  @Parameter
   private String[] jsKeys = new String[] { ".js." };
 
   /**
@@ -58,25 +60,25 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
    * 
    * @see {@link ValidateMojo}
    * 
-   * @parameter default-value="true"
    * @since 1.3
    */
+  @Parameter(defaultValue = "true")
   private boolean jsDoubleQuoted = true;
 
   /**
    * List of keys to match as url resources. Default is ".url.".
    * 
-   * @parameter
    * @since 1.2
    */
+  @Parameter
   private String[] urlKeys = new String[] { ".url." };
 
   /**
    * List of keys to match as html text resources. Default is ".text.".
    * 
-   * @parameter
    * @since 1.2
    */
+  @Parameter
   private String[] htmlKeys = new String[] { ".text." };
 
   /**
@@ -85,22 +87,23 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
    * @parameter default-value="xhtml1-transitional.xsd"
    * @since 1.3
    */
+  @Parameter
   private File xhtmlSchema;
 
   /**
    * List of keys to match as non-html text resources. Default is ".title.".
    * 
-   * @parameter
    * @since 1.2
    */
+  @Parameter
   private String[] textKeys = new String[] { ".title." };
 
   /**
    * Custom validation patterns.
    * 
-   * @parameter
    * @since 1.3
    */
+  @Parameter
   private CustomPattern[] customPatterns = new CustomPattern[] {};
 
   /**
@@ -108,9 +111,9 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
    * 
    * Defaults to the value of parameter propertyDir.
    * 
-   * @parameter
    * @since 1.4
    */
+  @Parameter
   private File dictionaryDir;
 
   /**
