@@ -17,6 +17,5 @@ Refactoring:
 - Refactor using chains of validators/transformators for nested validation ?
 
 Other:
-- Use plugin to validate its own translation !?
 - Document re-use configuration for build and reporting (is it possible ? what about maven 3 new reporting configuration ?)
 

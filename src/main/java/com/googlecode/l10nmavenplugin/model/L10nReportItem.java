@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
@@ -106,8 +107,17 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
 
     @Override
     public String toString() {
-      ResourceBundle bundle = getBundle(Locale.ENGLISH);
-      return bundle.getString(titleLocKey);
+      String s;
+
+      try {
+        ResourceBundle bundle = getBundle(Locale.ENGLISH);
+        s = bundle.getString(titleLocKey);
+      } catch (MissingResourceException e) {
+        // Cobertura execution doesn' have access to .properties ?
+        s = name();
+      }
+
+      return s;
     }
 
     /**

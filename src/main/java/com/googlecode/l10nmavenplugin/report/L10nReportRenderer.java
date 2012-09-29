@@ -159,7 +159,7 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
     endTable();
     endSection();
     sink.horizontalRule();
-    link("#summary", "Up");
+    link("#summary", bundle.getString("report.dashboard.title.up"));
   }
 
   private void renderL10nReportItem(L10nReportItem reportItem) {

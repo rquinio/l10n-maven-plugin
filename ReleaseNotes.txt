@@ -1,3 +1,7 @@
+1.6
+Plugin now uses itself to validate its own translation
+Added French translation for the plugin
+
 
 1.5 23-Sep-2012
 Added generation of CSV files with keys for each severity (ERROR/WARN/INFO).
