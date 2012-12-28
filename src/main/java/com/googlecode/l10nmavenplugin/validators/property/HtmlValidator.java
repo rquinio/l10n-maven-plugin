@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Copyright (c) 2012 Romain Quinio (http://code.google.com/p/l10n-maven-plugin)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.validators.property;
@@ -65,16 +65,22 @@ import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValid
 public class HtmlValidator extends PropertiesKeyConventionValidator implements L10nValidator<Property> {
 
   /**
-   * Template for inserting text resource content before XHTML validation. Need to declare HTML entities that are non default XML ones. Also the text has to be
+   * Template for inserting text resource content before XHTML validation. Need to declare HTML entities that are non
+   * default XML ones. Also the text has to be
    * inside a div, as plain text is not allowed directly in body.
    */
-  public static final String XHTML_TEMPLATE = "<!DOCTYPE html [ " + "<!ENTITY nbsp \"&#160;\"> " + "<!ENTITY copy \"&#169;\"> " + "<!ENTITY cent \"&#162;\"> "
-      + "<!ENTITY pound \"&#163;\"> " + "<!ENTITY yen \"&#165;\"> " + "<!ENTITY euro \"&#8364;\"> " + "<!ENTITY sect \"&#167;\"> "
-      + "<!ENTITY reg \"&#174;\"> " + "<!ENTITY trade \"&#8482;\"> " + "<!ENTITY ndash \"&#8211;\"> " + "]> " + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+  public static final String XHTML_TEMPLATE = "<!DOCTYPE html [ " + "<!ENTITY nbsp \"&#160;\"> "
+      + "<!ENTITY copy \"&#169;\"> " + "<!ENTITY cent \"&#162;\"> "
+      + "<!ENTITY pound \"&#163;\"> " + "<!ENTITY yen \"&#165;\"> " + "<!ENTITY euro \"&#8364;\"> "
+      + "<!ENTITY sect \"&#167;\"> "
+      + "<!ENTITY reg \"&#174;\"> " + "<!ENTITY trade \"&#8482;\"> " + "<!ENTITY ndash \"&#8211;\"> " + "]> "
+      + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
       + "<head><title /></head><body><div>{0}</div></body></html>";
 
   public static final File XHTML5 = new File("xhtml5.xsd");
+
   public static final File XHTML1_TRANSITIONAL = new File("xhtml1-transitional.xsd");
+
   public static final File XHTML1_STRICT = new File("xhtml1-strict.xsd");
 
   private static final File[] PREDEFINED_XSD = new File[] { XHTML5, XHTML1_TRANSITIONAL, XHTML1_STRICT };
@@ -84,11 +90,17 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
    * 
    * TODO should handle " or ' in attribute value ...
    * 
-   * @see <a href="http://dev.w3.org/html5/spec/global-attributes.html#embedding-custom-non-visible-data-with-the-data-attributes">W3C HTML5</a>
+   * @see <a
+   *      href="http://dev.w3.org/html5/spec/global-attributes.html#embedding-custom-non-visible-data-with-the-data-attributes">W3C
+   *      HTML5</a>
    */
   private static final String DATA_ATTRIBUTE_REGEX = "data-[-a-z0-9_:\\.]+=(\"[^\"]*\"|'[^\']*')";
 
   protected static final Pattern DATA_ATTRIBUTE_PATTERN = Pattern.compile(DATA_ATTRIBUTE_REGEX);
+
+  private static final String MULTIPLE_LIS_AT_ROOT_REGEXP = "^(<li>.*</li>\\s*)+$";
+
+  protected static final Pattern MULTIPLE_LIS_AT_ROOT_PATTERN = Pattern.compile(MULTIPLE_LIS_AT_ROOT_REGEXP);
 
   /**
    * The validator for HTML resources
@@ -115,7 +127,8 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
    * @param xhtmlSchema
    * @param logger
    */
-  public HtmlValidator(File xhtmlSchema, L10nValidatorLogger logger, L10nValidator<Property> spellCheckValidator, String[] htmlKeys) {
+  public HtmlValidator(File xhtmlSchema, L10nValidatorLogger logger, L10nValidator<Property> spellCheckValidator,
+      String[] htmlKeys) {
     super(logger, htmlKeys);
     this.spellCheckValidator = spellCheckValidator;
 
@@ -129,14 +142,17 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
       if (xhtmlSchema.exists()) {
         // Load custom schema
         schema = factory.newSchema(xhtmlSchema);
-      } else {
+      }
+      else {
         // Try to load a pre-defined schemas from classpath
         URL schemaURL = this.getClass().getClassLoader().getResource(xhtmlSchema.getName());
 
         if (schemaURL == null) {
           logger.getLogger().error(
-              "Could not load XML schema from file <" + xhtmlSchema.getAbsolutePath() + "> and <" + xhtmlSchema.getName()
-                  + "> is not a default schema either (" + Arrays.toString(PREDEFINED_XSD) + "), thus defaulting to " + XHTML1_TRANSITIONAL.getName());
+              "Could not load XML schema from file <" + xhtmlSchema.getAbsolutePath() + "> and <" +
+                  xhtmlSchema.getName()
+                  + "> is not a default schema either (" + Arrays.toString(PREDEFINED_XSD) + "), thus defaulting to " +
+                  XHTML1_TRANSITIONAL.getName());
           schemaURL = this.getClass().getClassLoader().getResource(XHTML1_TRANSITIONAL.getName());
         }
         schema = factory.newSchema(schemaURL);
@@ -147,10 +163,12 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
       parser = saxParserFactory.newSAXParser();
 
-    } catch (SAXException e) {
+    }
+    catch (SAXException e) {
       logger.getLogger().error("Could not initialize HtmlValidator", e);
 
-    } catch (ParserConfigurationException e) {
+    }
+    catch (ParserConfigurationException e) {
       logger.getLogger().error("Could not initialize HtmlValidator", e);
     }
   }
@@ -175,9 +193,12 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
       String formattedMessage = property.getMessage();
       ReportingErrorHandler handler = new ReportingErrorHandler(property, formattedMessage, reportItems, logger);
       try {
+        formattedMessage = applyWorkArroundForMultipleLIsIfNecessary(formattedMessage);
+
         if (ParametricCoherenceValidator.isParametric(formattedMessage)) {
           formattedMessage = ParametricMessageValidator.defaultFormat(formattedMessage);
-        } else { // In any case replace '' by ' (resource without parameters but called with fmt:param)
+        }
+        else { // In any case replace '' by ' (resource without parameters but called with fmt:param)
           formattedMessage = formattedMessage.replaceAll("''", "'");
         }
 
@@ -196,25 +217,42 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
             parser.parse(new InputSource(new StringReader(xhtml)), saxHandler);
             nbErrors += saxHandler.getNbErrors();
 
-          } catch (SAXException e) {
+          }
+          catch (SAXException e) {
             logger.getLogger().error("SAXException while parsing [" + formattedMessage + "]", e);
-          } catch (IOException e) {
+          }
+          catch (IOException e) {
             logger.getLogger().error(e);
           }
         }
 
-      } catch (IllegalArgumentException e) {
+      }
+      catch (IllegalArgumentException e) {
         // Catch MessageFormat errors in case of malformed message
         handler.report(e, Type.MALFORMED_PARAMETER, "Formatting error: ", property, formattedMessage, reportItems);
-      } catch (SAXException e) {
-        handler.report(e, Type.HTML_VALIDATION, "XHTML validation fatal error: ", property, formattedMessage, reportItems);
-      } catch (IOException e) {
-        handler.report(e, Type.HTML_VALIDATION, "XHTML validation fatal error: ", property, formattedMessage, reportItems);
-      } finally {
+      }
+      catch (SAXException e) {
+        handler.report(e, Type.HTML_VALIDATION, "XHTML validation fatal error: ", property, formattedMessage,
+            reportItems);
+      }
+      catch (IOException e) {
+        handler.report(e, Type.HTML_VALIDATION, "XHTML validation fatal error: ", property, formattedMessage,
+            reportItems);
+      }
+      finally {
         nbErrors += handler.getNbErrors();
       }
     }
     return nbErrors;
+  }
+
+  private String applyWorkArroundForMultipleLIsIfNecessary(String formattedMessage) {
+    String result = formattedMessage;
+    String trimmed = StringUtils.trim(formattedMessage);
+    if (MULTIPLE_LIS_AT_ROOT_PATTERN.matcher(trimmed).matches()) {
+      result = "<ul>" + formattedMessage + "</ul>";
+    }
+    return result;
   }
 
   public void setSpellCheckValidator(L10nValidator<Property> spellCheckValidator) {
@@ -228,7 +266,9 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
   private class SpellCheckValidationHandler extends DefaultHandler {
 
     private final Property property;
+
     private final List<L10nReportItem> reportItems;
+
     private int nbErrors = 0;
 
     public SpellCheckValidationHandler(Property property, List<L10nReportItem> reportItems) {
@@ -267,7 +307,8 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
 
     private final String formattedMessage;
 
-    public ReportingErrorHandler(Property property, String formattedMessage, List<L10nReportItem> reportItems, L10nValidatorLogger logger) {
+    public ReportingErrorHandler(Property property, String formattedMessage, List<L10nReportItem> reportItems,
+        L10nValidatorLogger logger) {
       this.reportItems = reportItems;
       this.formattedMessage = formattedMessage;
       this.logger = logger;
@@ -296,11 +337,13 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
      * @param formattedMessage
      * @param reportItems
      */
-    public void report(Exception e, Type type, String errorText, Property property, String formattedMessage, List<L10nReportItem> reportItems) {
+    public void report(Exception e, Type type, String errorText, Property property, String formattedMessage,
+        List<L10nReportItem> reportItems) {
       if (Severity.ERROR.equals(type.getSeverity())) {
         nbErrors++;
       }
-      L10nReportItem reportItem = new L10nReportItem(type, errorText + StringUtils.abbreviate(e.getMessage(), NB_ERROR_MAX_CHAR), property, formattedMessage);
+      L10nReportItem reportItem = new L10nReportItem(type, errorText +
+          StringUtils.abbreviate(e.getMessage(), NB_ERROR_MAX_CHAR), property, formattedMessage);
       reportItems.add(reportItem);
       logger.log(reportItem);
     }
