@@ -34,6 +34,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <id>mederel</id>
+      <name>Emile de Weerd</name>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
   <issueManagement>
     <system>GoogleCode</system>
@@ -150,7 +157,7 @@
     </pluginManagement>
     <plugins>
       <!-- Needed to process the annotations to create an xml file -->
-      <!--  
+      <!--
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
@@ -218,7 +225,7 @@
             <haltOnFailure>false</haltOnFailure>
             <totalBranchRate>80</totalBranchRate>
             <totalLineRate>85</totalLineRate>
-            <!-- 
+            <!--
             <packageLineRate>50</packageLineRate>
             <packageBranchRate>50</packageBranchRate>
             <branchRate>25</branchRate>
