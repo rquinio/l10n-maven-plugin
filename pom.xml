@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.googlecode.l10n-maven-plugin</groupId>
   <artifactId>l10n-maven-plugin</artifactId>
-  <version>1.6-SNAPSHOT</version>
+  <version>1.7-SNAPSHOT</version>
   <name>L10n maven plugin</name>
   <description>Maven plugin to validate localization resources in Java properties files</description>
   <packaging>maven-plugin</packaging>
@@ -30,6 +30,13 @@
     <developer>
       <id>romain.quinio</id>
       <name>Romain Quinio</name>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mederel</id>
+      <name>Emile de Weerd</name>
       <roles>
         <role>developer</role>
       </roles>
@@ -150,7 +157,7 @@
     </pluginManagement>
     <plugins>
       <!-- Needed to process the annotations to create an xml file -->
-      <!--  
+      <!--
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
@@ -218,7 +225,7 @@
             <haltOnFailure>false</haltOnFailure>
             <totalBranchRate>80</totalBranchRate>
             <totalLineRate>85</totalLineRate>
-            <!-- 
+            <!--
             <packageLineRate>50</packageLineRate>
             <packageBranchRate>50</packageBranchRate>
             <branchRate>25</branchRate>
