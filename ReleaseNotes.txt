@@ -1,5 +1,4 @@
 1.6
-Plugin now uses itself to validate its own translation
 Added French translation for the plugin
 
 
