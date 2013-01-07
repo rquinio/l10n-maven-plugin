@@ -1,6 +1,7 @@
 1.6
 Added French translation for the plugin
-
+Fixed a bug with a simple quote following a double quote in the HTML validation
+Addition of the acceptance of LI elements at the root of an HTML resource (without a UL or OL encompassing element)
 
 1.5 23-Sep-2012
 Added generation of CSV files with keys for each severity (ERROR/WARN/INFO).
