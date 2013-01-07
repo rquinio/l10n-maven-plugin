@@ -1,7 +1,7 @@
 
 Spellchecking:
 - Support for Hunspell dictionaries (pending https://github.com/dren-dk/HunspellJNA/issues/2)
-- No spellcheck on root bundle ?
+- Should run spellcheck on root bundle (in case default language is in root bundle)
 
 Existing validators:
 - Check for URLs in html validator ? What is XHTML schema validating for href / src ?
@@ -17,5 +17,7 @@ Refactoring:
 - Refactor using chains of validators/transformators for nested validation ?
 
 Other:
-- Document re-use configuration for build and reporting (is it possible ? what about maven 3 new reporting configuration ?)
+- Create a FAQ
+- Document re-use configuration for build and reporting: not possible due to http://jira.codehaus.org/browse/MSITE-516
+
 
