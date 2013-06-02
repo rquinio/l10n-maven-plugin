@@ -18,6 +18,13 @@ import org.junit.Test;
 public class BundlePropertiesFileTest {
 
   @Test
+  public void testBundleName() {
+    PropertiesFile file = new BundlePropertiesFile("Bundle_en.properties", null);
+    assertEquals("Bundle_en.properties", file.getFileName());
+    assertEquals("Bundle", file.getBundleName());
+  }
+
+  @Test
   public void testLanguageLocale() {
     PropertiesFile file = new BundlePropertiesFile("Bundle_en.properties", null);
     assertEquals(Locale.ENGLISH, file.getLocale());
@@ -36,8 +43,10 @@ public class BundlePropertiesFileTest {
   }
 
   @Test
-  public void noLocaleShouldBeNull() {
+  public void rootPropertyShouldHaveNoLocale() {
     PropertiesFile file = new BundlePropertiesFile("Bundle.properties", null);
+    assertEquals("Bundle", file.getBundleName());
     assertNull(file.getLocale());
   }
+
 }

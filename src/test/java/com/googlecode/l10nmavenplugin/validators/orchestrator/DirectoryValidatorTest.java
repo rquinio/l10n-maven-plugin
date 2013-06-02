@@ -10,17 +10,14 @@
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
 
@@ -44,14 +41,32 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   }
 
   @Test
-  public void testBundlePropertiesFamilyLoading() throws MojoExecutionException {
+  public void testSingleBundleePropertiesFamilyLoading() throws MojoExecutionException {
     File directory = getFile("locales");
 
-    PropertiesFamily propertiesFamily = validator.loadPropertiesFamily(directory);
+    List<PropertiesFamily> propertiesFamilies = validator.loadPropertiesFamily(directory);
 
+    assertEquals(1, propertiesFamilies.size());
+
+    PropertiesFamily propertiesFamily = propertiesFamilies.get(0);
     assertEquals("Bundle", propertiesFamily.getBaseName());
     assertEquals(3, propertiesFamily.getNbPropertiesFiles());
     assertNotNull(propertiesFamily.getRootPropertiesFile());
+  }
+
+  @Test
+  public void testMultipleBundlePropertiesFamilyLoading() throws MojoExecutionException {
+    File directory = getFile("multi-bundle");
+
+    List<PropertiesFamily> propertiesFamilies = validator.loadPropertiesFamily(directory);
+
+    assertEquals(3, propertiesFamilies.size());
+    assertEquals("3", propertiesFamilies.get(0).getBaseName());
+    assertEquals(1, propertiesFamilies.get(0).getPropertiesFiles().size());
+    assertEquals("2", propertiesFamilies.get(1).getBaseName());
+    assertEquals(1, propertiesFamilies.get(1).getPropertiesFiles().size());
+    assertEquals("1", propertiesFamilies.get(2).getBaseName());
+    assertEquals(2, propertiesFamilies.get(2).getPropertiesFiles().size());
   }
 
   @Test
@@ -63,19 +78,6 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
     } catch (IllegalArgumentException e) {
       e.printStackTrace();
     }
-  }
-
-  @Test
-  public void testLogSummary() {
-    items.add(new L10nReportItem(Type.HTML_VALIDATION, "", "", "", "", ""));
-    items.add(new L10nReportItem(Type.INCOHERENT_TAGS, "", "", "", "", ""));
-    items.add(new L10nReportItem(Type.EXCLUDED, "", "", "", "", ""));
-
-    validator.logSummary(items);
-
-    verify(log, atLeast(4)).info(any(CharSequence.class));
-    verify(log, atLeast(1)).warn(any(CharSequence.class));
-    verify(log, atLeast(1)).error(any(CharSequence.class));
   }
 
   private File getFile(String path) {
