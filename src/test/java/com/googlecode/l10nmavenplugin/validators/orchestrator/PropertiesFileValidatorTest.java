@@ -47,5 +47,4 @@ public class PropertiesFileValidatorTest extends AbstractL10nValidatorTest<Prope
 
     assertEquals(0, nbErrors);
   }
-
 }

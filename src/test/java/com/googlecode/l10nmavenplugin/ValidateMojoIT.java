@@ -72,8 +72,4 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
     assertTrue(items.size() >= 3);
     verify(log, atLeast(3)).error(any(CharSequence.class));
   }
-
-  private File getFile(String path) {
-    return new File(this.getClass().getClassLoader().getResource(path).getFile());
-  }
 }

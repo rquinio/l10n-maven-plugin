@@ -13,6 +13,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.Before;
@@ -80,8 +81,29 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
     }
   }
 
-  private File getFile(String path) {
-    return new File(this.getClass().getClassLoader().getResource(path).getFile());
-  }
+  /**
+   * Test the behavior of {@link Properties#load(java.io.Reader)} regarding newline character.
+   */
+  @Test
+  public void testLoadingMultilineProperties() throws MojoExecutionException {
+    File directory = getFile("multi-line");
 
+    List<PropertiesFamily> propertiesFamilies = validator.loadPropertiesFamily(directory);
+
+    Properties properties = propertiesFamilies.get(0).getPropertiesFiles().iterator().next().getProperties();
+
+    assertEquals("Some text.", properties.getProperty("ALLP.text.key"));
+
+    // Value formatted on multiple lines: newline character needs to be escaped
+    assertEquals("Some text continuing on next line.", properties.getProperty("ALLP.text.multilineValue"));
+
+    // \n is valid
+    assertEquals("Some text continuing on next line and with newline character \n (displayed as 2 lines)", properties.getProperty("ALLP.text.valueWithNewline"));
+
+    // If forgetting to escape newline character, the value is truncated ...
+    assertEquals("Some text continuing", properties.getProperty("ALLP.text.badMultilineValue"));
+
+    // ... and first world of 2nd line becomes a key (space is valid key/valuer separator)
+    assertEquals("next line, but without escaping.", properties.getProperty("on"));
+  }
 }
