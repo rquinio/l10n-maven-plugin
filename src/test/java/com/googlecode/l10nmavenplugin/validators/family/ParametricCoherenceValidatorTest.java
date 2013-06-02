@@ -14,12 +14,12 @@ import static org.junit.Assert.*;
 import java.util.regex.Matcher;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.model.BundlePropertyFamily;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
-import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
 
 public class ParametricCoherenceValidatorTest extends AbstractL10nValidatorTest<PropertyFamily> {
 
@@ -31,17 +31,28 @@ public class ParametricCoherenceValidatorTest extends AbstractL10nValidatorTest<
   }
 
   @Test
-  public void testParametricReplacePattern() {
-    assertFalse(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some text").matches());
-    assertFalse(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some quoted text: '{bla}' ").matches());
+  public void testIsParametric() {
+    assertFalse(ParametricCoherenceValidator.isParametric("Some text"));
+    assertFalse(ParametricCoherenceValidator.isParametric("Some quoted text: '{bla}' "));
 
-    assertTrue(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some text: {0} {1}").matches());
-    assertTrue(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some date: {0,date}").matches());
-    assertTrue(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some date: {0,number,integer}").matches());
+    assertTrue(ParametricCoherenceValidator.isParametric("Some text: {0} {1}"));
+    assertTrue(ParametricCoherenceValidator.isParametric("Some date: {0,date}"));
+    assertTrue(ParametricCoherenceValidator.isParametric("Some date: {0,number,integer}"));
   }
 
   @Test
-  public void testParametricReplacepatternCapture() {
+  public void testIsParametricWithNewline() {
+    assertTrue(ParametricCoherenceValidator.isParametric("Some text: {0} \n with newline"));
+  }
+
+  @Test
+  @Ignore("Case not supported yet")
+  public void singleQuoteShouldBeAnEscapeSequence() {
+    assertFalse(ParametricCoherenceValidator.isParametric("'{0}'"));
+  }
+
+  @Test
+  public void testParametricReplacePatternCapture() {
     Matcher m = ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some {0} parametrized text {1,date}");
     assertTrue(m.matches());
     // Only last is saved

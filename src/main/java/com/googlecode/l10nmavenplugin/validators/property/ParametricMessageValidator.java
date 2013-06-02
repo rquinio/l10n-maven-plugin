@@ -25,12 +25,10 @@ import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValid
 /**
  * Validator to check syntax of parametric resources, i.e properties containing formatting parameters ({0},{1},...).
  * 
- * It will detect single quotes that are not escaped (typical usage in French, Italian, and also English). Also performs
- * a format, to check syntax is correct.
+ * It will detect single quotes that are not escaped (typical usage in French, Italian, and also English). Also performs a format, to check syntax is correct.
  * 
- * Note: parametric js resource, where parametric replacement is done on client side, should also consume the single
- * quote escaping (i.e follow {@link java.text.MessageFormat} specification), otherwise the validator will raise false
- * positive.
+ * Note: parametric js resource, where parametric replacement is done on client side, should also consume the single quote escaping (i.e follow
+ * {@link java.text.MessageFormat} specification), otherwise the validator will raise false positive.
  * 
  * @author romain.quinio
  * @since 1.0
@@ -40,8 +38,7 @@ import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValid
 public class ParametricMessageValidator extends AbstractL10nValidator implements L10nValidator<Property> {
 
   /**
-   * Validation of single quotes escaping, consumed by MessageFormat. First unescaped quote is matched, with special
-   * case where it is at the end
+   * Validation of single quotes escaping, consumed by MessageFormat. First unescaped quote is matched, with special case where it is at the end
    * 
    * "^([^']|'')*$" runs into StackOverflow for long messages.
    */
@@ -65,7 +62,7 @@ public class ParametricMessageValidator extends AbstractL10nValidator implements
     }
   }
 
-  protected static final Pattern UNESCAPED_QUOTE_PATTERN = Pattern.compile(UNESCAPED_QUOTE_REGEX);
+  protected static final Pattern UNESCAPED_QUOTE_PATTERN = Pattern.compile(UNESCAPED_QUOTE_REGEX, Pattern.DOTALL);
 
   public ParametricMessageValidator(L10nValidatorLogger logger) {
     super(logger);
@@ -85,18 +82,14 @@ public class ParametricMessageValidator extends AbstractL10nValidator implements
       Matcher unescapedQuotesMatcher = UNESCAPED_QUOTE_PATTERN.matcher(property.getMessage());
       if (unescapedQuotesMatcher.matches()) {
         nbErrors++;
-        L10nReportItem reportItem = new L10nReportItem(Type.UNESCAPED_QUOTE_WITH_PARAMETERS,
-            "MessageFormat requires that ' be escaped with ''.", property,
+        L10nReportItem reportItem = new L10nReportItem(Type.UNESCAPED_QUOTE_WITH_PARAMETERS, "MessageFormat requires that ' be escaped with ''.", property,
             null);
         reportItems.add(reportItem);
         logger.log(reportItem);
       }
-    }
-    else if (property.getMessage().contains("''")) {
-      L10nReportItem reportItem = new L10nReportItem(
-          Type.ESCAPED_QUOTE_WITHOUT_PARAMETER,
-          "Resource contains escaped quote '' but no parameters. This may be correct if formatter is called with unused parameters.",
-          property, null);
+    } else if (property.getMessage().contains("''")) {
+      L10nReportItem reportItem = new L10nReportItem(Type.ESCAPED_QUOTE_WITHOUT_PARAMETER,
+          "Resource contains escaped quote '' but no parameters. This may be correct if formatter is called with unused parameters.", property, null);
       reportItems.add(reportItem);
       logger.log(reportItem);
     }

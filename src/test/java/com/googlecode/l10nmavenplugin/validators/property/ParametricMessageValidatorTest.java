@@ -12,6 +12,7 @@ package com.googlecode.l10nmavenplugin.validators.property;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.googlecode.l10nmavenplugin.model.Property;
@@ -39,26 +40,47 @@ public class ParametricMessageValidatorTest extends AbstractL10nValidatorTest<Pr
     assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text'").matches());
     assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("'Some text'").matches());
     assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some '' text '").matches());
-    // TODO assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some 'quoted' text").matches());
   }
 
   @Test
-  public void testEscapedQuote() {
+  @Ignore("Case not supported yet")
+  public void singleQuoteShouldBeAnEscapeSequence() {
+    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some 'quoted' text").matches());
+  }
+
+  @Test
+  public void unescapedQuoteWithoutParametersShouldValidate() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some text", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some ' text", FILE), items));
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some '' {0} text", FILE), items));
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some ''{0}'' text", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some ' text with \n newline character", FILE), items));
+
+    // No warnings either
+    assertEquals(0, items.size());
   }
 
   @Test
-  public void testUnescapedQuote() {
+  public void escapedQuoteWithParametersShouldValidate() {
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some '' {0} text", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some ''{0}'' text", FILE), items));
+
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_KO, "Some text {0} \n with '' newline character", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_KO, "Some '' text \n with {0} newline character", FILE), items));
+
+    // No warnings either
+    assertEquals(0, items.size());
+  }
+
+  @Test
+  public void unescapedQuoteWithParametersShouldError() {
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some' text{1}", FILE), items));
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some {0} 'text", FILE), items));
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "<{0,date}> != '#price':$", FILE), items));
+    assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some text {0} \n with ' newline character", FILE), items));
+    assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "Some ' text \n with {0} newline character", FILE), items));
   }
 
   @Test
-  public void testUnnecessaryQuoteEscaping() {
+  public void escapedQuotesWithoutParametersShouldWarn() {
     // Only a warning
     assertEquals(0, validator.validate(new PropertyImpl(KEY_KO, "Some '' text", FILE), items));
     assertEquals(1, items.size());

@@ -51,7 +51,11 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
   private static final String DETECT_PARAMETERS_REGEXP = "^.*" + CAPTURE_PARAMETERS_REGEXP + ".*$";
 
   protected static final Pattern CAPTURE_PARAMETERS_PATTERN = Pattern.compile(CAPTURE_PARAMETERS_REGEXP);
-  protected static final Pattern DETECT_PARAMETERS_PATTERN = Pattern.compile(DETECT_PARAMETERS_REGEXP);
+
+  /**
+   * Use DOTALL flag so that . includes newline characters
+   */
+  protected static final Pattern DETECT_PARAMETERS_PATTERN = Pattern.compile(DETECT_PARAMETERS_REGEXP, Pattern.DOTALL);
 
   public ParametricCoherenceValidator(L10nValidatorLogger logger) {
     super(logger);
