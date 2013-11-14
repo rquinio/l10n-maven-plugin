@@ -10,10 +10,7 @@
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,12 +23,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFamily;
-import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
+import com.googlecode.l10nmavenplugin.utils.PropertiesLoader;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nValidationException;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
@@ -45,13 +41,20 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
 
   private final L10nValidator<PropertiesFamily> propertiesFamilyValidator;
 
-  public DirectoryValidator(L10nValidatorLogger logger, L10nValidator<PropertiesFamily> propertiesFamilyValidator) {
+  private final L10nValidator<File> duplicateKeysValidator;
+
+  private final PropertiesLoader propertiesLoader;
+
+  public DirectoryValidator(L10nValidatorLogger logger, L10nValidator<PropertiesFamily> propertiesFamilyValidator, L10nValidator<File> duplicateKeysValidator) {
     super(logger);
     this.propertiesFamilyValidator = propertiesFamilyValidator;
+    this.duplicateKeysValidator = duplicateKeysValidator;
+
+    this.propertiesLoader = new PropertiesLoader(logger);
   }
 
   /**
-   * Validate .properties files in a directory, grouped by bundle.
+   * Validate .properties files in a directory, grouped by bundle (aka PropertiesFamily).
    * 
    * @param directory
    *          the folder containing .properties files to validate
@@ -62,8 +65,8 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
    */
   public int validate(File directory, List<L10nReportItem> reportItems) {
     int nbError = 0;
-
-    List<PropertiesFamily> propertiesFamilies = loadPropertiesFamily(directory);
+    List<PropertiesFamily> propertiesFamilies = new ArrayList<PropertiesFamily>();
+    nbError += loadPropertiesFamily(directory, reportItems, propertiesFamilies);
     for (PropertiesFamily propertiesFamily : propertiesFamilies) {
       if (propertiesFamily != null && propertiesFamily.getNbPropertiesFiles() > 0) {
         nbError += propertiesFamilyValidator.validate(propertiesFamily, reportItems);
@@ -81,7 +84,9 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
   /**
    * Load a group of Properties file from a directory
    */
-  protected List<PropertiesFamily> loadPropertiesFamily(File directory) {
+  protected int loadPropertiesFamily(File directory, List<L10nReportItem> reportItems, List<PropertiesFamily> propertiesFamilies) {
+    int nbErrors = 0;
+
     logger.getLogger().info("Looking for .properties files in: " + directory.getAbsolutePath());
     List<PropertiesFile> propertiesFilesInDir = new ArrayList<PropertiesFile>();
 
@@ -91,11 +96,16 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
 
     } else {
       for (File file : files) {
-        propertiesFilesInDir.add(loadPropertiesFile(file));
+        // Validate File
+        nbErrors += duplicateKeysValidator.validate(file, reportItems);
+
+        // Load it normally
+        propertiesFilesInDir.add(loadPropertiesFile(file, reportItems));
       }
     }
+    propertiesFamilies.addAll(loadPropertiesFamily(propertiesFilesInDir));
+    return nbErrors;
 
-    return loadPropertiesFamily(propertiesFilesInDir);
   }
 
   private List<PropertiesFamily> loadPropertiesFamily(List<PropertiesFile> propertiesFilesInDir) {
@@ -128,28 +138,8 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
   /**
    * Load a single Properties file
    */
-  protected PropertiesFile loadPropertiesFile(File file) {
-    PropertiesFile propertiesFile = null;
-
-    String fileName = file.getName();
-    logger.getLogger().debug("Loading " + fileName + "...");
-
-    try {
-      InputStream inStream = new FileInputStream(file);
-      Properties properties = new Properties();
-      try {
-        properties.load(inStream);
-        propertiesFile = new BundlePropertiesFile(fileName, properties);
-      } catch (IllegalArgumentException e) {
-        // Add file details to the exception
-        throw new IllegalArgumentException("The file <" + fileName + "> could not be loaded. Check for a malformed Unicode escape sequence.", e);
-
-      } finally {
-        inStream.close();
-      }
-    } catch (IOException e) {
-      throw new L10nValidationException("An unexpected exception has occured while loading properties.", e);
-    }
-    return propertiesFile;
+  protected PropertiesFile loadPropertiesFile(File file, List<L10nReportItem> reportItems) {
+    Properties propertiesToFill = new Properties();
+    return propertiesLoader.loadPropertiesFile(file, propertiesToFill);
   }
 }

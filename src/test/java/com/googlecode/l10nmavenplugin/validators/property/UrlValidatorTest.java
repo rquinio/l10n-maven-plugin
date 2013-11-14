@@ -74,7 +74,7 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Test
   public void testParametricURL() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://{0}/{1}/{2}", FILE), items));
-    // Invalid param number should not be replaced qnd trigger an error
+    // Invalid param number should not be replaced and trigger an error
     assertEquals(1, validator.validate(new PropertyImpl(KEY_OK, "http://{199}", FILE), items));
     // Check MessageFormat parsing exceptions are catched
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "http://{0 }/{1}", FILE), items));

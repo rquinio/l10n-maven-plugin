@@ -12,6 +12,7 @@ package com.googlecode.l10nmavenplugin.validators.orchestrator;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -26,11 +27,14 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
 
   private DirectoryValidator validator;
 
+  private List<PropertiesFamily> propertiesFamilies;
+
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    validator = new DirectoryValidator(logger, new AlwaysSucceedingValidator<PropertiesFamily>());
+    validator = new DirectoryValidator(logger, new AlwaysSucceedingValidator<PropertiesFamily>(), new AlwaysSucceedingValidator<File>());
+    propertiesFamilies = new ArrayList<PropertiesFamily>();
   }
 
   /**
@@ -44,9 +48,9 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   @Test
   public void testSingleBundleePropertiesFamilyLoading() throws MojoExecutionException {
     File directory = getFile("locales");
+    int nbErrors = validator.loadPropertiesFamily(directory, items, propertiesFamilies);
 
-    List<PropertiesFamily> propertiesFamilies = validator.loadPropertiesFamily(directory);
-
+    assertEquals(0, nbErrors);
     assertEquals(1, propertiesFamilies.size());
 
     PropertiesFamily propertiesFamily = propertiesFamilies.get(0);
@@ -58,9 +62,9 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   @Test
   public void testMultipleBundlePropertiesFamilyLoading() throws MojoExecutionException {
     File directory = getFile("multi-bundle");
+    int nbErrors = validator.loadPropertiesFamily(directory, items, propertiesFamilies);
 
-    List<PropertiesFamily> propertiesFamilies = validator.loadPropertiesFamily(directory);
-
+    assertEquals(0, nbErrors);
     assertEquals(3, propertiesFamilies.size());
     assertEquals("3", propertiesFamilies.get(0).getBaseName());
     assertEquals(1, propertiesFamilies.get(0).getPropertiesFiles().size());
@@ -74,10 +78,10 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   public void malfomedPropertiesShouldFailExecution() throws MojoExecutionException {
     File file = getFile("malformed/malformed.properties");
     try {
-      validator.loadPropertiesFile(file);
+      validator.loadPropertiesFile(file, items);
       fail("Malformed properties file should fail");
     } catch (IllegalArgumentException e) {
-      e.printStackTrace();
+      assertTrue(true);
     }
   }
 
@@ -88,7 +92,9 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   public void testLoadingMultilineProperties() throws MojoExecutionException {
     File directory = getFile("multi-line");
 
-    List<PropertiesFamily> propertiesFamilies = validator.loadPropertiesFamily(directory);
+    int nbErrors = validator.loadPropertiesFamily(directory, items, propertiesFamilies);
+
+    assertEquals(0, nbErrors);
 
     Properties properties = propertiesFamilies.get(0).getPropertiesFiles().iterator().next().getProperties();
 

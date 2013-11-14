@@ -35,9 +35,9 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
  * @since ??
  * 
  */
-public class DuplicationValidator extends AbstractL10nValidator implements L10nValidator<PropertiesFamily> {
+public class DuplicateValuesValidator extends AbstractL10nValidator implements L10nValidator<PropertiesFamily> {
 
-  public DuplicationValidator(L10nValidatorLogger logger) {
+  public DuplicateValuesValidator(L10nValidatorLogger logger) {
     super(logger);
   }
 

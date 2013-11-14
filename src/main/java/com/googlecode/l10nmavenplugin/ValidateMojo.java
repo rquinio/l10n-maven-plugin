@@ -31,6 +31,7 @@ import com.googlecode.l10nmavenplugin.validators.family.HtmlTagCoherenceValidato
 import com.googlecode.l10nmavenplugin.validators.family.IdenticalTranslationValidator;
 import com.googlecode.l10nmavenplugin.validators.family.MissingTranslationValidator;
 import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
+import com.googlecode.l10nmavenplugin.validators.file.DuplicateKeysValidator;
 import com.googlecode.l10nmavenplugin.validators.orchestrator.DirectoryValidator;
 import com.googlecode.l10nmavenplugin.validators.orchestrator.PropertiesFamilyValidator;
 import com.googlecode.l10nmavenplugin.validators.orchestrator.PropertyFamilyValidator;
@@ -292,7 +293,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyFamilyValidator.setPropertyValidator(propertyValidator);
 
     PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir, propertyFamilyValidator);
-    directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator);
+    L10nValidator<File> duplicateKeysValidator = new DuplicateKeysValidator(logger);
+    directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator, duplicateKeysValidator);
   }
 
   /**

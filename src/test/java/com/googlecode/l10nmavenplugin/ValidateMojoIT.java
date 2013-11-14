@@ -61,7 +61,6 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
   /**
    * Test tricky escaping of \ before " when loading Properties
    * 
-   * @throws MojoExecutionException
    */
   @Test
   public void testJsEscapeFromProperties() throws IOException, MojoExecutionException {
@@ -71,5 +70,19 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
     assertEquals(3, nbErrors);
     assertTrue(items.size() >= 3);
     verify(log, atLeast(3)).error(any(CharSequence.class));
+  }
+
+  /**
+   * Test duplicated keys when loading Properties
+   * 
+   */
+  @Test
+  public void testDuplicateKeys() throws IOException, MojoExecutionException {
+    File directory = getFile("duplicates");
+    int nbErrors = plugin.validate(directory, items);
+
+    assertEquals(2, nbErrors);
+    assertTrue(items.size() >= 2);
+    verify(log, atLeast(2)).error(any(CharSequence.class));
   }
 }
