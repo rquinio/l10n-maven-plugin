@@ -14,6 +14,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
+import com.googlecode.l10nmavenplugin.format.MessageFormatFormatter;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
@@ -24,7 +26,8 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Before
   public void setUp() {
     super.setUp();
-    validator = new UrlValidator(logger, new String[] { ".url." });
+    Formatter formatter = new MessageFormatFormatter();
+    validator = new UrlValidator(logger, new String[] { ".url." }, formatter);
   }
 
   @Test

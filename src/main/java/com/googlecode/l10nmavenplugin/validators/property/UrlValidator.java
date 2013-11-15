@@ -19,13 +19,13 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 import com.googlecode.l10nmavenplugin.validators.PropertiesKeyConventionValidator;
-import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
 
 /**
  * Validator to check URL is well formed, either being:
@@ -65,8 +65,11 @@ public class UrlValidator extends PropertiesKeyConventionValidator implements L1
 
   protected static final Pattern URL_VALIDATION_PATTERN = Pattern.compile(URL_VALIDATION_REGEXP);
 
-  public UrlValidator(L10nValidatorLogger logger, String[] urlKeys) {
+  private final Formatter formattingParametersExtractor;
+
+  public UrlValidator(L10nValidatorLogger logger, String[] urlKeys, Formatter formattingParametersExtractor) {
     super(logger, urlKeys);
+    this.formattingParametersExtractor = formattingParametersExtractor;
   }
 
   /**
@@ -88,8 +91,8 @@ public class UrlValidator extends PropertiesKeyConventionValidator implements L1
     String formattedMessage = property.getMessage();
 
     try {
-      if (ParametricCoherenceValidator.isParametric(formattedMessage)) {
-        formattedMessage = ParametricMessageValidator.defaultFormat(property.getMessage());
+      if (formattingParametersExtractor.isParametric(formattedMessage)) {
+        formattedMessage = formattingParametersExtractor.defaultFormat(property.getMessage());
       }
       // Unescape HTML in case URL is used in HTML context (ex: &amp; -> &)
       String url = StringEscapeUtils.unescapeHtml(formattedMessage);

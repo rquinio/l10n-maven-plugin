@@ -7,23 +7,21 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-package com.googlecode.l10nmavenplugin.validators.property;
+package com.googlecode.l10nmavenplugin.validators.property.format;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.googlecode.l10nmavenplugin.format.MessageFormatFormatter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.Property;
-import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
-import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
 
 /**
- * Validator to check syntax of parametric resources, i.e properties containing formatting parameters ({0},{1},...).
+ * Validator to check syntax of {@link java.text.MessageFormat} parametric resources, i.e properties containing formatting parameters ({0},{1},...).
  * 
  * It will detect single quotes that are not escaped (typical usage in French, Italian, and also English). Also performs a format, to check syntax is correct.
  * 
@@ -35,7 +33,7 @@ import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValid
  * @see {@link com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator}
  * 
  */
-public class ParametricMessageValidator extends AbstractL10nValidator implements L10nValidator<Property> {
+public class MessageFormatFormattingValidator extends FormattingValidator implements L10nValidator<Property> {
 
   /**
    * Validation of single quotes escaping, consumed by MessageFormat. First unescaped quote is matched, with special case where it is at the end
@@ -44,28 +42,12 @@ public class ParametricMessageValidator extends AbstractL10nValidator implements
    */
   private static final String UNESCAPED_QUOTE_REGEX = "(.*[^']'[^'].*|^'[^'].*|.*[^']'$)";
 
-  /**
-   * Number of formatting parameters replaced in resources
-   */
-  private static final int NB_MAX_FORMAT_PARAM = 19;
-
-  /**
-   * Values to replace parameters {i} in properties.
-   * 
-   * Use Integers as they work with all parameter definitions {i,date} {i,number} etc.
-   */
-  private static final Object[] PARAMETRIC_REPLACE_VALUES = new Integer[NB_MAX_FORMAT_PARAM];
-
-  static {
-    for (int i = 0; i < NB_MAX_FORMAT_PARAM; i++) {
-      PARAMETRIC_REPLACE_VALUES[i] = i;
-    }
-  }
-
   protected static final Pattern UNESCAPED_QUOTE_PATTERN = Pattern.compile(UNESCAPED_QUOTE_REGEX, Pattern.DOTALL);
 
-  public ParametricMessageValidator(L10nValidatorLogger logger) {
+  public MessageFormatFormattingValidator(L10nValidatorLogger logger) {
     super(logger);
+
+    formatter = new MessageFormatFormatter();
   }
 
   /**
@@ -77,7 +59,7 @@ public class ParametricMessageValidator extends AbstractL10nValidator implements
     int nbErrors = 0;
 
     // boolean isParametric = this.captureParameters(key, message, propertiesName);
-    boolean isParametric = ParametricCoherenceValidator.isParametric(property.getMessage());
+    boolean isParametric = formatter.isParametric(property.getMessage());
     if (isParametric) {
       Matcher unescapedQuotesMatcher = UNESCAPED_QUOTE_PATTERN.matcher(property.getMessage());
       if (unescapedQuotesMatcher.matches()) {
@@ -94,10 +76,6 @@ public class ParametricMessageValidator extends AbstractL10nValidator implements
       logger.log(reportItem);
     }
     return nbErrors;
-  }
-
-  public static String defaultFormat(String message) {
-    return MessageFormat.format(message, PARAMETRIC_REPLACE_VALUES);
   }
 
   public boolean shouldValidate(Property property) {

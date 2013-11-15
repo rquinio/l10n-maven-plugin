@@ -11,12 +11,11 @@ package com.googlecode.l10nmavenplugin.validators.family;
 
 import static org.junit.Assert.*;
 
-import java.util.regex.Matcher;
-
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
+import com.googlecode.l10nmavenplugin.format.MessageFormatFormatter;
 import com.googlecode.l10nmavenplugin.model.BundlePropertyFamily;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
@@ -27,37 +26,9 @@ public class ParametricCoherenceValidatorTest extends AbstractL10nValidatorTest<
   @Before
   public void setUp() {
     super.setUp();
-    validator = new ParametricCoherenceValidator(logger);
-  }
 
-  @Test
-  public void testIsParametric() {
-    assertFalse(ParametricCoherenceValidator.isParametric("Some text"));
-    assertFalse(ParametricCoherenceValidator.isParametric("Some quoted text: '{bla}' "));
-
-    assertTrue(ParametricCoherenceValidator.isParametric("Some text: {0} {1}"));
-    assertTrue(ParametricCoherenceValidator.isParametric("Some date: {0,date}"));
-    assertTrue(ParametricCoherenceValidator.isParametric("Some date: {0,number,integer}"));
-  }
-
-  @Test
-  public void testIsParametricWithNewline() {
-    assertTrue(ParametricCoherenceValidator.isParametric("Some text: {0} \n with newline"));
-  }
-
-  @Test
-  @Ignore("Case not supported yet")
-  public void singleQuoteShouldBeAnEscapeSequence() {
-    assertFalse(ParametricCoherenceValidator.isParametric("'{0}'"));
-  }
-
-  @Test
-  public void testParametricReplacePatternCapture() {
-    Matcher m = ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some {0} parametrized text {1,date}");
-    assertTrue(m.matches());
-    // Only last is saved
-    assertEquals(1, m.groupCount());
-    assertEquals("1", m.group(1));
+    Formatter formatter = new MessageFormatFormatter();
+    validator = new ParametricCoherenceValidator(logger, formatter);
   }
 
   /**

@@ -7,7 +7,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-package com.googlecode.l10nmavenplugin.validators.property;
+package com.googlecode.l10nmavenplugin.validators.property.format;
 
 import static org.junit.Assert.*;
 
@@ -19,33 +19,33 @@ import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
 
-public class ParametricMessageValidatorTest extends AbstractL10nValidatorTest<Property> {
+public class MessageFormatParametricValidatorTest extends AbstractL10nValidatorTest<Property> {
 
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    validator = new ParametricMessageValidator(logger);
+    validator = new MessageFormatFormattingValidator(logger);
   }
 
   @Test
   public void testUnescapedQuotesPattern() {
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text").matches());
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some '' text").matches());
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text''").matches());
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("''Some text").matches());
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ''{0}'' text").matches());
+    assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text").matches());
+    assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some '' text").matches());
+    assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text''").matches());
+    assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("''Some text").matches());
+    assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ''{0}'' text").matches());
 
-    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ' text").matches());
-    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text'").matches());
-    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("'Some text'").matches());
-    assertTrue(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some '' text '").matches());
+    assertTrue(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some ' text").matches());
+    assertTrue(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some text'").matches());
+    assertTrue(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("'Some text'").matches());
+    assertTrue(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some '' text '").matches());
   }
 
   @Test
   @Ignore("Case not supported yet")
-  public void singleQuoteShouldBeAnEscapeSequence() {
-    assertFalse(ParametricMessageValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some 'quoted' text").matches());
+  public void singleQuoteShouldBeAnEscapeSequencePattern() {
+    assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some 'quoted' text").matches());
   }
 
   @Test

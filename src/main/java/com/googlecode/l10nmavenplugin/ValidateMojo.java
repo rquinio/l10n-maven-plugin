@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
@@ -39,12 +40,13 @@ import com.googlecode.l10nmavenplugin.validators.orchestrator.PropertyValidator;
 import com.googlecode.l10nmavenplugin.validators.property.DefaultValidator;
 import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
 import com.googlecode.l10nmavenplugin.validators.property.JsValidator;
-import com.googlecode.l10nmavenplugin.validators.property.ParametricMessageValidator;
 import com.googlecode.l10nmavenplugin.validators.property.PatternValidator;
 import com.googlecode.l10nmavenplugin.validators.property.PlainTextValidator;
 import com.googlecode.l10nmavenplugin.validators.property.SpellCheckValidator;
 import com.googlecode.l10nmavenplugin.validators.property.TrailingWhitespaceValidator;
 import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.FormattingValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFormattingValidator;
 
 /**
  * Validate a set of l10n {@link Properties} files against:
@@ -246,21 +248,24 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     }
     L10nValidator<Property> spellCheckValidator = new SpellCheckValidator(logger, dictionaryDir);
 
+    FormattingValidator formattingValidator = new MessageFormatFormattingValidator(logger);
+    Formatter formatter = formattingValidator.getFormatter();
+
     L10nValidator<Property> htmlValidator;
     if (xhtmlSchema != null) {
-      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys);
+      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys, formatter);
     } else {
-      htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys);
+      htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys, formatter);
     }
 
     L10nValidator<Property> jsValidator = new JsValidator(jsDoubleQuoted, htmlValidator, logger, jsKeys);
-    L10nValidator<Property> urlValidator = new UrlValidator(logger, urlKeys);
+    L10nValidator<Property> urlValidator = new UrlValidator(logger, urlKeys, formatter);
     L10nValidator<Property> plainTextValidator = new PlainTextValidator(logger, spellCheckValidator, textKeys);
     L10nValidator<Property> defaultValidator = new DefaultValidator(logger, htmlKeys, urlKeys);
-    L10nValidator<Property> parametricMessageValidator = new ParametricMessageValidator(logger);
+
     L10nValidator<Property> trailingWhitespaceValidator = new TrailingWhitespaceValidator(logger);
     L10nValidator<PropertyFamily> missingTranslationValidator = new MissingTranslationValidator(logger);
-    L10nValidator<PropertyFamily> parametricCoherenceValidator = new ParametricCoherenceValidator(logger);
+    L10nValidator<PropertyFamily> parametricCoherenceValidator = new ParametricCoherenceValidator(logger, formatter);
     L10nValidator<PropertyFamily> identicalTranslationValidator = new IdenticalTranslationValidator(logger);
     L10nValidator<PropertyFamily> htmlTagCoherenceValidator = new HtmlTagCoherenceValidator(logger, htmlKeys);
 
@@ -280,7 +285,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyValidator.setDefaultValidator(defaultValidator);
     propertyValidator.setHtmlValidator(htmlValidator);
     propertyValidator.setJsValidator(jsValidator);
-    propertyValidator.setParametricMessageValidator(parametricMessageValidator);
+    propertyValidator.setParametricMessageValidator(formattingValidator);
     propertyValidator.setPlainTextValidator(plainTextValidator);
     propertyValidator.setTrailingWhitespaceValidator(trailingWhitespaceValidator);
     propertyValidator.setUrlValidator(urlValidator);
