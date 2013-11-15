@@ -82,7 +82,9 @@ public class CStyleFormatter implements Formatter {
   }
 
   public String defaultFormat(String message) throws IllegalArgumentException {
-    return format(message, PARAMETRIC_REPLACE_VALUES);
+    // Throws exception for %f and %T, so disabled for now
+    // return format(message, PARAMETRIC_REPLACE_VALUES);
+    return message;
   }
 
   public boolean isParametric(String message) {

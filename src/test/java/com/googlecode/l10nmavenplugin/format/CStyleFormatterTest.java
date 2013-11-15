@@ -63,13 +63,6 @@ public class CStyleFormatterTest {
   @Test
   public void defaultFormatShouldSupportAllTypes() {
     // No exceptions
-    formatter.defaultFormat("%1$s %2$d %3$c");
+    formatter.defaultFormat("%1$s %2$d %3$c %4$f %5$tHH");
   }
-
-  @Test
-  @Ignore("Not supported")
-  public void defaultFormatShouldSupportAllTypes2() {
-    formatter.defaultFormat("%4$f %5$tHH");
-  }
-
 }
