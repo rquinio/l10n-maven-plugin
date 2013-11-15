@@ -71,11 +71,6 @@ public class PropertiesFamilyValidator extends AbstractL10nValidator implements 
       PropertyFamily propertyFamily = it.next();
       if (propertyFamilyValidator.shouldValidate(propertyFamily)) {
         nbErrors += propertyFamilyValidator.validate(propertyFamily, reportItems);
-
-        if (reportItems.size() > 0) {
-          logBundleValidationSummary(reportItems, propertiesFamily.getBaseName());
-        }
-
       } else {
         // Property is excluded from validation
         L10nReportItem item = new L10nReportItem(Type.EXCLUDED, "Property was excluded from validation by plugin configuration.", propertyFamily
@@ -85,7 +80,10 @@ public class PropertiesFamilyValidator extends AbstractL10nValidator implements 
       }
     }
 
-    generateCsv(reportItems, propertiesFamily.getBaseName());
+    if (reportItems.size() > 0) {
+      logBundleValidationSummary(reportItems, propertiesFamily.getBaseName());
+      generateCsv(reportItems, propertiesFamily.getBaseName());
+    }
 
     return nbErrors;
   }
