@@ -45,6 +45,7 @@ import com.googlecode.l10nmavenplugin.validators.property.PlainTextValidator;
 import com.googlecode.l10nmavenplugin.validators.property.SpellCheckValidator;
 import com.googlecode.l10nmavenplugin.validators.property.TrailingWhitespaceValidator;
 import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.CStyleFormattingValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.FormattingValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFormattingValidator;
 
@@ -66,8 +67,9 @@ import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFo
  * 
  * @note References for escape sequences and special characters:
  *       <ul>
- *       <li>Java Properties: {@link Properties#load}</li>
- *       <li>Java MessageFormat: {@link java.text.MessageFormat}</li>
+ *       <li>java.util.Properties: {@link java.util.Properties#load}</li>
+ *       <li>java.text.MessageFormat: {@link java.text.MessageFormat}</li>
+ *       <li>java.util.Formatter {@link java.util.Formatter}</li>
  *       <li>Javascript: {@link http://www.w3schools.com/js/js_special_characters.asp}</li>
  *       <li>JSON {@link http://json.org/}</li>
  *       <li>XHTML: {@link http://www.w3schools.com/tags/ref_entities.asp}</li>
@@ -75,7 +77,7 @@ import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFo
  *       </ul>
  *       Extra references for development:
  *       <ul>
- *       <li>Java Pattern: {@link java.util.regex.Pattern}</li>
+ *       <li>java.util.regex.Pattern: {@link java.util.regex.Pattern}</li>
  *       <li>Java String: {@link http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#101089}</li>
  *       </ul>
  * 
@@ -85,6 +87,10 @@ import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFo
  */
 @Mojo(name = "validate", defaultPhase = LifecyclePhase.TEST)
 public class ValidateMojo extends AbstractMojo implements L10nValidationConfiguration {
+
+  public static final String MESSAGE_FORMAT_FORMATTER = "messageFormat";
+
+  public static final String C_STYLE_FORMATTER = "C-style";
 
   /**
    * Directory containing properties file to check
@@ -200,6 +206,17 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   @Parameter(defaultValue = "${project.build.directory}/l10n-reports")
   private File reportsDir;
 
+  /**
+   * 
+   * Type of {@link Formatter} used for parametric replacement.
+   * 
+   * Allowed values: {@link #MESSAGE_FORMAT_FORMATTER} and {@link #C_STYLE_FORMATTER}
+   * 
+   * @since 1.7
+   */
+  @Parameter(defaultValue = MESSAGE_FORMAT_FORMATTER)
+  private String formatter;
+
   private L10nValidator<File> directoryValidator;
 
   private L10nValidatorLogger logger;
@@ -248,7 +265,12 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     }
     L10nValidator<Property> spellCheckValidator = new SpellCheckValidator(logger, dictionaryDir);
 
-    FormattingValidator formattingValidator = new MessageFormatFormattingValidator(logger);
+    FormattingValidator formattingValidator;
+    if (C_STYLE_FORMATTER.equalsIgnoreCase(formatter)) {
+      formattingValidator = new CStyleFormattingValidator(logger);
+    } else {
+      formattingValidator = new MessageFormatFormattingValidator(logger);
+    }
     Formatter formatter = formattingValidator.getFormatter();
 
     L10nValidator<Property> htmlValidator;
@@ -472,5 +494,13 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
 
   public void setReportsDir(File reportsDir) {
     this.reportsDir = reportsDir;
+  }
+
+  public String getFormatter() {
+    return formatter;
+  }
+
+  public void setFormatter(String formatter) {
+    this.formatter = formatter;
   }
 }

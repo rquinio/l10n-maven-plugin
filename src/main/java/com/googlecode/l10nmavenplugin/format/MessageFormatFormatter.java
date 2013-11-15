@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * {@link java.text.MessageFormat} wrapper.
+ * 
  */
 public class MessageFormatFormatter implements Formatter {
 
@@ -79,5 +80,9 @@ public class MessageFormatFormatter implements Formatter {
 
   public String format(String message, Object... args) {
     return MessageFormat.format(message, args);
+  }
+
+  public String displayIndexedParameter(int index) {
+    return "{" + index + "}";
   }
 }

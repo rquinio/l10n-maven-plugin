@@ -87,7 +87,7 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
   }
 
   /**
-   * Display parameters using {i}
+   * Display parameters
    * 
    * @param parameters
    * @return
@@ -98,7 +98,7 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
       if (i != 0) {
         sb.append(",");
       }
-      sb.append("{").append(parameters.get(i)).append("}");
+      sb.append(formatter.displayIndexedParameter(parameters.get(i)));
     }
     sb.append("]");
     return sb.toString();

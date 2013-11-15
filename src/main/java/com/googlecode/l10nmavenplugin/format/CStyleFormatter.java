@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * {@link java.util.Formatter} wrapper.
+ * 
  */
 public class CStyleFormatter implements Formatter {
 
@@ -103,6 +104,10 @@ public class CStyleFormatter implements Formatter {
     Collections.sort(parameters);
 
     return parameters;
+  }
+
+  public String displayIndexedParameter(int index) {
+    return "%" + index + "$";
   }
 
 }

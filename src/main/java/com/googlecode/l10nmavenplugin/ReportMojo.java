@@ -24,6 +24,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
 
@@ -115,6 +116,17 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
    */
   @Parameter
   private File dictionaryDir;
+
+  /**
+   * 
+   * Type of {@link Formatter} used for parametric replacement.
+   * 
+   * Allowed values: {@link ValidateMojo#MESSAGE_FORMAT_FORMATTER} and {@link ValidateMojo#C_STYLE_FORMATTER}
+   * 
+   * @since 1.7
+   */
+  @Parameter(defaultValue = ValidateMojo.MESSAGE_FORMAT_FORMATTER)
+  private String formatter;
 
   /**
    * Maven site renderer, not used by this Mojo.
@@ -315,6 +327,14 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   public File getReportsDir() {
     // Ignored for reporting
     return null;
+  }
+
+  public String getFormatter() {
+    return formatter;
+  }
+
+  public void setFormatter(String formatter) {
+    this.formatter = formatter;
   }
 
 }

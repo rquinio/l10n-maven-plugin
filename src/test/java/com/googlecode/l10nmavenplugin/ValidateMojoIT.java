@@ -85,4 +85,20 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
     assertTrue(items.size() >= 2);
     verify(log, atLeast(2)).error(any(CharSequence.class));
   }
+
+  @Test
+  public void testCStyleFormatting() throws IOException, MojoExecutionException {
+    File directory = getFile("cstyle");
+    plugin.setFormatter(ValidateMojo.C_STYLE_FORMATTER);
+
+    plugin.initialize();
+
+    int nbErrors = plugin.validate(directory, items);
+
+    assertEquals(0, nbErrors);
+
+    // 1 Warning for parametric coherence
+    assertTrue(items.size() >= 1);
+  }
+
 }

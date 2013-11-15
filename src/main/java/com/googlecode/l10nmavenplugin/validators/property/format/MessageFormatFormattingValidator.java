@@ -23,7 +23,7 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 /**
  * Validator to check syntax of {@link java.text.MessageFormat} parametric resources, i.e properties containing formatting parameters ({0},{1},...).
  * 
- * It will detect single quotes that are not escaped (typical usage in French, Italian, and also English). Also performs a format, to check syntax is correct.
+ * It will detect single quotes that are not escaped (typical usage in French, Italian, and also English).
  * 
  * Note: parametric js resource, where parametric replacement is done on client side, should also consume the single quote escaping (i.e follow
  * {@link java.text.MessageFormat} specification), otherwise the validator will raise false positive.

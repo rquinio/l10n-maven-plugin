@@ -14,6 +14,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.format.CStyleFormatter;
 import com.googlecode.l10nmavenplugin.format.Formatter;
 import com.googlecode.l10nmavenplugin.format.MessageFormatFormatter;
 import com.googlecode.l10nmavenplugin.model.BundlePropertyFamily;
@@ -89,4 +90,20 @@ public class ParametricCoherenceValidatorTest extends AbstractL10nValidatorTest<
     validator.validate(propertyFamily, items);
     assertEquals(1, items.size());
   }
+
+  @Test
+  public void testCStyleFormatCoherency() {
+    Formatter formatter = new CStyleFormatter();
+    validator = new ParametricCoherenceValidator(logger, formatter);
+
+    bundleA.put(KEY_KO, "%1$s%2$s%3$s");
+    bundleB.put(KEY_KO, "%1$s%2$s");
+    bundleC.put(KEY_KO, "%1$s");
+    PropertyFamily propertyFamily = new BundlePropertyFamily(KEY_KO, propertiesFamily);
+
+    // Only warning
+    assertEquals(0, validator.validate(propertyFamily, items));
+    assertEquals(2, items.size());
+  }
+
 }

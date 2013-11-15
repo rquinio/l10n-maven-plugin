@@ -6,6 +6,7 @@ import java.util.List;
  * Wrapper interface around formatter implementations.
  * 
  * Adds the ability to detect and extract formatting parameters from a message, based on the syntax used for parametric replacement.
+ * 
  */
 public interface Formatter {
 
@@ -34,4 +35,9 @@ public interface Formatter {
    * 
    */
   List<Integer> captureParameters(String message);
+
+  /**
+   * How to display an indexed parameter (ex: {0} or %1$), for logging purposes
+   */
+  String displayIndexedParameter(int index);
 }
