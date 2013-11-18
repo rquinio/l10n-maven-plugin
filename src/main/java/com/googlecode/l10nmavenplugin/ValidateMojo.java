@@ -247,6 +247,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     setExcludedKeys(configuration.getExcludedKeys());
     setDictionaryDir(configuration.getDictionaryDir());
     setReportsDir(configuration.getReportsDir());
+    setFormatter(configuration.getFormatter());
   }
 
   /**

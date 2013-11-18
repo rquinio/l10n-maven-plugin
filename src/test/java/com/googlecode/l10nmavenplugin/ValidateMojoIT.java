@@ -88,17 +88,27 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
 
   @Test
   public void testCStyleFormatting() throws IOException, MojoExecutionException {
-    File directory = getFile("cstyle");
+    File directory = getFile("parametric/cstyle");
     plugin.setFormatter(ValidateMojo.C_STYLE_FORMATTER);
-
+    // c-style is not spellcheck friendly
+    plugin.setDictionaryDir(null);
     plugin.initialize();
 
     int nbErrors = plugin.validate(directory, items);
 
+    // Warnings
     assertEquals(0, nbErrors);
+    assertEquals(2, items.size());
+  }
 
-    // 1 Warning for parametric coherence
-    assertTrue(items.size() >= 1);
+  @Test
+  public void testParametricCoherenceK() throws IOException, MojoExecutionException {
+    File directory = getFile("parametric/messageFormat");
+    int nbErrors = plugin.validate(directory, items);
+
+    // Warnings
+    assertEquals(0, nbErrors);
+    assertEquals(2, items.size());
   }
 
 }
