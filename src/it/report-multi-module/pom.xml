@@ -3,22 +3,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.googlecode.l10n-maven-plugin</groupId>
-  <artifactId>l10n-maven-plugin-report_fr-it</artifactId>
-  <packaging>jar</packaging>
+  <artifactId>l10n-maven-plugin-report-multi-module-it</artifactId>
+  <packaging>pom</packaging>
   <version>@project.version@</version>
-  <name>Report goal IT (fr)</name>
-  <description>IT for plugin report goal with a different locale</description>
+  <name>Multi-module report goal IT</name>
+  <description>IT of plugin report goal with maven multi-modules to detect working directory relative path issues</description>
+  <modules>
+    <module>moduleA</module>
+    <module>moduleB</module>
+  </modules>
   <reporting>
     <outputDirectory>${basedir}/target/site</outputDirectory>
     <excludeDefaults>true</excludeDefaults>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <locales>fr</locales>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>com.googlecode.l10n-maven-plugin</groupId>
         <artifactId>l10n-maven-plugin</artifactId>
@@ -30,18 +27,6 @@
               <report>report</report>
             </reports>
             <inherited>true</inherited>
-            <configuration>
-              <xhtmlSchema>xhtml5.xsd</xhtmlSchema>
-              <customPatterns>
-                <customPattern>
-                  <name>List pattern</name>
-                  <keys>
-                    <key>.list.</key>
-                  </keys>
-                  <regex>([A-Z](:[A-Z])+)?</regex>
-                </customPattern>
-              </customPatterns>
-            </configuration>
           </reportSet>
         </reportSets>
       </plugin>

@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.googlecode.l10n-maven-plugin</groupId>
-  <artifactId>l10n-maven-plugin-validate-test</artifactId>
+  <artifactId>l10n-maven-plugin-report-it</artifactId>
   <packaging>jar</packaging>
   <version>@project.version@</version>
   <name>Report goal IT</name>
   <description>Basic IT of plugin report goal, also used as report sample on wiki</description>
   <reporting>
-    <outputDirectory>${basedir}/target/site</outputDirectory>
+    <!--  <outputDirectory>${basedir}/target/site</outputDirectory>-->
     <excludeDefaults>true</excludeDefaults>
     <plugins>
       <plugin>
@@ -24,7 +24,6 @@
             </reports>
             <inherited>true</inherited>
             <configuration>
-              <!-- Faster loading -->
               <xhtmlSchema>xhtml5.xsd</xhtmlSchema>
               <customPatterns>
                 <customPattern>
