@@ -26,12 +26,14 @@ import org.apache.maven.reporting.MavenReportException;
 
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
+import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
 
 /**
  * Creates a report on l10n Properties files validation result.
  * 
- * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via {@link L10nReportRenderer}. It uses a subset of
- * {@link ValidateMojo} configuration, as ignoreFailures and excludedKey are not applicable for a report.
+ * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via
+ * {@link L10nReportRenderer}. It uses a subset of {@link ValidateMojo} configuration, as ignoreFailures and excludedKey
+ * are not applicable for a report.
  * 
  * @since 1.2
  * @author romain.quinio
@@ -143,6 +145,15 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   private String outputDirectory;
 
   /**
+   * Regular expression that is used before the XHTML validation to replace all custom references to other properties
+   * with their keys by a usual {0}
+   * 
+   * @since 1.8
+   */
+  @Parameter(defaultValue = HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES)
+  private String regExpForInternalReferenceToOtherProperties;
+
+  /**
    * Entry point for the plugin report goal
    * 
    * @param locale
@@ -159,7 +170,8 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
     try {
       nbErrors = validateMojo.validate(propertyDir, reportItems);
 
-    } catch (MojoExecutionException e) {
+    }
+    catch (MojoExecutionException e) {
       throw new MavenReportException("Could not exceute ValidateMojo", e);
     }
 
@@ -315,6 +327,14 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   public File getReportsDir() {
     // Ignored for reporting
     return null;
+  }
+
+  public String getRegExpForInternalReferenceToOtherProperties() {
+    return regExpForInternalReferenceToOtherProperties;
+  }
+
+  public void setRegExpForInternalReferenceToOtherProperties(String regExpForInternalReferenceToOtherProperties) {
+    this.regExpForInternalReferenceToOtherProperties = regExpForInternalReferenceToOtherProperties;
   }
 
 }

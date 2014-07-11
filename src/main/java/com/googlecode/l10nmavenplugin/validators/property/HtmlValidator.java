@@ -64,6 +64,8 @@ import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValid
  */
 public class HtmlValidator extends PropertiesKeyConventionValidator implements L10nValidator<Property> {
 
+  public static final String DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES = "\\[\\[[\\w._-]+\\]\\]";
+
   /**
    * Template for inserting text resource content before XHTML validation. Need to declare HTML entities that are non
    * default XML ones. Also the text has to be
@@ -111,14 +113,17 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
 
   private SAXParser parser;
 
+  private String regExpForInternalReferenceToOtherProperties;
+
   /**
    * Initialize using default XML schema
    * 
    * @param xhtmlSchema
    * @param logger
    */
-  public HtmlValidator(L10nValidatorLogger logger, L10nValidator<Property> spellCheckValidator, String[] htmlKeys) {
-    this(XHTML1_TRANSITIONAL, logger, spellCheckValidator, htmlKeys);
+  public HtmlValidator(L10nValidatorLogger logger, L10nValidator<Property> spellCheckValidator, String[] htmlKeys,
+      String regExpForInternalReferenceToOtherProperties) {
+    this(XHTML1_TRANSITIONAL, logger, spellCheckValidator, htmlKeys, regExpForInternalReferenceToOtherProperties);
   }
 
   /**
@@ -128,9 +133,10 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
    * @param logger
    */
   public HtmlValidator(File xhtmlSchema, L10nValidatorLogger logger, L10nValidator<Property> spellCheckValidator,
-      String[] htmlKeys) {
+      String[] htmlKeys, String regExpForInternalReferenceToOtherProperties) {
     super(logger, htmlKeys);
     this.spellCheckValidator = spellCheckValidator;
+    this.regExpForInternalReferenceToOtherProperties = regExpForInternalReferenceToOtherProperties;
 
     try {
       // SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -204,6 +210,7 @@ public class HtmlValidator extends PropertiesKeyConventionValidator implements L
 
         // HACK Remove custom data-* attributes, as thay can't easily be validated by a schema.
         formattedMessage = formattedMessage.replaceAll(DATA_ATTRIBUTE_REGEX, "");
+        formattedMessage = formattedMessage.replaceAll(regExpForInternalReferenceToOtherProperties, "{0}");
         String xhtml = MessageFormat.format(XHTML_TEMPLATE, formattedMessage);
         Source source = new StreamSource(new ByteArrayInputStream(xhtml.getBytes("UTF-8")));
 

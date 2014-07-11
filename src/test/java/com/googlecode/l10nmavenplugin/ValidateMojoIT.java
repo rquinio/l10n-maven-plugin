@@ -39,11 +39,14 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
     plugin.setDictionaryDir(dictionaryDir);
 
     CustomPattern listPattern = new CustomPattern("List", "([A-Z](:[A-Z])+)?", ".list.");
-    CustomPattern anotherPattern = new CustomPattern("List", "([A-Z](:[A-Z])+)?", new String[] { ".pattern1.", ".pattern2." });
+    CustomPattern anotherPattern = new CustomPattern("List", "([A-Z](:[A-Z])+)?", new String[] { ".pattern1.",
+        ".pattern2." });
     plugin.setCustomPatterns(new CustomPattern[] { listPattern, anotherPattern });
 
     // Junit bug can't use tmpFolder
     plugin.setReportsDir(new TemporaryFolder().newFolder());
+
+    plugin.setRegExpForInternalReferenceToOtherProperties(HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES);
 
     // Use default configuration for the rest
     plugin.initialize();

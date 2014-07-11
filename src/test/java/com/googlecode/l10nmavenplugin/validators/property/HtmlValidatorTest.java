@@ -33,7 +33,8 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void setUp() {
     super.setUp();
     // Use XHTML5 schema as it is much faster
-    validator = new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." });
+    validator = new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." },
+        HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES);
     validator.setSpellCheckValidator(new AlwaysSucceedingValidator<Property>());
   }
 
@@ -67,6 +68,12 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "<a href='http://example.com'>link</a>", FILE), items));
     // Nested HTML escaping "
     // assertEquals(0, plugin.validateProperty(KEY_OK, "<a onclick=\"javascript:alert(\\\"plop\\\");\"></a>", null));
+  }
+
+  @Test
+  public void testIncludedKeys() {
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK,
+        "<div>Some Text on<a href=\"[[ALLP.url.AURL]]\">Google</a></div>", FILE), items));
   }
 
   @Test

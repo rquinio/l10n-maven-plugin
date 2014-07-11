@@ -56,9 +56,11 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  * <li>Plain text resources containing HTML/URL</li>
  * </ul>
  * 
- * In case multiple checks are performed on a resource (ex: client side resource with parameters), the order above applies.
+ * In case multiple checks are performed on a resource (ex: client side resource with parameters), the order above
+ * applies.
  * 
- * The syntax of properties file itself is not checked, but it relies on loading them successfully as {@link Properties}.
+ * The syntax of properties file itself is not checked, but it relies on loading them successfully as {@link Properties}
+ * .
  * 
  * 
  * @note References for escape sequences and special characters:
@@ -197,6 +199,15 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   @Parameter(defaultValue = "${project.build.directory}/l10n-reports")
   private File reportsDir;
 
+  /**
+   * Regular expression that is used before the XHTML validation to replace all custom references to other properties
+   * with their keys by a usual {0}
+   * 
+   * @since 1.8
+   */
+  @Parameter(defaultValue = HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES)
+  private String regExpForInternalReferenceToOtherProperties;
+
   private L10nValidator<File> directoryValidator;
 
   private L10nValidatorLogger logger;
@@ -227,6 +238,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     setExcludedKeys(configuration.getExcludedKeys());
     setDictionaryDir(configuration.getDictionaryDir());
     setReportsDir(configuration.getReportsDir());
+    setRegExpForInternalReferenceToOtherProperties(configuration.getRegExpForInternalReferenceToOtherProperties());
   }
 
   /**
@@ -247,9 +259,12 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
 
     L10nValidator<Property> htmlValidator;
     if (xhtmlSchema != null) {
-      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys);
-    } else {
-      htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys);
+      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys,
+          regExpForInternalReferenceToOtherProperties);
+    }
+    else {
+      htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys,
+          regExpForInternalReferenceToOtherProperties);
     }
 
     L10nValidator<Property> jsValidator = new JsValidator(jsDoubleQuoted, htmlValidator, logger, jsKeys);
@@ -291,7 +306,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyFamilyValidator.setParametricCoherenceValidator(parametricCoherenceValidator);
     propertyFamilyValidator.setPropertyValidator(propertyValidator);
 
-    PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir, propertyFamilyValidator);
+    PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir,
+        propertyFamilyValidator);
     directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator);
   }
 
@@ -307,7 +323,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     if (!skip) {
       initialize();
       executeInternal();
-    } else {
+    }
+    else {
       getLog().info("Skipping plugin execution, as per configuration.");
     }
   }
@@ -329,10 +346,12 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
       if (ignoreFailure) {
         getLog().error("Validation has failed with " + nbErrors + " errors.");
         getLog().info("Ignoring failure as ignoreFailure is true.");
-      } else {
+      }
+      else {
         throw new MojoFailureException("Validation has failed with " + nbErrors + " errors.");
       }
-    } else {
+    }
+    else {
       getLog().info("Validation was successful.");
     }
   }
@@ -353,8 +372,11 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     try {
       nbErrors = directoryValidator.validate(directory, reportItems);
 
-    } catch (L10nValidationException e) {
-      throw new MojoExecutionException("An unexpected exception has occurred while validating properties under directory " + propertyDir.getAbsolutePath(), e);
+    }
+    catch (L10nValidationException e) {
+      throw new MojoExecutionException(
+          "An unexpected exception has occurred while validating properties under directory " +
+              propertyDir.getAbsolutePath(), e);
     }
     return nbErrors;
   }
@@ -466,4 +488,13 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   public void setReportsDir(File reportsDir) {
     this.reportsDir = reportsDir;
   }
+
+  public String getRegExpForInternalReferenceToOtherProperties() {
+    return regExpForInternalReferenceToOtherProperties;
+  }
+
+  public void setRegExpForInternalReferenceToOtherProperties(String regExpForInternalReferenceToOtherProperties) {
+    this.regExpForInternalReferenceToOtherProperties = regExpForInternalReferenceToOtherProperties;
+  }
+
 }

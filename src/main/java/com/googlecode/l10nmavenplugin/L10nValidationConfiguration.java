@@ -70,4 +70,6 @@ public interface L10nValidationConfiguration {
   void setReportsDir(File reportsDir);
 
   File getReportsDir();
+
+  String getRegExpForInternalReferenceToOtherProperties();
 }
