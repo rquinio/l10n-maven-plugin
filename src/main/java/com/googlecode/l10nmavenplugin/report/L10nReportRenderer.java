@@ -150,7 +150,8 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
     paragraph(bundle.getString(itemType.getDescriptionLocKey()));
     startTable();
     tableHeader(new String[] { "", bundle.getString("report.dashboard.messages.title.propertyKey"),
-        bundle.getString("report.dashboard.messages.title.errorMessage"), bundle.getString("report.dashboard.messages.title.propertyValue") });
+        bundle.getString("report.dashboard.messages.title.propertiesFileName"), bundle.getString("report.dashboard.messages.title.errorMessage"),
+        bundle.getString("report.dashboard.messages.title.propertyValue") });
 
     for (L10nReportItem reportItem : reportItems) {
       renderL10nReportItem(reportItem);
@@ -166,7 +167,8 @@ public class L10nReportRenderer extends AbstractMavenReportRenderer {
     // Can't use super.tableRow, as it consumes some {}
     sink.tableRow();
     rendreCell(String.valueOf(index));
-    rendreCell(reportItem.getPropertiesKey() + "  " + reportItem.getPropertiesName());
+    rendreCell(reportItem.getPropertiesKey());
+    rendreCell(reportItem.getPropertiesName());
     rendreCell(reportItem.getItemMessage());
     rendreCell(("[" + reportItem.getPropertiesValue() + "]"));
     sink.tableRow_();

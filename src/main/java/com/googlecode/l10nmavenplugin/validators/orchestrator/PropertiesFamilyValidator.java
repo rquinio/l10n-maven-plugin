@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.maven.plugin.MojoExecutionException;
 
@@ -69,7 +71,6 @@ public class PropertiesFamilyValidator extends AbstractL10nValidator implements 
       PropertyFamily propertyFamily = it.next();
       if (propertyFamilyValidator.shouldValidate(propertyFamily)) {
         nbErrors += propertyFamilyValidator.validate(propertyFamily, reportItems);
-
       } else {
         // Property is excluded from validation
         L10nReportItem item = new L10nReportItem(Type.EXCLUDED, "Property was excluded from validation by plugin configuration.", propertyFamily
@@ -79,7 +80,10 @@ public class PropertiesFamilyValidator extends AbstractL10nValidator implements 
       }
     }
 
-    generateCsv(reportItems, propertiesFamily.getBaseName());
+    if (reportItems.size() > 0) {
+      logBundleValidationSummary(reportItems, propertiesFamily.getBaseName());
+      generateCsv(reportItems, propertiesFamily.getBaseName());
+    }
 
     return nbErrors;
   }
@@ -138,6 +142,28 @@ public class PropertiesFamilyValidator extends AbstractL10nValidator implements 
   public boolean shouldValidate(PropertiesFamily propertiesFamily) {
     // Always validate
     return true;
+  }
+
+  /**
+   * Log a summary of the validation of a given bundle
+   * 
+   * @param reportItems
+   */
+  protected void logBundleValidationSummary(List<L10nReportItem> reportItems, String bundleName) {
+    logger.getLogger().info("--------------------");
+    logger.getLogger().info("Bundle <" + bundleName + "> validation summary: " + reportItems.size() + " issues.");
+
+    Map<Type, List<L10nReportItem>> byType = L10nReportItem.byType(reportItems);
+
+    for (Entry<Type, List<L10nReportItem>> entry : byType.entrySet()) {
+      Type type = entry.getKey();
+      int nbType = entry.getValue().size();
+      Severity severity = entry.getValue().iterator().next().getItemSeverity();
+
+      logger.log(severity, type + ": " + nbType);
+    }
+    logger.getLogger().info("--------------------\n");
+
   }
 
 }

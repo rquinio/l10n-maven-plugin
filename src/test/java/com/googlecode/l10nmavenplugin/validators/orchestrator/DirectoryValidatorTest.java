@@ -10,17 +10,16 @@
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
 
@@ -28,11 +27,14 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
 
   private DirectoryValidator validator;
 
+  private List<PropertiesFamily> propertiesFamilies;
+
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    validator = new DirectoryValidator(logger, new AlwaysSucceedingValidator<PropertiesFamily>());
+    validator = new DirectoryValidator(logger, new AlwaysSucceedingValidator<PropertiesFamily>(), new AlwaysSucceedingValidator<File>());
+    propertiesFamilies = new ArrayList<PropertiesFamily>();
   }
 
   /**
@@ -44,42 +46,70 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   }
 
   @Test
-  public void testBundlePropertiesFamilyLoading() throws MojoExecutionException {
+  public void testSingleBundleePropertiesFamilyLoading() throws MojoExecutionException {
     File directory = getFile("locales");
+    int nbErrors = validator.loadPropertiesFamily(directory, items, propertiesFamilies);
 
-    PropertiesFamily propertiesFamily = validator.loadPropertiesFamily(directory);
+    assertEquals(0, nbErrors);
+    assertEquals(1, propertiesFamilies.size());
 
+    PropertiesFamily propertiesFamily = propertiesFamilies.get(0);
     assertEquals("Bundle", propertiesFamily.getBaseName());
     assertEquals(3, propertiesFamily.getNbPropertiesFiles());
     assertNotNull(propertiesFamily.getRootPropertiesFile());
   }
 
   @Test
-  public void malfomedPropertiesShouldFailExecution() throws MojoExecutionException {
-    File file = getFile("malformed/malformed.properties");
-    try {
-      validator.loadPropertiesFile(file);
-      fail("Malformed properties file should fail");
-    } catch (IllegalArgumentException e) {
-      e.printStackTrace();
-    }
+  public void testMultipleBundlePropertiesFamilyLoading() throws MojoExecutionException {
+    File directory = getFile("multi-bundle");
+    int nbErrors = validator.loadPropertiesFamily(directory, items, propertiesFamilies);
+
+    assertEquals(0, nbErrors);
+    assertEquals(3, propertiesFamilies.size());
+    assertEquals("3", propertiesFamilies.get(0).getBaseName());
+    assertEquals(1, propertiesFamilies.get(0).getPropertiesFiles().size());
+    assertEquals("2", propertiesFamilies.get(1).getBaseName());
+    assertEquals(1, propertiesFamilies.get(1).getPropertiesFiles().size());
+    assertEquals("1", propertiesFamilies.get(2).getBaseName());
+    assertEquals(2, propertiesFamilies.get(2).getPropertiesFiles().size());
   }
 
   @Test
-  public void testLogSummary() {
-    items.add(new L10nReportItem(Type.HTML_VALIDATION, "", "", "", "", ""));
-    items.add(new L10nReportItem(Type.INCOHERENT_TAGS, "", "", "", "", ""));
-    items.add(new L10nReportItem(Type.EXCLUDED, "", "", "", "", ""));
-
-    validator.logSummary(items);
-
-    verify(log, atLeast(4)).info(any(CharSequence.class));
-    verify(log, atLeast(1)).warn(any(CharSequence.class));
-    verify(log, atLeast(1)).error(any(CharSequence.class));
+  public void malfomedPropertiesShouldFailExecution() throws MojoExecutionException {
+    File file = getFile("malformed/malformed.properties");
+    try {
+      validator.loadPropertiesFile(file, items);
+      fail("Malformed properties file should fail");
+    } catch (IllegalArgumentException e) {
+      assertTrue(true);
+    }
   }
 
-  private File getFile(String path) {
-    return new File(this.getClass().getClassLoader().getResource(path).getFile());
-  }
+  /**
+   * Test the behavior of {@link Properties#load(java.io.Reader)} regarding newline character.
+   */
+  @Test
+  public void testLoadingMultilineProperties() throws MojoExecutionException {
+    File directory = getFile("multi-line");
 
+    int nbErrors = validator.loadPropertiesFamily(directory, items, propertiesFamilies);
+
+    assertEquals(0, nbErrors);
+
+    Properties properties = propertiesFamilies.get(0).getPropertiesFiles().iterator().next().getProperties();
+
+    assertEquals("Some text.", properties.getProperty("ALLP.text.key"));
+
+    // Value formatted on multiple lines: newline character needs to be escaped
+    assertEquals("Some text continuing on next line.", properties.getProperty("ALLP.text.multilineValue"));
+
+    // \n is valid
+    assertEquals("Some text continuing on next line and with newline character \n (displayed as 2 lines)", properties.getProperty("ALLP.text.valueWithNewline"));
+
+    // If forgetting to escape newline character, the value is truncated ...
+    assertEquals("Some text continuing", properties.getProperty("ALLP.text.badMultilineValue"));
+
+    // ... and first world of 2nd line becomes a key (space is valid key/valuer separator)
+    assertEquals("next line, but without escaping.", properties.getProperty("on"));
+  }
 }

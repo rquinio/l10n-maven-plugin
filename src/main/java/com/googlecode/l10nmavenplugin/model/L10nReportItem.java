@@ -51,6 +51,7 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
    */
   public enum Type {
     // Errors
+    DUPLICATE_KEY("message.duplicateKey.title", "message.duplicateKey.description", Severity.ERROR), //
     MALFORMED_PARAMETER("message.malformedParameters.title", "message.malformedParameters.description", Severity.ERROR), //
     JS_DOUBLE_QUOTED_VALIDATION("message.jsDoubleQuotedValidation.title", "message.jsDoubleQuotedValidation.description", Severity.ERROR), //
     JS_SINGLE_QUOTED_VALIDATION("message.jsSingleQuotedValidation.title", "message.jsSingleQuotedValidation.description", Severity.ERROR), //
@@ -60,7 +61,7 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     TEXT_VALIDATION_NO_HTML("message.plainTextWithHtml.title", "message.plainTextWithHtml.description", Severity.ERROR), //
     URL_VALIDATION("message.urlValidation.title", "message.urlValidation.description", Severity.ERROR), //
     TEXT_VALIDATION_NO_URL("message.plainTextWithUrl.title", "message.plainTextWithUrl.description", Severity.ERROR), //
-    CUSTOM_PATTERN("message.customPattern.title", "message.customPattern.description", Severity.ERROR),
+    CUSTOM_PATTERN("message.customPattern.title", "message.customPattern.description", Severity.ERROR), //
 
     // Warnings
     ESCAPED_QUOTE_WITHOUT_PARAMETER("message.escapedQuoteWithoutParam.title", "message.escapedQuoteWithoutParam.description", Severity.WARN), //

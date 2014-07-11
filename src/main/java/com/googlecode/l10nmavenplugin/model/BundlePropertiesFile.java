@@ -22,8 +22,7 @@ import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 
 /**
- * {@link java.util.ResourceBundle} based implementation of {@link PropertiesFile}, using file suffix convention to get the
- * locale.
+ * {@link java.util.ResourceBundle} based implementation of {@link PropertiesFile}, using convention baseName[_language[_country[_variant]]].properties
  * 
  * @since 1.4
  * @author romain.quinio
@@ -31,9 +30,11 @@ import org.apache.commons.io.FilenameUtils;
  */
 public class BundlePropertiesFile implements PropertiesFile {
 
-  private String fileName;
+  private final Properties properties;
 
-  private Properties properties;
+  private final String fileName;
+
+  private final String bundleName;
 
   private Locale locale;
 
@@ -41,7 +42,9 @@ public class BundlePropertiesFile implements PropertiesFile {
     this.fileName = fileName;
     this.properties = properties;
 
+    // Parse bundleName and locale
     String[] parts = FilenameUtils.getBaseName(fileName).split("_", 2);
+    bundleName = parts[0];
     if (parts.length == 2) {
       this.locale = PropertiesFileUtils.getLocale(parts[1]);
     }
@@ -49,6 +52,10 @@ public class BundlePropertiesFile implements PropertiesFile {
 
   public String getFileName() {
     return fileName;
+  }
+
+  public String getBundleName() {
+    return bundleName;
   }
 
   public Locale getLocale() {

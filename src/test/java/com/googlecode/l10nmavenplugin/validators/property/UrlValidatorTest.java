@@ -14,6 +14,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
+import com.googlecode.l10nmavenplugin.format.MessageFormatFormatter;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
@@ -24,7 +26,8 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Before
   public void setUp() {
     super.setUp();
-    validator = new UrlValidator(logger, new String[] { ".url." });
+    Formatter formatter = new MessageFormatFormatter();
+    validator = new UrlValidator(logger, new String[] { ".url." }, formatter);
   }
 
   @Test
@@ -74,7 +77,7 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Test
   public void testParametricURL() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://{0}/{1}/{2}", FILE), items));
-    // Invalid param number should not be replaced qnd trigger an error
+    // Invalid param number should not be replaced and trigger an error
     assertEquals(1, validator.validate(new PropertyImpl(KEY_OK, "http://{199}", FILE), items));
     // Check MessageFormat parsing exceptions are catched
     assertEquals(1, validator.validate(new PropertyImpl(KEY_KO, "http://{0 }/{1}", FILE), items));

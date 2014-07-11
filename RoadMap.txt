@@ -15,9 +15,10 @@ New validators:
 
 Refactoring:
 - Refactor using chains of validators/transformators for nested validation ?
+- Allow custom validators (either part of the plugin, or user-defined) during the validation, defined via:
+StringFormatterArgCoherenceValidator implements L10nValidator<PropertyFamily>
 
 Other:
 - Create a FAQ
 - Document re-use configuration for build and reporting: not possible due to http://jira.codehaus.org/browse/MSITE-516
-
-
+- Extract validation report messages to .properties 

@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.googlecode.l10n-maven-plugin</groupId>
-  <artifactId>l10n-maven-plugin-validate-test</artifactId>
+  <artifactId>l10n-maven-plugin-noProperties-it</artifactId>
   <packaging>jar</packaging>
   <version>@project.version@</version>
-  <name>Validate goal IT</name>
-  <description>Validate goal without any .properties should not fail the build</description>
+  <name>No properties IT</name>
+  <description>IT for the case that properties folder is empty (nothing to validate)</description>
   <build>
     <plugins>
       <plugin>

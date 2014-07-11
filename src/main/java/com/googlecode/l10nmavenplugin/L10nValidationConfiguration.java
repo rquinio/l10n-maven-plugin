@@ -71,5 +71,7 @@ public interface L10nValidationConfiguration {
 
   File getReportsDir();
 
+  String getFormatter();
+
   String getRegExpForInternalReferenceToOtherProperties();
 }

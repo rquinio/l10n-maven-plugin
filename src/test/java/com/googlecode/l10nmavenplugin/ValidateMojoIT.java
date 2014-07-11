@@ -64,7 +64,6 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
   /**
    * Test tricky escaping of \ before " when loading Properties
    * 
-   * @throws MojoExecutionException
    */
   @Test
   public void testJsEscapeFromProperties() throws IOException, MojoExecutionException {
@@ -76,7 +75,43 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
     verify(log, atLeast(3)).error(any(CharSequence.class));
   }
 
-  private File getFile(String path) {
-    return new File(this.getClass().getClassLoader().getResource(path).getFile());
+  /**
+   * Test duplicated keys when loading Properties
+   * 
+   */
+  @Test
+  public void testDuplicateKeys() throws IOException, MojoExecutionException {
+    File directory = getFile("duplicates");
+    int nbErrors = plugin.validate(directory, items);
+
+    assertEquals(2, nbErrors);
+    assertTrue(items.size() >= 2);
+    verify(log, atLeast(2)).error(any(CharSequence.class));
   }
+
+  @Test
+  public void testCStyleFormatting() throws IOException, MojoExecutionException {
+    File directory = getFile("parametric/cstyle");
+    plugin.setFormatter(ValidateMojo.C_STYLE_FORMATTER);
+    // c-style is not spellcheck friendly
+    plugin.setDictionaryDir(null);
+    plugin.initialize();
+
+    int nbErrors = plugin.validate(directory, items);
+
+    // Warnings
+    assertEquals(0, nbErrors);
+    assertEquals(2, items.size());
+  }
+
+  @Test
+  public void testParametricCoherenceK() throws IOException, MojoExecutionException {
+    File directory = getFile("parametric/messageFormat");
+    int nbErrors = plugin.validate(directory, items);
+
+    // Warnings
+    assertEquals(0, nbErrors);
+    assertEquals(2, items.size());
+  }
+
 }

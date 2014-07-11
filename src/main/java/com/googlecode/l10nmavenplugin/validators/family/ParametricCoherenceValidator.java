@@ -9,18 +9,13 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.validators.family;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-
+import com.googlecode.l10nmavenplugin.format.Formatter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
@@ -39,27 +34,17 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
  * @since 1.2
  * @author romain.quinio
  * @see {@link com.googlecode.l10nmavenplugin.validators.family.HtmlTagCoherenceValidator}
- * @see {@link com.googlecode.l10nmavenplugin.validators.property.ParametricMessageValidator}
+ * @see {@link com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFormattingValidator}
  * 
  */
 public class ParametricCoherenceValidator extends AbstractL10nValidator implements L10nValidator<PropertyFamily> {
 
-  /**
-   * Detection of parameters in properties, ex: {0}, {0,date}, {0,number,integer}
-   */
-  private static final String CAPTURE_PARAMETERS_REGEXP = "(?:\\{([0-9]+)(?:,[a-z]+){0,2}\\})";
-  private static final String DETECT_PARAMETERS_REGEXP = "^.*" + CAPTURE_PARAMETERS_REGEXP + ".*$";
+  private final Formatter formatter;
 
-  protected static final Pattern CAPTURE_PARAMETERS_PATTERN = Pattern.compile(CAPTURE_PARAMETERS_REGEXP);
-  protected static final Pattern DETECT_PARAMETERS_PATTERN = Pattern.compile(DETECT_PARAMETERS_REGEXP);
-
-  public ParametricCoherenceValidator(L10nValidatorLogger logger) {
+  public ParametricCoherenceValidator(L10nValidatorLogger logger, Formatter formatter) {
     super(logger);
-  }
 
-  public static boolean isParametric(String message) {
-    Matcher m = DETECT_PARAMETERS_PATTERN.matcher(message);
-    return m.matches();
+    this.formatter = formatter;
   }
 
   /**
@@ -74,7 +59,7 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
 
     for (PropertiesFile propertiesFile : propertiesFiles) {
       String message = propertiesFile.getProperties().getProperty(key);
-      List<Integer> parameters = captureParameters(message);
+      List<Integer> parameters = formatter.captureParameters(message);
       if (parameters.size() > 0) {
         resourceParameters.put(propertiesFile, parameters);
       }
@@ -102,29 +87,7 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
   }
 
   /**
-   * Capture parameters of message
-   * 
-   * @param message
-   * @return
-   */
-  private List<Integer> captureParameters(String message) {
-    Matcher m = CAPTURE_PARAMETERS_PATTERN.matcher(message);
-
-    List<Integer> parameters = new ArrayList<Integer>();
-    while (m.find()) {
-      String param = m.group(1);
-      if (!StringUtils.isEmpty(param)) {
-        parameters.add(Integer.valueOf(param));
-      }
-    }
-    // Parameters may not appear in the same order depending of language
-    Collections.sort(parameters);
-
-    return parameters;
-  }
-
-  /**
-   * Display parameters using {i}
+   * Display parameters
    * 
    * @param parameters
    * @return
@@ -135,7 +98,7 @@ public class ParametricCoherenceValidator extends AbstractL10nValidator implemen
       if (i != 0) {
         sb.append(",");
       }
-      sb.append("{").append(parameters.get(i)).append("}");
+      sb.append(formatter.displayIndexedParameter(parameters.get(i)));
     }
     sb.append("]");
     return sb.toString();

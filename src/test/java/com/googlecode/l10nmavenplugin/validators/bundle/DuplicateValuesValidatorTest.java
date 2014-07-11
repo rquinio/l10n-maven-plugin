@@ -17,7 +17,7 @@ import org.junit.Test;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
 
-public class DuplicationValidatorTest extends AbstractL10nValidatorTest<PropertiesFamily> {
+public class DuplicateValuesValidatorTest extends AbstractL10nValidatorTest<PropertiesFamily> {
 
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";
@@ -27,7 +27,7 @@ public class DuplicationValidatorTest extends AbstractL10nValidatorTest<Properti
   @Before
   public void setUp() {
     super.setUp();
-    validator = new DuplicationValidator(logger);
+    validator = new DuplicateValuesValidator(logger);
   }
 
   @Test

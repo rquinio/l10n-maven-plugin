@@ -23,16 +23,21 @@ import java.util.Set;
 public interface PropertiesFile {
 
   /**
-   * The file name (ex: bundle_en.properties)
+   * The file name (ex: bundle_en.properties), the naming convention being bundleName_locale.properties
    * 
    * @return
    */
   String getFileName();
 
   /**
+   * The name of the bundle (i.e file name without locale nor file extension)
+   */
+  String getBundleName();
+
+  /**
    * The {@link Locale} of the file
    * 
-   * @return null if unknown
+   * @return null if unknown, or file is root
    */
   Locale getLocale();
 

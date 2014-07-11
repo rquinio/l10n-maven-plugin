@@ -10,14 +10,12 @@
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -25,20 +23,15 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.BundlePropertiesFamily;
-import com.googlecode.l10nmavenplugin.model.BundlePropertiesFile;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Severity;
-import com.googlecode.l10nmavenplugin.model.L10nReportItem.Type;
 import com.googlecode.l10nmavenplugin.model.PropertiesFamily;
 import com.googlecode.l10nmavenplugin.model.PropertiesFile;
+import com.googlecode.l10nmavenplugin.utils.PropertiesLoader;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidator;
-import com.googlecode.l10nmavenplugin.validators.L10nValidationException;
 import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 
 /**
- * Orchestrates the load and validation of Properties from a directory
- * 
- * All Properties files are assumed to be part of the same bundle
+ * Orchestrates the load and validation of Properties from a directory, handling the case of multiple bundles.
  * 
  * @since 1.5
  * @author romain.quinio
@@ -48,13 +41,20 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
 
   private final L10nValidator<PropertiesFamily> propertiesFamilyValidator;
 
-  public DirectoryValidator(L10nValidatorLogger logger, L10nValidator<PropertiesFamily> propertiesFamilyValidator) {
+  private final L10nValidator<File> duplicateKeysValidator;
+
+  private final PropertiesLoader propertiesLoader;
+
+  public DirectoryValidator(L10nValidatorLogger logger, L10nValidator<PropertiesFamily> propertiesFamilyValidator, L10nValidator<File> duplicateKeysValidator) {
     super(logger);
     this.propertiesFamilyValidator = propertiesFamilyValidator;
+    this.duplicateKeysValidator = duplicateKeysValidator;
+
+    this.propertiesLoader = new PropertiesLoader(logger);
   }
 
   /**
-   * 
+   * Validate .properties files in a directory, grouped by bundle (aka PropertiesFamily).
    * 
    * @param directory
    *          the folder containing .properties files to validate
@@ -65,15 +65,12 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
    */
   public int validate(File directory, List<L10nReportItem> reportItems) {
     int nbError = 0;
-
-    // TODO split multiple bundles in same directory ?
-    PropertiesFamily propertiesFamily = loadPropertiesFamily(directory);
-    if (propertiesFamily != null && propertiesFamily.getNbPropertiesFiles() > 0) {
-      nbError = propertiesFamilyValidator.validate(propertiesFamily, reportItems);
-    }
-
-    if (reportItems.size() > 0) {
-      logSummary(reportItems);
+    List<PropertiesFamily> propertiesFamilies = new ArrayList<PropertiesFamily>();
+    nbError += loadPropertiesFamily(directory, reportItems, propertiesFamilies);
+    for (PropertiesFamily propertiesFamily : propertiesFamilies) {
+      if (propertiesFamily != null && propertiesFamily.getNbPropertiesFiles() > 0) {
+        nbError += propertiesFamilyValidator.validate(propertiesFamily, reportItems);
+      }
     }
 
     return nbError;
@@ -85,17 +82,13 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
   }
 
   /**
-   * Load a group of Properties file
-   * 
-   * @param directory
-   *          the folder containing .properties files to load
-   * @param log
-   * @return
-   * @throws MojoExecutionException
+   * Load a group of Properties file from a directory
    */
-  protected PropertiesFamily loadPropertiesFamily(File directory) {
+  protected int loadPropertiesFamily(File directory, List<L10nReportItem> reportItems, List<PropertiesFamily> propertiesFamilies) {
+    int nbErrors = 0;
+
     logger.getLogger().info("Looking for .properties files in: " + directory.getAbsolutePath());
-    List<PropertiesFile> propertiesFiles = new ArrayList<PropertiesFile>();
+    List<PropertiesFile> propertiesFilesInDir = new ArrayList<PropertiesFile>();
 
     File[] files = directory.listFiles((FilenameFilter) new SuffixFileFilter(".properties"));
     if (files == null || files.length == 0) {
@@ -103,66 +96,50 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
 
     } else {
       for (File file : files) {
-        propertiesFiles.add(loadPropertiesFile(file));
+        // Validate File
+        nbErrors += duplicateKeysValidator.validate(file, reportItems);
+
+        // Load it normally
+        propertiesFilesInDir.add(loadPropertiesFile(file, reportItems));
       }
     }
+    propertiesFamilies.addAll(loadPropertiesFamily(propertiesFilesInDir));
+    return nbErrors;
 
-    return new BundlePropertiesFamily(propertiesFiles);
+  }
+
+  private List<PropertiesFamily> loadPropertiesFamily(List<PropertiesFile> propertiesFilesInDir) {
+    List<PropertiesFamily> families = new ArrayList<PropertiesFamily>();
+    Collection<List<PropertiesFile>> groupedPropertiesFiles = groupPropertiesFileByBundleName(propertiesFilesInDir);
+    for (List<PropertiesFile> bundle : groupedPropertiesFiles) {
+      families.add(new BundlePropertiesFamily(bundle));
+    }
+    return families;
+  }
+
+  private Collection<List<PropertiesFile>> groupPropertiesFileByBundleName(List<PropertiesFile> propertiesFiles) {
+    Map<String, List<PropertiesFile>> bundleFiles = new HashMap<String, List<PropertiesFile>>();
+
+    for (PropertiesFile propertiesFile : propertiesFiles) {
+      String bundleName = propertiesFile.getBundleName();
+
+      List<PropertiesFile> propertiesWithSameBundleName = bundleFiles.get(bundleName);
+
+      if (propertiesWithSameBundleName == null) {
+        propertiesWithSameBundleName = new ArrayList<PropertiesFile>();
+        bundleFiles.put(bundleName, propertiesWithSameBundleName);
+      }
+
+      propertiesWithSameBundleName.add(propertiesFile);
+    }
+    return bundleFiles.values();
   }
 
   /**
    * Load a single Properties file
-   * 
-   * @param file
-   * @param log
-   * @return
-   * @throws MojoExecutionException
    */
-  protected PropertiesFile loadPropertiesFile(File file) {
-    PropertiesFile propertiesFile = null;
-
-    String fileName = file.getName();
-    logger.getLogger().debug("Loading " + fileName + "...");
-
-    try {
-      InputStream inStream = new FileInputStream(file);
-      Properties properties = new Properties();
-      try {
-        properties.load(inStream);
-        propertiesFile = new BundlePropertiesFile(fileName, properties);
-      } catch (IllegalArgumentException e) {
-        // Add file details to the exception
-        throw new IllegalArgumentException("The file <" + fileName + "> could not be loaded. Check for a malformed Unicode escape sequence.", e);
-
-      } finally {
-        inStream.close();
-      }
-    } catch (IOException e) {
-      throw new L10nValidationException("An unexpected exception has occured while loading properties.", e);
-    }
-    return propertiesFile;
+  protected PropertiesFile loadPropertiesFile(File file, List<L10nReportItem> reportItems) {
+    Properties propertiesToFill = new Properties();
+    return propertiesLoader.loadPropertiesFile(file, propertiesToFill);
   }
-
-  /**
-   * Log a summary of the validation
-   * 
-   * @param reportItems
-   */
-  protected void logSummary(List<L10nReportItem> reportItems) {
-    logger.getLogger().info("--------------------");
-    logger.getLogger().info("Validation summary: " + reportItems.size() + " issues.");
-
-    Map<Type, List<L10nReportItem>> byType = L10nReportItem.byType(reportItems);
-
-    for (Entry<Type, List<L10nReportItem>> entry : byType.entrySet()) {
-      Type type = entry.getKey();
-      int nbType = entry.getValue().size();
-      Severity severity = entry.getValue().iterator().next().getItemSeverity();
-
-      logger.log(severity, type + ": " + nbType);
-    }
-    logger.getLogger().info("--------------------\n");
-
-  }
-
 }

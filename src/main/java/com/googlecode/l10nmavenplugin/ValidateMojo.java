@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
@@ -31,6 +32,7 @@ import com.googlecode.l10nmavenplugin.validators.family.HtmlTagCoherenceValidato
 import com.googlecode.l10nmavenplugin.validators.family.IdenticalTranslationValidator;
 import com.googlecode.l10nmavenplugin.validators.family.MissingTranslationValidator;
 import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
+import com.googlecode.l10nmavenplugin.validators.file.DuplicateKeysValidator;
 import com.googlecode.l10nmavenplugin.validators.orchestrator.DirectoryValidator;
 import com.googlecode.l10nmavenplugin.validators.orchestrator.PropertiesFamilyValidator;
 import com.googlecode.l10nmavenplugin.validators.orchestrator.PropertyFamilyValidator;
@@ -38,12 +40,14 @@ import com.googlecode.l10nmavenplugin.validators.orchestrator.PropertyValidator;
 import com.googlecode.l10nmavenplugin.validators.property.DefaultValidator;
 import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
 import com.googlecode.l10nmavenplugin.validators.property.JsValidator;
-import com.googlecode.l10nmavenplugin.validators.property.ParametricMessageValidator;
 import com.googlecode.l10nmavenplugin.validators.property.PatternValidator;
 import com.googlecode.l10nmavenplugin.validators.property.PlainTextValidator;
 import com.googlecode.l10nmavenplugin.validators.property.SpellCheckValidator;
 import com.googlecode.l10nmavenplugin.validators.property.TrailingWhitespaceValidator;
 import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.CStyleFormattingValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.FormattingValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFormattingValidator;
 
 /**
  * Validate a set of l10n {@link Properties} files against:
@@ -65,8 +69,9 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  * 
  * @note References for escape sequences and special characters:
  *       <ul>
- *       <li>Java Properties: {@link Properties#load}</li>
- *       <li>Java MessageFormat: {@link java.text.MessageFormat}</li>
+ *       <li>java.util.Properties: {@link java.util.Properties#load}</li>
+ *       <li>java.text.MessageFormat: {@link java.text.MessageFormat}</li>
+ *       <li>java.util.Formatter {@link java.util.Formatter}</li>
  *       <li>Javascript: {@link http://www.w3schools.com/js/js_special_characters.asp}</li>
  *       <li>JSON {@link http://json.org/}</li>
  *       <li>XHTML: {@link http://www.w3schools.com/tags/ref_entities.asp}</li>
@@ -74,7 +79,7 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  *       </ul>
  *       Extra references for development:
  *       <ul>
- *       <li>Java Pattern: {@link java.util.regex.Pattern}</li>
+ *       <li>java.util.regex.Pattern: {@link java.util.regex.Pattern}</li>
  *       <li>Java String: {@link http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#101089}</li>
  *       </ul>
  * 
@@ -84,6 +89,10 @@ import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
  */
 @Mojo(name = "validate", defaultPhase = LifecyclePhase.TEST)
 public class ValidateMojo extends AbstractMojo implements L10nValidationConfiguration {
+
+  public static final String MESSAGE_FORMAT_FORMATTER = "messageFormat";
+
+  public static final String C_STYLE_FORMATTER = "C-style";
 
   /**
    * Directory containing properties file to check
@@ -200,6 +209,17 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   private File reportsDir;
 
   /**
+   * 
+   * Type of {@link Formatter} used for parametric replacement.
+   * 
+   * Allowed values: {@link #MESSAGE_FORMAT_FORMATTER} and {@link #C_STYLE_FORMATTER}
+   * 
+   * @since 1.7
+   */
+  @Parameter(defaultValue = MESSAGE_FORMAT_FORMATTER)
+  private String formatter;
+
+  /**
    * Regular expression that is used before the XHTML validation to replace all custom references to other properties
    * with their keys by a usual {0}
    * 
@@ -257,24 +277,33 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     }
     L10nValidator<Property> spellCheckValidator = new SpellCheckValidator(logger, dictionaryDir);
 
+    FormattingValidator formattingValidator;
+    if (C_STYLE_FORMATTER.equalsIgnoreCase(formatter)) {
+      formattingValidator = new CStyleFormattingValidator(logger);
+    }
+    else {
+      formattingValidator = new MessageFormatFormattingValidator(logger);
+    }
+    Formatter formatter = formattingValidator.getFormatter();
+
     L10nValidator<Property> htmlValidator;
     if (xhtmlSchema != null) {
       htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys,
-          regExpForInternalReferenceToOtherProperties);
+          formatter, regExpForInternalReferenceToOtherProperties);
     }
     else {
       htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys,
-          regExpForInternalReferenceToOtherProperties);
+          formatter, regExpForInternalReferenceToOtherProperties);
     }
 
     L10nValidator<Property> jsValidator = new JsValidator(jsDoubleQuoted, htmlValidator, logger, jsKeys);
-    L10nValidator<Property> urlValidator = new UrlValidator(logger, urlKeys);
+    L10nValidator<Property> urlValidator = new UrlValidator(logger, urlKeys, formatter);
     L10nValidator<Property> plainTextValidator = new PlainTextValidator(logger, spellCheckValidator, textKeys);
     L10nValidator<Property> defaultValidator = new DefaultValidator(logger, htmlKeys, urlKeys);
-    L10nValidator<Property> parametricMessageValidator = new ParametricMessageValidator(logger);
+
     L10nValidator<Property> trailingWhitespaceValidator = new TrailingWhitespaceValidator(logger);
     L10nValidator<PropertyFamily> missingTranslationValidator = new MissingTranslationValidator(logger);
-    L10nValidator<PropertyFamily> parametricCoherenceValidator = new ParametricCoherenceValidator(logger);
+    L10nValidator<PropertyFamily> parametricCoherenceValidator = new ParametricCoherenceValidator(logger, formatter);
     L10nValidator<PropertyFamily> identicalTranslationValidator = new IdenticalTranslationValidator(logger);
     L10nValidator<PropertyFamily> htmlTagCoherenceValidator = new HtmlTagCoherenceValidator(logger, htmlKeys);
 
@@ -294,7 +323,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyValidator.setDefaultValidator(defaultValidator);
     propertyValidator.setHtmlValidator(htmlValidator);
     propertyValidator.setJsValidator(jsValidator);
-    propertyValidator.setParametricMessageValidator(parametricMessageValidator);
+    propertyValidator.setParametricMessageValidator(formattingValidator);
     propertyValidator.setPlainTextValidator(plainTextValidator);
     propertyValidator.setTrailingWhitespaceValidator(trailingWhitespaceValidator);
     propertyValidator.setUrlValidator(urlValidator);
@@ -308,7 +337,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
 
     PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir,
         propertyFamilyValidator);
-    directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator);
+    L10nValidator<File> duplicateKeysValidator = new DuplicateKeysValidator(logger);
+    directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator, duplicateKeysValidator);
   }
 
   /**
@@ -489,6 +519,14 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     this.reportsDir = reportsDir;
   }
 
+  public String getFormatter() {
+    return formatter;
+  }
+
+  public void setFormatter(String formatter) {
+    this.formatter = formatter;
+  }
+
   public String getRegExpForInternalReferenceToOtherProperties() {
     return regExpForInternalReferenceToOtherProperties;
   }
@@ -496,5 +534,4 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   public void setRegExpForInternalReferenceToOtherProperties(String regExpForInternalReferenceToOtherProperties) {
     this.regExpForInternalReferenceToOtherProperties = regExpForInternalReferenceToOtherProperties;
   }
-
 }

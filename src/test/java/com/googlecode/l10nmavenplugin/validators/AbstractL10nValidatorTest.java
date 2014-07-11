@@ -11,6 +11,7 @@ package com.googlecode.l10nmavenplugin.validators;
 
 import static org.mockito.Mockito.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -163,5 +164,12 @@ public abstract class AbstractL10nValidatorTest<T> {
       return false;
     }
 
+  }
+
+  /**
+   * Load a file from test resources
+   */
+  protected File getFile(String path) {
+    return new File(this.getClass().getClassLoader().getResource(path).getFile());
   }
 }

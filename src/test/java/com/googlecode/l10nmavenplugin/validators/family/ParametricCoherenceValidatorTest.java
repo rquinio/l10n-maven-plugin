@@ -11,15 +11,15 @@ package com.googlecode.l10nmavenplugin.validators.family;
 
 import static org.junit.Assert.*;
 
-import java.util.regex.Matcher;
-
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.format.CStyleFormatter;
+import com.googlecode.l10nmavenplugin.format.Formatter;
+import com.googlecode.l10nmavenplugin.format.MessageFormatFormatter;
 import com.googlecode.l10nmavenplugin.model.BundlePropertyFamily;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
-import com.googlecode.l10nmavenplugin.validators.family.ParametricCoherenceValidator;
 
 public class ParametricCoherenceValidatorTest extends AbstractL10nValidatorTest<PropertyFamily> {
 
@@ -27,26 +27,9 @@ public class ParametricCoherenceValidatorTest extends AbstractL10nValidatorTest<
   @Before
   public void setUp() {
     super.setUp();
-    validator = new ParametricCoherenceValidator(logger);
-  }
 
-  @Test
-  public void testParametricReplacePattern() {
-    assertFalse(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some text").matches());
-    assertFalse(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some quoted text: '{bla}' ").matches());
-
-    assertTrue(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some text: {0} {1}").matches());
-    assertTrue(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some date: {0,date}").matches());
-    assertTrue(ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some date: {0,number,integer}").matches());
-  }
-
-  @Test
-  public void testParametricReplacepatternCapture() {
-    Matcher m = ParametricCoherenceValidator.DETECT_PARAMETERS_PATTERN.matcher("Some {0} parametrized text {1,date}");
-    assertTrue(m.matches());
-    // Only last is saved
-    assertEquals(1, m.groupCount());
-    assertEquals("1", m.group(1));
+    Formatter formatter = new MessageFormatFormatter();
+    validator = new ParametricCoherenceValidator(logger, formatter);
   }
 
   /**
@@ -107,4 +90,20 @@ public class ParametricCoherenceValidatorTest extends AbstractL10nValidatorTest<
     validator.validate(propertyFamily, items);
     assertEquals(1, items.size());
   }
+
+  @Test
+  public void testCStyleFormatCoherency() {
+    Formatter formatter = new CStyleFormatter();
+    validator = new ParametricCoherenceValidator(logger, formatter);
+
+    bundleA.put(KEY_KO, "%1$s%2$s%3$s");
+    bundleB.put(KEY_KO, "%1$s%2$s");
+    bundleC.put(KEY_KO, "%1$s");
+    PropertyFamily propertyFamily = new BundlePropertyFamily(KEY_KO, propertiesFamily);
+
+    // Only warning
+    assertEquals(0, validator.validate(propertyFamily, items));
+    assertEquals(2, items.size());
+  }
+
 }

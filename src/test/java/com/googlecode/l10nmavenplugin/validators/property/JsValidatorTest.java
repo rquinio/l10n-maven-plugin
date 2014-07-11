@@ -14,19 +14,24 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.l10nmavenplugin.format.Formatter;
+import com.googlecode.l10nmavenplugin.format.MessageFormatFormatter;
 import com.googlecode.l10nmavenplugin.model.Property;
 import com.googlecode.l10nmavenplugin.model.PropertyImpl;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
 
 public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
 
+  private Formatter formatter;
+
   @Override
   @Before
   public void setUp() {
     super.setUp();
+    formatter = new MessageFormatFormatter();
     // Double quoted by default
     validator = new JsValidator(new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." },
-        HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES), logger, new String[] { ".js." });
+        formatter, HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES), logger, new String[] { ".js." });
   }
 
   @Test
@@ -59,10 +64,8 @@ public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
 
   @Test
   public void testValidJsSingleQuoted() {
-    validator = new JsValidator(false,
-        new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." },
-            HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES), logger,
-        new String[] { ".js." });
+    validator = new JsValidator(false, new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." }, formatter,
+	    HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES), logger, new String[] { ".js." });
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some \"text\" ", FILE), items));
   }
 

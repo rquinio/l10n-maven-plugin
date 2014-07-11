@@ -10,6 +10,8 @@
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,6 +81,19 @@ public class PropertiesFamilyValidatorTest extends AbstractL10nValidatorTest<Pro
 
     File csvFile = validator.generateCsv(items, "base", Severity.ERROR);
     assertNull(csvFile);
+  }
+
+  @Test
+  public void testLogSummary() {
+    items.add(new L10nReportItem(Type.HTML_VALIDATION, "", "", "", "", ""));
+    items.add(new L10nReportItem(Type.INCOHERENT_TAGS, "", "", "", "", ""));
+    items.add(new L10nReportItem(Type.EXCLUDED, "", "", "", "", ""));
+
+    validator.logBundleValidationSummary(items, "bundle");
+
+    verify(log, atLeast(4)).info(any(CharSequence.class));
+    verify(log, atLeast(1)).warn(any(CharSequence.class));
+    verify(log, atLeast(1)).error(any(CharSequence.class));
   }
 
 }
