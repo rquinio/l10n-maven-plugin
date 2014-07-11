@@ -7,3 +7,5 @@
 /ReleaseNotes.txt
 /cobertura.ser
 /src/it/report/target
+*.orig
+*.rej
