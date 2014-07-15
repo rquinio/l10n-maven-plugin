@@ -22,6 +22,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.googlecode.l10nmavenplugin.format.Formatter;
+import com.googlecode.l10nmavenplugin.format.InnerResourcesFormatter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
@@ -47,6 +48,7 @@ import com.googlecode.l10nmavenplugin.validators.property.TrailingWhitespaceVali
 import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.CStyleFormattingValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.FormattingValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.InnerResourcesFormattingValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFormattingValidator;
 
 /**
@@ -220,13 +222,12 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   private String formatter;
 
   /**
-   * Regular expression that is used before the XHTML validation to replace all custom references to other properties
-   * with their keys by a usual {0}
+   * Regular expression to use to match inner resources inside a resource value.
    * 
    * @since 1.8
    */
-  @Parameter(defaultValue = HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES)
-  private String regExpForInternalReferenceToOtherProperties;
+  @Parameter
+  private String innerResourceRegex;
 
   private L10nValidator<File> directoryValidator;
 
@@ -258,7 +259,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     setExcludedKeys(configuration.getExcludedKeys());
     setDictionaryDir(configuration.getDictionaryDir());
     setReportsDir(configuration.getReportsDir());
-    setRegExpForInternalReferenceToOtherProperties(configuration.getRegExpForInternalReferenceToOtherProperties());
+    setInnerResourceRegex(configuration.getInnerResourceRegex());
   }
 
   /**
@@ -286,14 +287,18 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     }
     Formatter formatter = formattingValidator.getFormatter();
 
+    InnerResourcesFormattingValidator innerResourcesValidator = new InnerResourcesFormattingValidator(logger,
+        innerResourceRegex);
+    InnerResourcesFormatter innerResourceFormatter = innerResourcesValidator.getFormatter();
+
     L10nValidator<Property> htmlValidator;
     if (xhtmlSchema != null) {
       htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys,
-          formatter, regExpForInternalReferenceToOtherProperties);
+          formatter, innerResourceFormatter);
     }
     else {
       htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys,
-          formatter, regExpForInternalReferenceToOtherProperties);
+          formatter, innerResourceFormatter);
     }
 
     L10nValidator<Property> jsValidator = new JsValidator(jsDoubleQuoted, htmlValidator, logger, jsKeys);
@@ -327,6 +332,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyValidator.setPlainTextValidator(plainTextValidator);
     propertyValidator.setTrailingWhitespaceValidator(trailingWhitespaceValidator);
     propertyValidator.setUrlValidator(urlValidator);
+    propertyValidator.setInnerResourcesValidator(innerResourcesValidator);
 
     PropertyFamilyValidator propertyFamilyValidator = new PropertyFamilyValidator(logger, excludedKeys);
     propertyFamilyValidator.setHtmlTagCoherenceValidator(htmlTagCoherenceValidator);
@@ -527,11 +533,12 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     this.formatter = formatter;
   }
 
-  public String getRegExpForInternalReferenceToOtherProperties() {
-    return regExpForInternalReferenceToOtherProperties;
+  public String getInnerResourceRegex() {
+    return innerResourceRegex;
   }
 
-  public void setRegExpForInternalReferenceToOtherProperties(String regExpForInternalReferenceToOtherProperties) {
-    this.regExpForInternalReferenceToOtherProperties = regExpForInternalReferenceToOtherProperties;
+  public void setInnerResourceRegex(String innerResourceRegex) {
+    this.innerResourceRegex = innerResourceRegex;
   }
+
 }

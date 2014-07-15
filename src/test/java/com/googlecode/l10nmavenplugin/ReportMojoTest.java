@@ -58,8 +58,6 @@ public class ReportMojoTest {
     plugin.setXhtmlSchema(HtmlValidator.XHTML5);
 
     plugin.setLog(new SystemStreamLog());
-
-    plugin.setRegExpForInternalReferenceToOtherProperties(HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES);
   }
 
   @Test

@@ -27,7 +27,6 @@ import org.apache.maven.reporting.MavenReportException;
 import com.googlecode.l10nmavenplugin.format.Formatter;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
-import com.googlecode.l10nmavenplugin.validators.property.HtmlValidator;
 
 /**
  * Creates a report on l10n Properties files validation result.
@@ -157,13 +156,12 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   private String outputDirectory;
 
   /**
-   * Regular expression that is used before the XHTML validation to replace all custom references to other properties
-   * with their keys by a usual {0}
+   * Regular expression to use to match inner resources inside a resource value.
    * 
    * @since 1.8
    */
-  @Parameter(defaultValue = HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES)
-  private String regExpForInternalReferenceToOtherProperties;
+  @Parameter
+  private String innerResourceRegex;
 
   /**
    * Entry point for the plugin report goal
@@ -348,13 +346,9 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   public void setFormatter(String formatter) {
     this.formatter = formatter;
   }
-  
-  public String getRegExpForInternalReferenceToOtherProperties() {
-    return regExpForInternalReferenceToOtherProperties;
-  }
 
-  public void setRegExpForInternalReferenceToOtherProperties(String regExpForInternalReferenceToOtherProperties) {
-    this.regExpForInternalReferenceToOtherProperties = regExpForInternalReferenceToOtherProperties;
+  public String getInnerResourceRegex() {
+    return innerResourceRegex;
   }
 
 }

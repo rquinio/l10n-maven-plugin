@@ -53,35 +53,46 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     // Errors
     DUPLICATE_KEY("message.duplicateKey.title", "message.duplicateKey.description", Severity.ERROR), //
     MALFORMED_PARAMETER("message.malformedParameters.title", "message.malformedParameters.description", Severity.ERROR), //
-    JS_DOUBLE_QUOTED_VALIDATION("message.jsDoubleQuotedValidation.title", "message.jsDoubleQuotedValidation.description", Severity.ERROR), //
-    JS_SINGLE_QUOTED_VALIDATION("message.jsSingleQuotedValidation.title", "message.jsSingleQuotedValidation.description", Severity.ERROR), //
-    JS_NEWLINE_VALIDATION("message.jsNewlineValidation.title", "message.jsNewlineValidation.description", Severity.ERROR), //
-    UNESCAPED_QUOTE_WITH_PARAMETERS("message.UnescapedQuotesParams.title", "message.UnescapedQuotesParams.description", Severity.ERROR), //
+    JS_DOUBLE_QUOTED_VALIDATION("message.jsDoubleQuotedValidation.title",
+        "message.jsDoubleQuotedValidation.description", Severity.ERROR), //
+    JS_SINGLE_QUOTED_VALIDATION("message.jsSingleQuotedValidation.title",
+        "message.jsSingleQuotedValidation.description", Severity.ERROR), //
+    JS_NEWLINE_VALIDATION("message.jsNewlineValidation.title", "message.jsNewlineValidation.description",
+        Severity.ERROR), //
+    UNESCAPED_QUOTE_WITH_PARAMETERS("message.UnescapedQuotesParams.title", "message.UnescapedQuotesParams.description",
+        Severity.ERROR), //
     HTML_VALIDATION("message.htmlValidation.title", "message.htmlValidation.description", Severity.ERROR), //
     TEXT_VALIDATION_NO_HTML("message.plainTextWithHtml.title", "message.plainTextWithHtml.description", Severity.ERROR), //
     URL_VALIDATION("message.urlValidation.title", "message.urlValidation.description", Severity.ERROR), //
     TEXT_VALIDATION_NO_URL("message.plainTextWithUrl.title", "message.plainTextWithUrl.description", Severity.ERROR), //
     CUSTOM_PATTERN("message.customPattern.title", "message.customPattern.description", Severity.ERROR), //
+    INNER_RESOURCE_DOES_NOT_EXIST("message.innerResource.title", "message.innerResource.description", Severity.ERROR), //
 
     // Warnings
-    ESCAPED_QUOTE_WITHOUT_PARAMETER("message.escapedQuoteWithoutParam.title", "message.escapedQuoteWithoutParam.description", Severity.WARN), //
+    ESCAPED_QUOTE_WITHOUT_PARAMETER("message.escapedQuoteWithoutParam.title",
+        "message.escapedQuoteWithoutParam.description", Severity.WARN), //
     INCOHERENT_PARAMETERS("message.incoherentParams.title", "message.incoherentParams.description", Severity.WARN), //
     MISSING_TRANSLATION("message.missingTranslation.title", "message.missingTranslation.description", Severity.WARN), //
     UNDECLARED_HTML_RESOURCE("message.undeclaredHtml.title", "message.undeclaredHtml.description", Severity.WARN), //
     UNDECLARED_URL_RESOURCE("message.undeclaredUrl.title", "message.undeclaredUrl.description", Severity.WARN), //
     TRAILING_WHITESPACE("message.trailingWhitespace.title", "message.trailingWhitespace.description", Severity.WARN), //
-    ALMOST_DUPLICATED_RESOURCE("message.almostDuplicatedResource.title", "message.almostDuplicatedResource.description", Severity.WARN), //
-    ALMOST_IDENTICAL_TRANSLATION("message.almostIdenticalTranslation.title", "message.almostIdenticalTranslation.description", Severity.WARN), //
+    ALMOST_DUPLICATED_RESOURCE("message.almostDuplicatedResource.title",
+        "message.almostDuplicatedResource.description", Severity.WARN), //
+    ALMOST_IDENTICAL_TRANSLATION("message.almostIdenticalTranslation.title",
+        "message.almostIdenticalTranslation.description", Severity.WARN), //
     SPELLCHECK("message.spellcheck.title", "message.spellcheck.description", Severity.WARN), //
     INCOHERENT_TAGS("message.incoherentTags.title", "message.incoherentTags.description", Severity.WARN),
 
     // Infos
     EXCLUDED("message.excluded.title", "message.excluded.description", Severity.INFO), //
     DUPLICATED_RESOURCE("message.duplicatedResource.title", "message.duplicatedResource.description", Severity.INFO), //
-    IDENTICAL_TRANSLATION("message.identicalTranslation.title", "message.identicalTranslation.description", Severity.INFO);
+    IDENTICAL_TRANSLATION("message.identicalTranslation.title", "message.identicalTranslation.description",
+        Severity.INFO);
 
     private final String titleLocKey;
+
     private final String descriptionLocKey;
+
     private Severity severity;
 
     private Type(String titleLocKey, String descriptionLocKey, Severity defaultSeverity) {
@@ -113,7 +124,8 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
       try {
         ResourceBundle bundle = getBundle(Locale.ENGLISH);
         s = bundle.getString(titleLocKey);
-      } catch (MissingResourceException e) {
+      }
+      catch (MissingResourceException e) {
         // Cobertura execution doesn' have access to .properties ?
         s = name();
       }
@@ -163,10 +175,12 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
   private final String formattedPropertiesValue;
 
   public L10nReportItem(Type itemType, String itemMessage, Property property, String formattedPropertiesValue) {
-    this(itemType, itemMessage, property.getPropertiesFile().toString(), property.getKey(), property.getMessage(), formattedPropertiesValue);
+    this(itemType, itemMessage, property.getPropertiesFile().toString(), property.getKey(), property.getMessage(),
+        formattedPropertiesValue);
   }
 
-  public L10nReportItem(Type itemType, String itemMessage, String propertiesName, String propertiesKey, String propertiesValue, String formattedPropertiesValue) {
+  public L10nReportItem(Type itemType, String itemMessage, String propertiesName, String propertiesKey,
+      String propertiesValue, String formattedPropertiesValue) {
     this.itemType = itemType;
     this.itemMessage = itemMessage;
     this.propertiesName = propertiesName;
@@ -254,8 +268,9 @@ public class L10nReportItem implements Comparable<L10nReportItem> {
     }
     if (!(obj instanceof L10nReportItem)) {
       return false;
-    } else {
-      return this.compareTo((L10nReportItem) obj) == 0;
+    }
+    else {
+      return this.compareTo((L10nReportItem)obj) == 0;
     }
   }
 

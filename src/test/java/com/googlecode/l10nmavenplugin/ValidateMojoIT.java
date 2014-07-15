@@ -46,8 +46,6 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
     // Junit bug can't use tmpFolder
     plugin.setReportsDir(new TemporaryFolder().newFolder());
 
-    plugin.setRegExpForInternalReferenceToOtherProperties(HtmlValidator.DEFAULT_REGEX_INTERNAL_PROPERTY_REFERENCES);
-
     // Use default configuration for the rest
     plugin.initialize();
   }
