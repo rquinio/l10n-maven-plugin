@@ -16,6 +16,8 @@ public class InnerResourcesFormatterTest {
 
   private static final String SQUARED_BRACKETS_REGEX = "\\[\\[(([A-Za-z0-9\\._])+)\\]\\]";
 
+  private InnerResourcesFormatter innerResourcesFormatter = new InnerResourcesFormatter(SQUARED_BRACKETS_REGEX);
+
   private Properties properties = new Properties();
 
   private PropertiesFile file = new PropertiesFile() {
@@ -43,14 +45,11 @@ public class InnerResourcesFormatterTest {
 
   @Test
   public void testGetInnerResourceRegex() {
-    InnerResourcesFormatter innerResourcesFormatter = new InnerResourcesFormatter(SQUARED_BRACKETS_REGEX);
-
     assertEquals(SQUARED_BRACKETS_REGEX, innerResourcesFormatter.getInnerResourceRegex());
   }
 
   @Test
   public void testFormatSquaredBracketsValid() {
-    InnerResourcesFormatter innerResourcesFormatter = new InnerResourcesFormatter(SQUARED_BRACKETS_REGEX);
     properties.setProperty("some.res", "some.value");
 
     assertEquals("an inner some.value with stuff behind", innerResourcesFormatter.format(
@@ -59,7 +58,6 @@ public class InnerResourcesFormatterTest {
 
   @Test
   public void testFormatSquaredBracketsExceptionNonExistingKey() {
-    InnerResourcesFormatter innerResourcesFormatter = new InnerResourcesFormatter(SQUARED_BRACKETS_REGEX);
     boolean illegalArgumentExceptionRaised = false;
     try {
       innerResourcesFormatter.format("an inner [[non.existing.res]] with stuff behind", file);
@@ -72,7 +70,6 @@ public class InnerResourcesFormatterTest {
 
   @Test
   public void testDefaultFormat() {
-    InnerResourcesFormatter innerResourcesFormatter = new InnerResourcesFormatter(SQUARED_BRACKETS_REGEX);
     String message = innerResourcesFormatter.defaultFormat("Res with [[multiple]] refs to [[external.res]]");
     assertFalse("default format should remove inner references to keys",
         innerResourcesFormatter.hasInnerResources(message));
@@ -80,13 +77,21 @@ public class InnerResourcesFormatterTest {
 
   @Test
   public void testCaptureInnerKeys() {
-    InnerResourcesFormatter innerResourcesFormatter = new InnerResourcesFormatter(SQUARED_BRACKETS_REGEX);
-
     assertEquals(Collections.emptyList(), innerResourcesFormatter.captureInnerResources(null));
     assertEquals(Collections.emptyList(), innerResourcesFormatter.captureInnerResources(" some text"));
     assertEquals(Collections.emptyList(), innerResourcesFormatter.captureInnerResources(" [[some.res text"));
     assertEquals(Arrays.asList("some.res", "another.res"),
         innerResourcesFormatter.captureInnerResources(" [[some.res]] text [[another.res]]"));
+  }
+
+  @Test
+  public void testHasInnerRes() {
+    String valueWithoutInnerKeys = "some value withouth innerKeys";
+    assertFalse("hasInnerResources returned true even if <" + valueWithoutInnerKeys + "> does not contains any",
+        innerResourcesFormatter.hasInnerResources(valueWithoutInnerKeys));
+    String valueWithInnerKeys = "some value with [[inner.key]]";
+    assertTrue("hasInnerResources returned false even if <" + valueWithInnerKeys + "> has one inner key",
+        innerResourcesFormatter.hasInnerResources(valueWithInnerKeys));
   }
 
 }

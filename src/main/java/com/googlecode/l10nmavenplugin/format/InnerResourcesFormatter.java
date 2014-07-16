@@ -34,8 +34,8 @@ public class InnerResourcesFormatter {
    */
   public InnerResourcesFormatter(String innerResourceRegex) {
     this.innerResourceRegex = innerResourceRegex;
-    innerResourcePattern = Pattern.compile(innerResourceRegex);
-    innerResourcePresencePattern = Pattern.compile(".*" + innerResourceRegex + ".*");
+    innerResourcePattern = Pattern.compile(innerResourceRegex, Pattern.DOTALL);
+    innerResourcePresencePattern = Pattern.compile("^.*" + innerResourceRegex + ".*$", Pattern.DOTALL);
   }
 
   /**
