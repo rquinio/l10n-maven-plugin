@@ -159,7 +159,7 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
     }
 
     validator.validate(new PropertyImpl(KEY_KO, "<div>Blablaplop<a href=\"http://\">Englis</a></div>", FILE), items);
-    // assertEquals(2, items.size());
+    assertEquals(2, items.size());
   }
 
   @Test

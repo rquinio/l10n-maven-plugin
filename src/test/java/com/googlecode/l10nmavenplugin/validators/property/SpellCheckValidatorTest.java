@@ -62,7 +62,7 @@ public class SpellCheckValidatorTest extends AbstractL10nValidatorTest<Property>
     validator.validate(new PropertyImpl(KEY_KO, "Some engish text.", FILE), items);
     validator.validate(new PropertyImpl(KEY_KO, "A syntacticaly valid sentence.", FILE), items);
     validator.validate(new PropertyImpl(KEY_KO, "text tex te.", FILE), items);
-    // assertEquals(3, items.size());
+    assertEquals(3, items.size());
   }
 
   @Test
