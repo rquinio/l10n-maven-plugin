@@ -25,6 +25,7 @@ import com.googlecode.l10nmavenplugin.validators.L10nValidator;
 public class PropertyValidatorTest extends AbstractL10nValidatorTest<Property> {
 
   private PropertyValidator validator;
+
   private L10nValidator<Property> defaultValidator;
 
   @Override
@@ -41,6 +42,7 @@ public class PropertyValidatorTest extends AbstractL10nValidatorTest<Property> {
     validator.setJsValidator(new AlwaysRefusingValidator<Property>());
     validator.setPatternValidators(new L10nValidator[] { new AlwaysRefusingValidator<Property>() });
     validator.setPlainTextValidator(new AlwaysRefusingValidator<Property>());
+    validator.setInnerResourcesValidator(new AlwaysSucceedingValidator<Property>());
 
     defaultValidator = spy(new AlwaysSucceedingValidator<Property>());
     validator.setDefaultValidator(defaultValidator);

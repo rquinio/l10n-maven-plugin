@@ -73,5 +73,5 @@ public interface L10nValidationConfiguration {
 
   String getFormatter();
 
-  void setFormatter(String Formatter);
+  String getInnerResourceRegex();
 }

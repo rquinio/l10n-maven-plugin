@@ -10,10 +10,12 @@ pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.next
 release.properties
+*.orig
+*.rej
 
 #Java
 *.class
 cobertura.ser
 
-#Project
+*.orig
 ReleaseNotes.txt

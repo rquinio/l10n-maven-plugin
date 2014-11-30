@@ -42,6 +42,8 @@ public class PropertyValidator extends PropertiesKeyConventionValidator implemen
 
   private L10nValidator<Property> trailingWhitespaceValidator;
 
+  private L10nValidator<Property> innerResourcesValidator;
+
   /**
    * Better use setter injection for L10nValidator as they share same type
    */
@@ -73,25 +75,30 @@ public class PropertyValidator extends PropertiesKeyConventionValidator implemen
 
       nbErrors += parametricMessageValidator.validate(property, reportItems);
       nbErrors += trailingWhitespaceValidator.validate(property, reportItems);
+      nbErrors += innerResourcesValidator.validate(property, reportItems);
 
       boolean bMatched = false;
       if (htmlValidator.shouldValidate(property)) {
         bMatched = true;
         nbErrors += htmlValidator.validate(property, reportItems);
 
-      } else if (jsValidator.shouldValidate(property)) {
+      }
+      else if (jsValidator.shouldValidate(property)) {
         bMatched = true;
         nbErrors += jsValidator.validate(property, reportItems);
 
-      } else if (urlValidator.shouldValidate(property)) {
+      }
+      else if (urlValidator.shouldValidate(property)) {
         bMatched = true;
         nbErrors += urlValidator.validate(property, reportItems);
 
-      } else if (plainTextValidator.shouldValidate(property)) {
+      }
+      else if (plainTextValidator.shouldValidate(property)) {
         bMatched = true;
         nbErrors += plainTextValidator.validate(property, reportItems);
 
-      } else {
+      }
+      else {
         for (int i = 0; i < patternValidators.length; i++) {
           if (patternValidators[i].shouldValidate(property)) {
             bMatched = true;
@@ -148,6 +155,10 @@ public class PropertyValidator extends PropertiesKeyConventionValidator implemen
 
   public void setTrailingWhitespaceValidator(L10nValidator<Property> trailingWhitespaceValidator) {
     this.trailingWhitespaceValidator = trailingWhitespaceValidator;
+  }
+
+  public void setInnerResourcesValidator(L10nValidator<Property> innerResourcesValidator) {
+    this.innerResourcesValidator = innerResourcesValidator;
   }
 
 }

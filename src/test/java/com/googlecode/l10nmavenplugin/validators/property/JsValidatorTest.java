@@ -30,7 +30,8 @@ public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
     super.setUp();
     formatter = new MessageFormatFormatter();
     // Double quoted by default
-    validator = new JsValidator(new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." }, formatter), logger, new String[] { ".js." });
+    validator = new JsValidator(new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." },
+        formatter, null), logger, new String[] { ".js." });
   }
 
   @Test
@@ -57,13 +58,14 @@ public class JsValidatorTest extends AbstractL10nValidatorTest<Property> {
   @Test
   public void testValidJsDoubleQuoted() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some 'text' ", FILE), items));
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "<a href='www.google.fr' target='_blank'>Google</a>", FILE), items));
+    assertEquals(0,
+        validator.validate(new PropertyImpl(KEY_OK, "<a href='www.google.fr' target='_blank'>Google</a>", FILE), items));
   }
 
   @Test
   public void testValidJsSingleQuoted() {
-    validator = new JsValidator(false, new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." }, formatter), logger,
-        new String[] { ".js." });
+    validator = new JsValidator(false, new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." },
+        formatter, null), logger, new String[] { ".js." });
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "Some \"text\" ", FILE), items));
   }
 

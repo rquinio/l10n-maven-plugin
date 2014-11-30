@@ -22,6 +22,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.googlecode.l10nmavenplugin.format.Formatter;
+import com.googlecode.l10nmavenplugin.format.InnerResourcesFormatter;
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.model.Property;
@@ -47,6 +48,7 @@ import com.googlecode.l10nmavenplugin.validators.property.TrailingWhitespaceVali
 import com.googlecode.l10nmavenplugin.validators.property.UrlValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.CStyleFormattingValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.FormattingValidator;
+import com.googlecode.l10nmavenplugin.validators.property.format.InnerResourcesFormattingValidator;
 import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFormattingValidator;
 
 /**
@@ -60,9 +62,11 @@ import com.googlecode.l10nmavenplugin.validators.property.format.MessageFormatFo
  * <li>Plain text resources containing HTML/URL</li>
  * </ul>
  * 
- * In case multiple checks are performed on a resource (ex: client side resource with parameters), the order above applies.
+ * In case multiple checks are performed on a resource (ex: client side resource with parameters), the order above
+ * applies.
  * 
- * The syntax of properties file itself is not checked, but it relies on loading them successfully as {@link Properties}.
+ * The syntax of properties file itself is not checked, but it relies on loading them successfully as {@link Properties}
+ * .
  * 
  * 
  * @note References for escape sequences and special characters:
@@ -217,6 +221,14 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   @Parameter(defaultValue = MESSAGE_FORMAT_FORMATTER)
   private String formatter;
 
+  /**
+   * Regular expression to use to match inner resources inside a resource value.
+   * 
+   * @since 1.8
+   */
+  @Parameter
+  private String innerResourceRegex;
+
   private L10nValidator<File> directoryValidator;
 
   private L10nValidatorLogger logger;
@@ -247,7 +259,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     setExcludedKeys(configuration.getExcludedKeys());
     setDictionaryDir(configuration.getDictionaryDir());
     setReportsDir(configuration.getReportsDir());
-    setFormatter(configuration.getFormatter());
+    setInnerResourceRegex(configuration.getInnerResourceRegex());
   }
 
   /**
@@ -269,16 +281,24 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     FormattingValidator formattingValidator;
     if (C_STYLE_FORMATTER.equalsIgnoreCase(formatter)) {
       formattingValidator = new CStyleFormattingValidator(logger);
-    } else {
+    }
+    else {
       formattingValidator = new MessageFormatFormattingValidator(logger);
     }
     Formatter formatter = formattingValidator.getFormatter();
 
+    InnerResourcesFormattingValidator innerResourcesValidator = new InnerResourcesFormattingValidator(logger,
+        innerResourceRegex);
+    InnerResourcesFormatter innerResourceFormatter = innerResourcesValidator.getFormatter();
+
     L10nValidator<Property> htmlValidator;
     if (xhtmlSchema != null) {
-      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys, formatter);
-    } else {
-      htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys, formatter);
+      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys,
+          formatter, innerResourceFormatter);
+    }
+    else {
+      htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys,
+          formatter, innerResourceFormatter);
     }
 
     L10nValidator<Property> jsValidator = new JsValidator(jsDoubleQuoted, htmlValidator, logger, jsKeys);
@@ -312,6 +332,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyValidator.setPlainTextValidator(plainTextValidator);
     propertyValidator.setTrailingWhitespaceValidator(trailingWhitespaceValidator);
     propertyValidator.setUrlValidator(urlValidator);
+    propertyValidator.setInnerResourcesValidator(innerResourcesValidator);
 
     PropertyFamilyValidator propertyFamilyValidator = new PropertyFamilyValidator(logger, excludedKeys);
     propertyFamilyValidator.setHtmlTagCoherenceValidator(htmlTagCoherenceValidator);
@@ -320,7 +341,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyFamilyValidator.setParametricCoherenceValidator(parametricCoherenceValidator);
     propertyFamilyValidator.setPropertyValidator(propertyValidator);
 
-    PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir, propertyFamilyValidator);
+    PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir,
+        propertyFamilyValidator);
     L10nValidator<File> duplicateKeysValidator = new DuplicateKeysValidator(logger);
     directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator, duplicateKeysValidator);
   }
@@ -337,7 +359,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     if (!skip) {
       initialize();
       executeInternal();
-    } else {
+    }
+    else {
       getLog().info("Skipping plugin execution, as per configuration.");
     }
   }
@@ -359,10 +382,12 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
       if (ignoreFailure) {
         getLog().error("Validation has failed with " + nbErrors + " errors.");
         getLog().info("Ignoring failure as ignoreFailure is true.");
-      } else {
+      }
+      else {
         throw new MojoFailureException("Validation has failed with " + nbErrors + " errors.");
       }
-    } else {
+    }
+    else {
       getLog().info("Validation was successful.");
     }
   }
@@ -383,8 +408,11 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     try {
       nbErrors = directoryValidator.validate(directory, reportItems);
 
-    } catch (L10nValidationException e) {
-      throw new MojoExecutionException("An unexpected exception has occurred while validating properties under directory " + propertyDir.getAbsolutePath(), e);
+    }
+    catch (L10nValidationException e) {
+      throw new MojoExecutionException(
+          "An unexpected exception has occurred while validating properties under directory " +
+              propertyDir.getAbsolutePath(), e);
     }
     return nbErrors;
   }
@@ -504,4 +532,13 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   public void setFormatter(String formatter) {
     this.formatter = formatter;
   }
+
+  public String getInnerResourceRegex() {
+    return innerResourceRegex;
+  }
+
+  public void setInnerResourceRegex(String innerResourceRegex) {
+    this.innerResourceRegex = innerResourceRegex;
+  }
+
 }

@@ -31,8 +31,9 @@ import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
 /**
  * Creates a report on l10n Properties files validation result.
  * 
- * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via {@link L10nReportRenderer}. It uses a subset of
- * {@link ValidateMojo} configuration, as ignoreFailures and excludedKey are not applicable for a report.
+ * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via
+ * {@link L10nReportRenderer}. It uses a subset of {@link ValidateMojo} configuration, as ignoreFailures and excludedKey
+ * are not applicable for a report.
  * 
  * @since 1.2
  * @author romain.quinio
@@ -155,6 +156,14 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
   private String outputDirectory;
 
   /**
+   * Regular expression to use to match inner resources inside a resource value.
+   * 
+   * @since 1.8
+   */
+  @Parameter
+  private String innerResourceRegex;
+
+  /**
    * Entry point for the plugin report goal
    * 
    * @param locale
@@ -171,7 +180,8 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
     try {
       nbErrors = validateMojo.validate(propertyDir, reportItems);
 
-    } catch (MojoExecutionException e) {
+    }
+    catch (MojoExecutionException e) {
       throw new MavenReportException("Could not exceute ValidateMojo", e);
     }
 
@@ -335,6 +345,10 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
 
   public void setFormatter(String formatter) {
     this.formatter = formatter;
+  }
+
+  public String getInnerResourceRegex() {
+    return innerResourceRegex;
   }
 
 }
