@@ -31,14 +31,13 @@ import com.googlecode.l10nmavenplugin.report.L10nReportRenderer;
 /**
  * Creates a report on l10n Properties files validation result.
  * 
- * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via
- * {@link L10nReportRenderer}. It uses a subset of {@link ValidateMojo} configuration, as ignoreFailures and excludedKey
- * are not applicable for a report.
+ * Relies on {@link ValidateMojo} to build list of validation items, before rendering them via {@link L10nReportRenderer}. It uses a subset of
+ * {@link ValidateMojo} configuration, as ignoreFailures and excludedKey are not applicable for a report.
  * 
  * @since 1.2
  * @author romain.quinio
  */
-@Mojo(name = "report", defaultPhase = LifecyclePhase.SITE)
+@Mojo(name = "report", defaultPhase = LifecyclePhase.SITE, threadSafe = true)
 public class ReportMojo extends AbstractMavenReport implements L10nValidationConfiguration {
 
   /**
@@ -180,8 +179,7 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
     try {
       nbErrors = validateMojo.validate(propertyDir, reportItems);
 
-    }
-    catch (MojoExecutionException e) {
+    } catch (MojoExecutionException e) {
       throw new MavenReportException("Could not exceute ValidateMojo", e);
     }
 

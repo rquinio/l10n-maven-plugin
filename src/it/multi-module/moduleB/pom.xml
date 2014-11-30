@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.googlecode.l10n-maven-plugin</groupId>
+    <artifactId>l10n-maven-plugin-multi-module-it</artifactId>
+    <version>@project.version@</version>
+  </parent>
+  <artifactId>l10n-maven-plugin-multi-moduleB-it</artifactId>
+  <packaging>jar</packaging>
+  <version>@project.version@</version>
+  <name>moduleB</name>
+  <description>IT of plugin validate goal with maven multi-modules</description>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.googlecode.l10n-maven-plugin</groupId>
+        <artifactId>l10n-maven-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>validate-l10n</id>
+            <phase>test</phase>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <ignoreFailure>true</ignoreFailure>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

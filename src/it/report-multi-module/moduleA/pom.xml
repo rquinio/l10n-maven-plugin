@@ -11,6 +11,6 @@
   <artifactId>l10n-maven-plugin-report-multi-moduleA-it</artifactId>
   <packaging>jar</packaging>
   <version>@project.version@</version>
-  <name>Multi-module report goal IT</name>
+  <name>moduleA</name>
   <description>IT of plugin report goal with maven multi-modules to detect working directory relative path issues</description>
 </project>
