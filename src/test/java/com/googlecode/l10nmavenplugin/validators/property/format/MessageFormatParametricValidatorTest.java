@@ -44,8 +44,19 @@ public class MessageFormatParametricValidatorTest extends AbstractL10nValidatorT
 
   @Test
   @Ignore("Case not supported yet")
+  public void singleQuoteInParametricPatternShouldBeIgnored() {
+    assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("date is {1,date,MM/dd/yyyy HH':'mm}").matches());
+  }
+
+  @Test
+  @Ignore("Case not supported yet")
   public void singleQuoteShouldBeAnEscapeSequencePattern() {
     assertFalse(MessageFormatFormattingValidator.UNESCAPED_QUOTE_PATTERN.matcher("Some 'quoted' text").matches());
+  }
+
+  @Test
+  public void singleQuotesWithinParametersShouldValidate() {
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "date is {1,date,MM/dd/yyyy HH':'mm}", FILE), items));
   }
 
   @Test
@@ -104,5 +115,4 @@ public class MessageFormatParametricValidatorTest extends AbstractL10nValidatorT
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, longMessage, FILE), items));
     assertEquals(0, items.size());
   }
-
 }

@@ -17,7 +17,6 @@ import org.junit.Test;
 import com.googlecode.l10nmavenplugin.model.BundlePropertyFamily;
 import com.googlecode.l10nmavenplugin.model.PropertyFamily;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
-import com.googlecode.l10nmavenplugin.validators.family.IdenticalTranslationValidator;
 
 public class IdenticalTranslationValidatorTest extends AbstractL10nValidatorTest<PropertyFamily> {
 

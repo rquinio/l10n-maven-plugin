@@ -34,6 +34,12 @@ public class MessageFormatFormatterTest {
 
   @Test
   @Ignore("Case not supported yet")
+  public void testIsParametricWithDatePattern() {
+    assertTrue(formatter.isParametric("{0,date,MM/dd/yyyy HH':'mm}"));
+  }
+
+  @Test
+  @Ignore("Case not supported yet")
   public void singleQuoteShouldBeAnEscapeSequence() {
     assertFalse(formatter.isParametric("'{0}'"));
   }
