@@ -10,17 +10,24 @@
 package com.googlecode.l10nmavenplugin;
 
 import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.invocation.Invocation;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.googlecode.l10nmavenplugin.model.L10nReportItem;
 import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
@@ -28,6 +35,7 @@ import com.googlecode.l10nmavenplugin.validators.AbstractL10nValidatorTest;
 /**
  * Unit tests for {@link ValidateMojo}
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ValidateMojoTest extends AbstractL10nValidatorTest<File> {
 
   /**
@@ -36,6 +44,9 @@ public class ValidateMojoTest extends AbstractL10nValidatorTest<File> {
   private ValidateMojo failingMojo;
 
   private ValidateMojo plugin;
+
+  @Mock
+  private L10nValidationConfiguration configuration;
 
   @Override
   @Before
@@ -51,6 +62,22 @@ public class ValidateMojoTest extends AbstractL10nValidatorTest<File> {
         return 1;
       }
     };
+  }
+
+  @Test
+  public void allConfigurationGettersShouldBeCalled() {
+    plugin = new ValidateMojo(configuration);
+
+    List<Method> invokedMethods = new ArrayList<Method>();
+    for (Invocation invocation : mockingDetails(configuration).getInvocations()) {
+      invokedMethods.add(invocation.getMethod());
+    }
+
+    for (Method method : L10nValidationConfiguration.class.getDeclaredMethods()) {
+      if (method.getName().startsWith("get")) {
+        assertThat("A getter was not called", invokedMethods, hasItem(method));
+      }
+    }
   }
 
   @Test

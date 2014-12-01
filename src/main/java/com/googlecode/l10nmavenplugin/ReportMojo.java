@@ -123,7 +123,8 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
    * 
    * Allowed values: {@link ValidateMojo#MESSAGE_FORMAT_FORMATTER} and {@link ValidateMojo#C_STYLE_FORMATTER}
    * 
-   * @since 1.7
+   * @since 1.9
+   * @note Actually introduced with 1.7, but not propagated to validateMojo, see issue #1
    */
   @Parameter(defaultValue = ValidateMojo.MESSAGE_FORMAT_FORMATTER)
   private String formatter;
