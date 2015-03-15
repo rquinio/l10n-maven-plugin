@@ -19,3 +19,6 @@ cobertura.ser
 
 *.orig
 ReleaseNotes.txt
+
+# Github markdown
+*.md.html
