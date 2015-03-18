@@ -1,4 +1,8 @@
-# Description
+# l10n-maven-plugin [![Build Status](https://travis-ci.org/rquinio/l10n-maven-plugin.svg)](https://travis-ci.org/rquinio/l10n-maven-plugin)
+
+> A Maven plugin to validate localization resources in Java properties files 
+
+## Description
 
 The localization process of an application often involves non technical people. Some translated resources may contain issues linked to formatting, encoding, or the context where the resource is used.
 
@@ -12,7 +16,7 @@ It aims to be a pragmatic solution when having legacy constraints or needing fas
   * Some checks could rather be performed as soon as translator uploads/inputs the translation in the localization tool, to provide instant feedback.
   * Encoding/escaping should rather be managed by the code using the resources, based on the context they are being used (server side, client side, ...) rather than in the resources themselves.
 
-# Usage
+## Usage
 
 See [Usage](Usage.md) page for plugin goals and detailed configuration.
 
@@ -26,7 +30,7 @@ Plugin is available on [Maven Central](http://search.maven.org/#search|ga|1|g%3A
 </plugin>
 ```
 
-# Requirements
+## Requirements
 
 The following specifies the _minimum_ requirements to run this Maven plugin:
 
@@ -36,7 +40,7 @@ The following specifies the _minimum_ requirements to run this Maven plugin:
 | **JDK** | **1.5** |  |
 
 
-# Validation
+## Validation
 
 The files are loaded as Java [Properties](http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Properties.html) and some checks are performed, depending on the type of resource.
 
@@ -82,7 +86,7 @@ There are 3 severity levels:
  * **Warn**: Issue that may impact the application in some cases, incoherence, or bad practice. Can be ignored via --quiet trigger
  * **Info**: Minor issue or recommendation. Can be ignored via --quiet trigger
 
-# References
+## References
 
   * [java.util.Properties#load](http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Properties.html#load%28java.io.InputStream%29) Javadoc
   * [java.text.MessageFormat](http://docs.oracle.com/javase/1.5.0/docs/api/java/text/MessageFormat.html) and [java.util.Formatter](http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html) Javadoc.
