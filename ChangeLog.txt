@@ -1,9 +1,27 @@
-1.6
+1.9 Next
+---------------
+
+1.8 30-Nov-2014
+---------------
+#8 Change absolute URI in xhtml1 schemas to relative URI, in order to avoid re-downloading xml.xsd each time.
+#11 Make plugin threadsafe for maven 3.x parallel execution
+#12 Support for property substitution (i.e. property = ${anotherProperty}) in property values.
+
+1.7 15-Nov-2013
+---------------
+#1 Support for String.format parameters (C-stytle formatting)
+#4 Support for multi-line property value with parameters and quotes
+#5 Support for multiple resource bundles per project
+#7 Support for detecting duplicated keys in property file
+
+1.6 07-Jan-2013
+---------------
 Added French translation for the plugin
 Fixed a bug with a simple quote following a double quote in the HTML validation
 Addition of the acceptance of LI elements at the root of an HTML resource (without a UL or OL encompassing element)
 
 1.5 23-Sep-2012
+---------------
 Added generation of CSV files with keys for each severity (ERROR/WARN/INFO).
 Added a summary to the report, with links to sections
 Added logging of expected html/url key pattern for default validator
@@ -13,7 +31,7 @@ Fixed HTML tag coherence validator to ignore siblings order
 Upgraded xhtml5 schema to XMLmind 1.0.3
 
 1.4 26-May-2012 New validators
-
+---------------
 Refactored validators architecture and model, with notion of scope (single property value, translations of a property, whole properties file, whole bundle of properties file, ...)
 Added identical translation validator, to info identically translated resources, or warn if translations are mostly identical but a few differ.
 Added Trailing whitespace validator for all resources.
@@ -27,6 +45,7 @@ Added plugin integration tests using maven-invoker-plugin.
 Added log of issues summary per severity & type, after validation.
 
 1.3 07-Apr-2012 Customization
+---------------
 Added custom pattern validators.
 Added XHTML validation schema configuration, with pre-defined xhtml1-transitional (default), xhtml1-strict or xhtml5 (based on http://www.xmlmind.com/xhtml5_resources.shtml 1.0.1).
 Added configuration to switch from double quoted js resources (default) to single quoted js resources validation. 
@@ -35,9 +54,11 @@ Increased number of replaced formatting parameters in resource before URL/XHTML 
 Fixed report generation failure when no issues found.
 
 1.2.1 14-Feb-2012 Java 5 compatibility patch
+---------------
 Fixed Java 5 compatibility issue introduced in 1.2.
 
 1.2 14-Feb-2012 Reporting goal
+---------------
 Added report goal that binds to site phase;
 Added parametric replacement checks (single quote escaping, parameters coherency).
 Added support for javascript escaping of double quotes in js resources (\\").
@@ -47,9 +68,11 @@ Refactored code architecture with validators.
 Changed logging to be more consistent.
 
 1.1 10-Feb-2012
+---------------
 Added HTML unescaping before URL validation.
 Added Text key validation (no HTML/URL).
 Changed Other resources validation to warning instead of error.
 
 1.0 07-Feb-2012 Initial release
+---------------
 Validate goal that binds to test phase.

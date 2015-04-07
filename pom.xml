@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.sonatype.oss</groupId>
@@ -148,6 +149,31 @@
             <target>${java.version}</target>
           </configuration>
         </plugin>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <versionRange>[0.7.4.201502262128,)</versionRange>
+                    <goals>
+                      <goal>prepare-agent</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -184,11 +210,11 @@
             </goals>
             <configuration>
               <goalPrefix>l10n-maven-plugin</goalPrefix>
-          </configuration>
+            </configuration>
           </execution>
         </executions>
         <configuration>
-          <!-- Annotations require compiled Mojo, which is not available at  generate-resources phase -->
+          <!-- Annotations require compiled Mojo, which is not available at generate-resources phase -->
           <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
         </configuration>
       </plugin>
@@ -213,30 +239,23 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <check>
-            <haltOnFailure>false</haltOnFailure>
-            <totalBranchRate>80</totalBranchRate>
-            <totalLineRate>85</totalLineRate>
-            <!--
-            <packageLineRate>50</packageLineRate>
-            <packageBranchRate>50</packageBranchRate>
-            <branchRate>25</branchRate>
-            <lineRate>25</lineRate>
-             -->
-          </check>
-        </configuration>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.4.201502262128</version>
         <executions>
           <execution>
+            <id>prepare-agent</id>
             <goals>
-              <goal>clean</goal>
-              <goal>check</goal>
+              <goal>prepare-agent</goal>
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <!-- Publish coverage data to https://coveralls.zendesk.com -->
+      <plugin>
+        <groupId>org.eluder.coveralls</groupId>
+        <artifactId>coveralls-maven-plugin</artifactId>
+        <version>3.1.0</version>
       </plugin>
     </plugins>
   </build>
@@ -256,7 +275,7 @@
                   <goal>verify</goal>
                 </goals>
               </execution>
-             </executions>
+            </executions>
           </plugin>
           <plugin>
             <artifactId>maven-invoker-plugin</artifactId>

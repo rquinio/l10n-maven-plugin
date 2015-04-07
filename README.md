@@ -1,4 +1,4 @@
-# l10n-maven-plugin [![Build Status](https://travis-ci.org/rquinio/l10n-maven-plugin.svg)](https://travis-ci.org/rquinio/l10n-maven-plugin)
+# l10n-maven-plugin [![Build Status](https://travis-ci.org/rquinio/l10n-maven-plugin.svg)](https://travis-ci.org/rquinio/l10n-maven-plugin) [![Coverage Status](https://coveralls.io/repos/rquinio/l10n-maven-plugin/badge.svg)](https://coveralls.io/r/rquinio/l10n-maven-plugin) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.googlecode.l10n-maven-plugin/l10n-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.googlecode.l10n-maven-plugin/l10n-maven-plugin)
 
 > A Maven plugin to validate localization resources in Java properties files 
 
@@ -8,7 +8,7 @@ The localization process of an application often involves non technical people. 
 
 l10-maven-plugin can validate a set of [properties files](http://en.wikipedia.org/wiki/.properties) (mainly used in Java [ResourceBundle](http://docs.oracle.com/javase/1.5.0/docs/api/java/util/ResourceBundle.html)). It aims to either:
   * Detect invalid l10n properties resources at build time, typically before the webapp is packaged, or when extracting properties files from a localization tool/database (**[l10n:validate goal](Usage#l10n:validate.md)**).
-  * Build a Maven site report listing violations found on properties (**[l10n:report goal](Usage#l10n:report.md)**), see a [sample report](http://wiki.l10n-maven-plugin.googlecode.com/git/SampleReport.html).
+  * Build a Maven site report listing violations found on properties (**[l10n:report goal](Usage#l10n:report.md)**), see a [sample report](https://cdn.rawgit.com/wiki/rquinio/l10n-maven-plugin/SampleReport.html).
 
 The plugin was initially developed for some webapps translated in 7 languages with several thousands of properties across 5 resource bundles. It allowed to prevent buggy translations from slipping into production and reduced the cost of fixing them by detecting issues earlier.
 
@@ -18,7 +18,7 @@ It aims to be a pragmatic solution when having legacy constraints or needing fas
 
 ## Usage
 
-See [Usage](Usage.md) page for plugin goals and detailed configuration.
+See [Usage](https://github.com/rquinio/l10n-maven-plugin/wiki/Usage) page for plugin goals and detailed configuration.
 
 Plugin is available on [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22com.googlecode.l10n-maven-plugin%22), through [Sonatype OSS hosting](https://oss.sonatype.org).
 
@@ -77,7 +77,7 @@ Most checks apply at property value level, but some coherency checks have a larg
 | URL | HTML imports | Error | URL is an HTML import and does not support https context (cf [scheme relative URLs](http://stackoverflow.com/questions/3583103/network-path-reference-uri-scheme-relative-urls)). | Mixed content warning | `example.url=http://www.google.com/script.js` |
 | Plain text | No HTML | Error | Contains HTML | Tags not interpreted by browser | `example.alt=alternative text<br/>of an image` |
 | Plain text | No URL | Error | Contains URL | URLs not clickable | `example.alt=Go to http://www.google.com` |
-| Custom | Custom pattern | Error | [custom pattern](CustomPatterns.md) regex doesn't match. |  |  |
+| Custom | Custom pattern | Error | [custom pattern](https://github.com/rquinio/l10n-maven-plugin/wiki/CustomPatterns) regex doesn't match. |  |  |
 | Other | Wrong resource type | Warn | Contains HTML or URL but wasn't checked, so probably some key patterns are wrong in plugin configuration |  | `example.other=This is <br/> actually HTML` |
 | Other | Excluded | Info | Resource has been skipped using _excludedKeys_ configuration property. If this was to bypass a false positive raised by the plugin for a somehow valid case, feel free to [report a bug](https://github.com/rquinio/l10n-maven-plugin/issues) ;-)  | No check performed |  |
 
