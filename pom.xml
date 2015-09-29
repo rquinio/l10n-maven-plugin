@@ -13,7 +13,7 @@
   <name>L10n maven plugin</name>
   <description>Maven plugin to validate localization resources in Java properties files</description>
   <packaging>maven-plugin</packaging>
-  <url>http://code.google.com/p/l10n-maven-plugin/</url>
+  <url>https://github.com/rquinio/l10n-maven-plugin</url>
   <inceptionYear>2012</inceptionYear>
   <licenses>
     <license>
@@ -23,14 +23,19 @@
     </license>
   </licenses>
   <scm>
-    <url>http://code.google.com/p/l10n-maven-plugin/source</url>
-    <connection>scm:git:http://code.google.com/p/l10n-maven-plugin/</connection>
-    <developerConnection>scm:git:https://code.google.com/p/l10n-maven-plugin/</developerConnection>
+    <url>https://github.com/rquinio/l10n-maven-plugin</url>
+    <connection>scm:git:git@github.com:rquinio/l10n-maven-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:rquinio/l10n-maven-plugin.git</developerConnection>
   </scm>
+  <issueManagement>
+    <url>https://github.com/rquinio/l10n-maven-plugin/issues</url>
+    <system>GitHub Issues</system>
+  </issueManagement>
   <developers>
     <developer>
       <id>romain.quinio</id>
       <name>Romain Quinio</name>
+      <url>https://github.com/rquinio</url>
       <roles>
         <role>developer</role>
       </roles>
@@ -38,15 +43,12 @@
     <developer>
       <id>mederel</id>
       <name>Emile de Weerd</name>
+      <url>https://github.com/mederel</url>
       <roles>
         <role>developer</role>
       </roles>
     </developer>
   </developers>
-  <issueManagement>
-    <system>GoogleCode</system>
-    <url>http://code.google.com/p/l10n-maven-plugin/issues/</url>
-  </issueManagement>
   <properties>
     <java.version>1.5</java.version>
   </properties>
