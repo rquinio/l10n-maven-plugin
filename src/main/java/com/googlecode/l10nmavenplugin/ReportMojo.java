@@ -42,6 +42,8 @@ public class ReportMojo extends AbstractMavenReport implements L10nValidationCon
 
   /**
    * Directory containing properties file to check
+   * <p>
+   * The directory is scanned recursively.
    * 
    * @since 1.2
    */

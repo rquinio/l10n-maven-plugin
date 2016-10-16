@@ -1,5 +1,6 @@
 1.9 Next
 ---------------
+#17 Recursive search of bundles in propertyDir
 
 1.8 30-Nov-2014
 ---------------

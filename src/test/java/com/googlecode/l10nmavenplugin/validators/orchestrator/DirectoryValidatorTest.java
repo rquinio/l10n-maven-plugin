@@ -113,4 +113,13 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
     // ... and first world of 2nd line becomes a key (space is valid key/valuer separator)
     assertEquals("next line, but without escaping.", properties.getProperty("on"));
   }
+
+  @Test
+  public void directoriesShouldBeScannedRecursively() {
+    File directory = getFile("recursive");
+
+    validator.loadPropertiesFamily(directory, items, propertiesFamilies);
+
+    assertEquals(1, propertiesFamilies.size());
+  }
 }

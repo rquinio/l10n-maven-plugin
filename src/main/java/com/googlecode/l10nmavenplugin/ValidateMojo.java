@@ -95,7 +95,9 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
   public static final String C_STYLE_FORMATTER = "C-style";
 
   /**
-   * Directory containing properties file to check
+   * Directory containing properties file to check.
+   * <p>
+   * The directory is scanned recursively.
    * 
    * @since 1.0
    */
@@ -289,12 +291,14 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     }
     Formatter formatter = formattingValidator.getFormatter();
 
-    InnerResourcesFormattingValidator innerResourcesValidator = new InnerResourcesFormattingValidator(logger, innerResourceRegex);
+    InnerResourcesFormattingValidator innerResourcesValidator = new InnerResourcesFormattingValidator(logger,
+        innerResourceRegex);
     InnerResourcesFormatter innerResourceFormatter = innerResourcesValidator.getFormatter();
 
     L10nValidator<Property> htmlValidator;
     if (xhtmlSchema != null) {
-      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys, formatter, innerResourceFormatter);
+      htmlValidator = new HtmlValidator(xhtmlSchema, logger, spellCheckValidator, htmlKeys, formatter,
+          innerResourceFormatter);
     } else {
       htmlValidator = new HtmlValidator(logger, spellCheckValidator, htmlKeys, formatter, innerResourceFormatter);
     }
@@ -339,7 +343,8 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
     propertyFamilyValidator.setParametricCoherenceValidator(parametricCoherenceValidator);
     propertyFamilyValidator.setPropertyValidator(propertyValidator);
 
-    PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir, propertyFamilyValidator);
+    PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir,
+        propertyFamilyValidator);
     L10nValidator<File> duplicateKeysValidator = new DuplicateKeysValidator(logger);
     directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator, duplicateKeysValidator);
   }
@@ -403,7 +408,9 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
       nbErrors = directoryValidator.validate(directory, reportItems);
 
     } catch (L10nValidationException e) {
-      throw new MojoExecutionException("An unexpected exception has occurred while validating properties under directory " + propertyDir.getAbsolutePath(), e);
+      throw new MojoExecutionException(
+          "An unexpected exception has occurred while validating properties under directory "
+              + propertyDir.getAbsolutePath(), e);
     }
     return nbErrors;
   }

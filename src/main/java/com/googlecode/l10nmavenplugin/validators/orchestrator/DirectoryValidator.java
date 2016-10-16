@@ -10,15 +10,17 @@
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 
 import com.googlecode.l10nmavenplugin.log.L10nValidatorLogger;
@@ -91,9 +93,12 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
 
     logger.getLogger().info("Looking for .properties files in: " + directory.getAbsolutePath());
     List<PropertiesFile> propertiesFilesInDir = new ArrayList<PropertiesFile>();
+    Collection<File> files = Collections.emptyList();
 
-    File[] files = directory.listFiles((FilenameFilter) new SuffixFileFilter(".properties"));
-    if (files == null || files.length == 0) {
+    if (directory.exists()) {
+      files = FileUtils.listFiles(directory, new SuffixFileFilter(".properties"), TrueFileFilter.INSTANCE);
+    }
+    if (files == null || files.size() == 0) {
       logger.getLogger().warn(
           "No properties file under folder " + directory.getAbsolutePath() + ". Skipping l10n validation.");
 
@@ -108,7 +113,6 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
     }
     propertiesFamilies.addAll(loadPropertiesFamily(propertiesFilesInDir));
     return nbErrors;
-
   }
 
   private List<PropertiesFamily> loadPropertiesFamily(List<PropertiesFile> propertiesFilesInDir) {
