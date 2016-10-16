@@ -45,7 +45,8 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
 
   private final PropertiesLoader propertiesLoader;
 
-  public DirectoryValidator(L10nValidatorLogger logger, L10nValidator<PropertiesFamily> propertiesFamilyValidator, L10nValidator<File> duplicateKeysValidator) {
+  public DirectoryValidator(L10nValidatorLogger logger, L10nValidator<PropertiesFamily> propertiesFamilyValidator,
+      L10nValidator<File> duplicateKeysValidator) {
     super(logger);
     this.propertiesFamilyValidator = propertiesFamilyValidator;
     this.duplicateKeysValidator = duplicateKeysValidator;
@@ -84,7 +85,8 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
   /**
    * Load a group of Properties file from a directory
    */
-  protected int loadPropertiesFamily(File directory, List<L10nReportItem> reportItems, List<PropertiesFamily> propertiesFamilies) {
+  protected int loadPropertiesFamily(File directory, List<L10nReportItem> reportItems,
+      List<PropertiesFamily> propertiesFamilies) {
     int nbErrors = 0;
 
     logger.getLogger().info("Looking for .properties files in: " + directory.getAbsolutePath());
@@ -92,7 +94,8 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
 
     File[] files = directory.listFiles((FilenameFilter) new SuffixFileFilter(".properties"));
     if (files == null || files.length == 0) {
-      logger.getLogger().warn("No properties file under folder " + directory.getAbsolutePath() + ". Skipping l10n validation.");
+      logger.getLogger().warn(
+          "No properties file under folder " + directory.getAbsolutePath() + ". Skipping l10n validation.");
 
     } else {
       for (File file : files) {
@@ -126,6 +129,7 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
       List<PropertiesFile> propertiesWithSameBundleName = bundleFiles.get(bundleName);
 
       if (propertiesWithSameBundleName == null) {
+        logger.getLogger().debug(String.format("Detected bundle with name %s", bundleName));
         propertiesWithSameBundleName = new ArrayList<PropertiesFile>();
         bundleFiles.put(bundleName, propertiesWithSameBundleName);
       }

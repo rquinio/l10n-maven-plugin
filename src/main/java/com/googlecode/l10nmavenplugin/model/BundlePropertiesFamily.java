@@ -32,9 +32,9 @@ public class BundlePropertiesFamily implements PropertiesFamily {
 
   private PropertiesFile rootPropertiesFile = null;
 
-  private Collection<PropertiesFile> propertiesFiles;
+  private final Collection<PropertiesFile> propertiesFiles;
 
-  private Collection<PropertiesFile> propertiesFilesNoRoot = new ArrayList<PropertiesFile>();
+  private final Collection<PropertiesFile> propertiesFilesNoRoot = new ArrayList<PropertiesFile>();
 
   /**
    * 
@@ -62,7 +62,8 @@ public class BundlePropertiesFamily implements PropertiesFamily {
   public Set<String> getKeys() {
     Set<String> keys = new HashSet<String>();
     for (PropertiesFile propertiesFile : propertiesFiles) {
-      keys.addAll(new HashSet<String>(Collections.list((Enumeration<String>) propertiesFile.getProperties().propertyNames())));
+      keys.addAll(new HashSet<String>(Collections.list((Enumeration<String>) propertiesFile.getProperties()
+          .propertyNames())));
     }
     return keys;
   }
@@ -105,7 +106,7 @@ public class BundlePropertiesFamily implements PropertiesFamily {
   public Iterator<PropertyFamily> iterator() {
     return new Iterator<PropertyFamily>() {
 
-      private Iterator<String> keysIterator = getKeys().iterator();
+      private final Iterator<String> keysIterator = getKeys().iterator();
 
       public boolean hasNext() {
         return keysIterator.hasNext();
@@ -139,8 +140,7 @@ public class BundlePropertiesFamily implements PropertiesFamily {
   }
 
   /**
-   * Get the base name of bundle, based on default {@link java.util.ResourceBundle} convention
-   * baseName[_language[_country[_variant]]].properties
+   * Get the base name of bundle, based on default {@link java.util.ResourceBundle} convention baseName[_language[_country[_variant]]].properties
    * 
    * @param propertiesName
    *          file name of 1 properties of the bundle
@@ -153,5 +153,10 @@ public class BundlePropertiesFamily implements PropertiesFamily {
     } else {
       return FilenameUtils.getBaseName(propertiesName);
     }
+  }
+
+  @Override
+  public String toString() {
+    return "Bundle with base name " + getBaseName();
   }
 }

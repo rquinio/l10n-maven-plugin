@@ -96,4 +96,5 @@ public class ReportMojoTest {
 
     plugin.executeReport(Locale.ENGLISH);
   }
+
 }

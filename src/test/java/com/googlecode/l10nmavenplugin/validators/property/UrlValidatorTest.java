@@ -48,10 +48,13 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void testValidUrl() {
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "//www.google.com", FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "https://www.google.com/search", FILE), items));
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://www.google.com.au/search/misc/help_search/detect-context", FILE), items));
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://www.google.au?param1=value1&param2=value2", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK,
+        "http://www.google.com.au/search/misc/help_search/detect-context", FILE), items));
+    assertEquals(0,
+        validator.validate(new PropertyImpl(KEY_OK, "http://www.google.au?param1=value1&param2=value2", FILE), items));
     // URL should allow HTML escaping
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://www.google.au?param1=value1&amp;param2=value2", FILE), items));
+    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "http://www.google.au?param1=value1&amp;param2=value2",
+        FILE), items));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "//www.google.com/file.js#anchor", FILE), items));
   }
 
@@ -59,7 +62,8 @@ public class UrlValidatorTest extends AbstractL10nValidatorTest<Property> {
   public void testMailToScheme() {
     // assertEquals(1, urlValidator.validateProperty("ALLP.url.valid", "mailto:", FILE)));
     assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "mailto:e-mail@example.com", FILE), items));
-    assertEquals(0, validator.validate(new PropertyImpl(KEY_OK, "mailto:username@example.com?subject=Topic", FILE), items));
+    assertEquals(0,
+        validator.validate(new PropertyImpl(KEY_OK, "mailto:username@example.com?subject=Topic", FILE), items));
   }
 
   @Test

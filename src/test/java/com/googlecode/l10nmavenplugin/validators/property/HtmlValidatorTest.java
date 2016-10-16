@@ -10,6 +10,8 @@
 package com.googlecode.l10nmavenplugin.validators.property;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -38,8 +40,8 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
     Formatter formatter = new MessageFormatFormatter();
     InnerResourcesFormatter innerResourcesFormatter = new InnerResourcesFormatter("\\[\\[([A-Za-z0-9\\._]+)\\]\\]");
     // Use XHTML5 schema as it is much faster
-    validator = new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." },
-        formatter, innerResourcesFormatter);
+    validator = new HtmlValidator(HtmlValidator.XHTML5, logger, null, new String[] { ".text." }, formatter,
+        innerResourcesFormatter);
     validator.setSpellCheckValidator(new AlwaysSucceedingValidator<Property>());
   }
 
@@ -153,8 +155,7 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
       L10nValidator<Property> spellCheckValidator = new SpellCheckValidator(new L10nValidatorLogger(), new File(
           url.toURI()));
       validator.setSpellCheckValidator(spellCheckValidator);
-    }
-    catch (URISyntaxException e) {
+    } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
 
@@ -177,5 +178,12 @@ public class HtmlValidatorTest extends AbstractL10nValidatorTest<Property> {
     validator.validate(new PropertyImpl(KEY_KO, "<div><li>Item 1</li> <li>Item 2</li> <li>Item 3</li></div>", FILE),
         items);
     assertEquals(items.toString(), 1, items.size());
+  }
+
+  @Test
+  public void invalidSchemaShouldDefaultToXhtml1() {
+    validator = new HtmlValidator(new File("dummy"), logger, null, new String[] {}, null, null);
+
+    verify(log).error(contains("Could not load XML schema"));
   }
 }

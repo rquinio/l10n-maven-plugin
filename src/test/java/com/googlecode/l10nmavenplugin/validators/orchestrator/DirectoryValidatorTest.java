@@ -9,6 +9,7 @@
  ******************************************************************************/
 package com.googlecode.l10nmavenplugin.validators.orchestrator;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.hamcrest.beans.HasPropertyWithValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +35,8 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
   @Before
   public void setUp() {
     super.setUp();
-    validator = new DirectoryValidator(logger, new AlwaysSucceedingValidator<PropertiesFamily>(), new AlwaysSucceedingValidator<File>());
+    validator = new DirectoryValidator(logger, new AlwaysSucceedingValidator<PropertiesFamily>(),
+        new AlwaysSucceedingValidator<File>());
     propertiesFamilies = new ArrayList<PropertiesFamily>();
   }
 
@@ -66,12 +69,9 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
 
     assertEquals(0, nbErrors);
     assertEquals(3, propertiesFamilies.size());
-    assertEquals("3", propertiesFamilies.get(0).getBaseName());
-    assertEquals(1, propertiesFamilies.get(0).getPropertiesFiles().size());
-    assertEquals("2", propertiesFamilies.get(1).getBaseName());
-    assertEquals(1, propertiesFamilies.get(1).getPropertiesFiles().size());
-    assertEquals("1", propertiesFamilies.get(2).getBaseName());
-    assertEquals(2, propertiesFamilies.get(2).getPropertiesFiles().size());
+    assertThat(propertiesFamilies, hasItem(HasPropertyWithValue.<PropertiesFamily> hasProperty("baseName", is("1"))));
+    assertThat(propertiesFamilies, hasItem(HasPropertyWithValue.<PropertiesFamily> hasProperty("baseName", is("2"))));
+    assertThat(propertiesFamilies, hasItem(HasPropertyWithValue.<PropertiesFamily> hasProperty("baseName", is("3"))));
   }
 
   @Test
@@ -104,7 +104,8 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
     assertEquals("Some text continuing on next line.", properties.getProperty("ALLP.text.multilineValue"));
 
     // \n is valid
-    assertEquals("Some text continuing on next line and with newline character \n (displayed as 2 lines)", properties.getProperty("ALLP.text.valueWithNewline"));
+    assertEquals("Some text continuing on next line and with newline character \n (displayed as 2 lines)",
+        properties.getProperty("ALLP.text.valueWithNewline"));
 
     // If forgetting to escape newline character, the value is truncated ...
     assertEquals("Some text continuing", properties.getProperty("ALLP.text.badMultilineValue"));
