@@ -23,14 +23,18 @@ import java.util.Set;
 public interface PropertiesFile {
 
   /**
-   * The file name (ex: bundle_en.properties), the naming convention being bundleName_locale.properties
+   * The file name (ex: bundle_en.properties), the naming convention being bundleName_locale.properties.
+   * <p>
+   * It may contain sub-folders, i.e. "com/mycompany/a/bundle_en.properties".
    * 
    * @return
    */
   String getFileName();
 
   /**
-   * The name of the bundle (i.e file name without locale nor file extension)
+   * The name of the bundle (i.e file name without locale nor file extension), i.e "MyBundle".
+   * <p>
+   * In case the bundle is in a sub-folder, paths to the root folder are separated by ".", i.e "com.mycompany.a.MyBundle" and "com.mycompany.b.MyBundle"
    */
   String getBundleName();
 

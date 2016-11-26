@@ -39,14 +39,16 @@ public class BundlePropertiesFile implements PropertiesFile {
   private Locale locale;
 
   public BundlePropertiesFile(String fileName, Properties properties) {
-    this.fileName = fileName;
     this.properties = properties;
 
+    this.fileName = fileName;
+
     // Parse bundleName and locale
-    String[] parts = FilenameUtils.getBaseName(fileName).split("_", 2);
-    bundleName = parts[0];
-    if (parts.length == 2) {
-      this.locale = PropertiesFileUtils.getLocale(parts[1]);
+    String path = FilenameUtils.getPath(fileName).replace('/', '.').replace('\\', '.');
+    String[] fileNameParts = FilenameUtils.getBaseName(fileName).split("_", 2);
+    bundleName = path + fileNameParts[0];
+    if (fileNameParts.length == 2) {
+      this.locale = PropertiesFileUtils.getLocale(fileNameParts[1]);
     }
   }
 

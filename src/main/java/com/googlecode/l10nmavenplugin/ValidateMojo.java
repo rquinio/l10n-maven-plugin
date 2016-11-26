@@ -345,7 +345,7 @@ public class ValidateMojo extends AbstractMojo implements L10nValidationConfigur
 
     PropertiesFamilyValidator propertiesFamilyValidator = new PropertiesFamilyValidator(logger, reportsDir,
         propertyFamilyValidator);
-    L10nValidator<File> duplicateKeysValidator = new DuplicateKeysValidator(logger);
+    L10nValidator<File> duplicateKeysValidator = new DuplicateKeysValidator(logger, propertyDir);
     directoryValidator = new DirectoryValidator(logger, propertiesFamilyValidator, duplicateKeysValidator);
   }
 

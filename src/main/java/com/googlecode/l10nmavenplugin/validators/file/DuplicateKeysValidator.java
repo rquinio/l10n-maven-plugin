@@ -25,18 +25,21 @@ public class DuplicateKeysValidator extends AbstractL10nValidator implements L10
 
   private final PropertiesLoader propertiesLoader;
 
-  public DuplicateKeysValidator(L10nValidatorLogger logger) {
+  private final File rootDir;
+
+  public DuplicateKeysValidator(L10nValidatorLogger logger, File rootDir) {
     super(logger);
 
+    this.rootDir = rootDir;
     this.propertiesLoader = new PropertiesLoader(logger);
   }
 
   public int validate(File file, List<L10nReportItem> reportItems) throws L10nValidationException {
-    PropertiesFile propertiesFile = new BundlePropertiesFile(file.getName(), null);
+    PropertiesFile propertiesFile = new BundlePropertiesFile(propertiesLoader.getRelativeFileName(file, rootDir), null);
     DuplicateKeysAwareProperties propertiesToFill = new DuplicateKeysAwareProperties(logger, propertiesFile);
 
     // Validation happens during loading
-    this.propertiesLoader.loadPropertiesFile(file, propertiesToFill);
+    this.propertiesLoader.loadPropertiesFile(file, rootDir, propertiesToFill);
 
     reportItems.addAll(propertiesToFill.getReportItems());
     return propertiesToFill.getNbErrors();
@@ -68,7 +71,8 @@ public class DuplicateKeysValidator extends AbstractL10nValidator implements L10
       if (containsKey(key)) {
         String previousValue = (String) get(key);
         Property property = new PropertyImpl((String) key, (String) value, propertiesFile);
-        L10nReportItem reportItem = new L10nReportItem(Type.DUPLICATE_KEY, "Duplicate key for existing value [" + previousValue + "]", property, null);
+        L10nReportItem reportItem = new L10nReportItem(Type.DUPLICATE_KEY, "Duplicate key for existing value ["
+            + previousValue + "]", property, null);
         reportItems.add(reportItem);
 
         logger.log(reportItem);

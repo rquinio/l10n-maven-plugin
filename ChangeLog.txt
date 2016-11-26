@@ -1,6 +1,6 @@
 1.9 Next
 ---------------
-#17 Recursive search of bundles in propertyDir
+#17 Make the search for bundles in propertyDir recursive. In order to easily differentiate bundles with identical names but in different sub-folders, their file and bundle names are fully qualified to reflect their relative paths inside propertyDir.
 
 1.8 30-Nov-2014
 ---------------

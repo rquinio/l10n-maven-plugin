@@ -32,6 +32,8 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
     plugin = new ValidateMojo();
     plugin.setLog(log);
 
+    plugin.setPropertyDir(getFile(""));
+
     // Use XHTML5 as it is much faster
     plugin.setXhtmlSchema(HtmlValidator.XHTML5);
 
@@ -99,7 +101,7 @@ public class ValidateMojoIT extends AbstractL10nValidatorTest<File> {
 
     // Warnings
     assertEquals(0, nbErrors);
-    assertEquals(2, items.size());
+    assertEquals(3, items.size());
   }
 
   @Test

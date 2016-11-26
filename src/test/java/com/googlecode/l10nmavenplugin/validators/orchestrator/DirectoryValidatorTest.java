@@ -74,17 +74,6 @@ public class DirectoryValidatorTest extends AbstractL10nValidatorTest<File> {
     assertThat(propertiesFamilies, hasItem(HasPropertyWithValue.<PropertiesFamily> hasProperty("baseName", is("3"))));
   }
 
-  @Test
-  public void malfomedPropertiesShouldFailExecution() throws MojoExecutionException {
-    File file = getFile("malformed/malformed.properties");
-    try {
-      validator.loadPropertiesFile(file, items);
-      fail("Malformed properties file should fail");
-    } catch (IllegalArgumentException e) {
-      assertTrue(true);
-    }
-  }
-
   /**
    * Test the behavior of {@link Properties#load(java.io.Reader)} regarding newline character.
    */

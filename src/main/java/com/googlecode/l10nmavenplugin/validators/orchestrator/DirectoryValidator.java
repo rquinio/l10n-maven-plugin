@@ -108,7 +108,7 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
         nbErrors += duplicateKeysValidator.validate(file, reportItems);
 
         // Load it normally
-        propertiesFilesInDir.add(loadPropertiesFile(file, reportItems));
+        propertiesFilesInDir.add(loadPropertiesFile(file, directory, reportItems));
       }
     }
     propertiesFamilies.addAll(loadPropertiesFamily(propertiesFilesInDir));
@@ -146,8 +146,8 @@ public class DirectoryValidator extends AbstractL10nValidator implements L10nVal
   /**
    * Load a single Properties file
    */
-  protected PropertiesFile loadPropertiesFile(File file, List<L10nReportItem> reportItems) {
+  protected PropertiesFile loadPropertiesFile(File file, File rootDir, List<L10nReportItem> reportItems) {
     Properties propertiesToFill = new Properties();
-    return propertiesLoader.loadPropertiesFile(file, propertiesToFill);
+    return propertiesLoader.loadPropertiesFile(file, rootDir, propertiesToFill);
   }
 }

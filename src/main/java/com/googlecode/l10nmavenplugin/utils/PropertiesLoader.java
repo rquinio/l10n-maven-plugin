@@ -25,20 +25,20 @@ public class PropertiesLoader {
   /**
    * Load a single Properties file
    */
-  public PropertiesFile loadPropertiesFile(File file, Properties propertiesToFill) {
+  public PropertiesFile loadPropertiesFile(File file, File rootDir, Properties propertiesToFill) {
     PropertiesFile propertiesFile = null;
 
-    String fileName = file.getName();
-    logger.getLogger().debug("Loading " + fileName + "...");
+    logger.getLogger().debug("Loading " + file.getPath() + "...");
 
     try {
       InputStream inStream = new FileInputStream(file);
       try {
         propertiesToFill.load(inStream);
-        propertiesFile = new BundlePropertiesFile(fileName, propertiesToFill);
+        propertiesFile = new BundlePropertiesFile(getRelativeFileName(file, rootDir), propertiesToFill);
       } catch (IllegalArgumentException e) {
         // Add file details to the exception
-        throw new IllegalArgumentException("The file <" + fileName + "> could not be loaded. Check for a malformed Unicode escape sequence.", e);
+        throw new IllegalArgumentException("The file <" + file.getPath()
+            + "> could not be loaded. Check for a malformed Unicode escape sequence.", e);
 
       } finally {
         inStream.close();
@@ -49,4 +49,10 @@ public class PropertiesLoader {
     return propertiesFile;
   }
 
+  /**
+   * Get the relative fileName of file inside rootDir, without prefix.
+   */
+  public String getRelativeFileName(File file, File rootDir) {
+    return file.getPath().replace(rootDir.getPath() + File.separator, "");
+  }
 }

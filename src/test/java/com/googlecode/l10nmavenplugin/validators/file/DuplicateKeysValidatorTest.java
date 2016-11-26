@@ -17,7 +17,7 @@ public class DuplicateKeysValidatorTest extends AbstractL10nValidatorTest<File> 
   @Before
   public void setUp() {
     super.setUp();
-    validator = new DuplicateKeysValidator(logger);
+    validator = new DuplicateKeysValidator(logger, getFile("duplicates"));
   }
 
   @Test
